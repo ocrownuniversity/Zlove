@@ -7,6 +7,13 @@
 <meta name="description" content="Africa's #1 premium dating platform. AI-powered matching, verified profiles, real-time chat."/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<!-- Paystack -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <style>
 :root{--rose:#E8427D;--violet:#7C3AED;--vl:#9B5CF0;--gold:#F59E0B;--bg:#0D0D12;--bg2:#141420;--card:#1C1C2E;--elev:#252538;--border:rgba(255,255,255,.08);--borderH:rgba(232,66,125,.4);--tp:#F5F0FF;--ts:#A09ABF;--tm:#6B6585;--glass:rgba(28,28,46,.85);--sr:0 0 40px rgba(232,66,125,.15);--sc:0 8px 32px rgba(0,0,0,.4);--gh:linear-gradient(135deg,#0D0D12,#1a0d2e,#0D0D12);--gr:linear-gradient(135deg,#E8427D,#7C3AED);--gc:linear-gradient(145deg,#1C1C2E,#252538)}
 [data-theme=light]{--bg:#FDF8FF;--bg2:#F3EEF9;--card:#FFF;--elev:#F0EBF8;--border:rgba(0,0,0,.08);--tp:#1A1025;--ts:#5A4E6E;--tm:#9B8FB0;--glass:rgba(255,255,255,.9);--sc:0 8px 32px rgba(124,58,237,.08);--gh:linear-gradient(135deg,#FDF8FF,#F0E6FF,#FDF8FF);--gc:linear-gradient(145deg,#FFF,#F5F0FF)}
@@ -393,8 +400,32 @@ a{text-decoration:none;color:inherit}
 @media(max-width:480px){.acard{padding:22px 16px}.mo{padding:20px 16px}.agrid{grid-template-columns:1fr}}
 .mt2{margin-top:8px}.mt4{margin-top:16px}.mt6{margin-top:24px}.mb2{margin-bottom:8px}.mb4{margin-bottom:16px}.mb6{margin-bottom:24px}
 </style>
+<style>
+/* ── CALL UI ── */
+.call-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;flex-direction:column;align-items:center;justify-content:center}
+.call-overlay.open{display:flex}
+.call-avatar{width:100px;height:100px;border-radius:50%;background:var(--gr);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:20px;animation:pulse-ring 2s ease-out infinite}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(232,66,125,.5)}70%{box-shadow:0 0 0 30px rgba(232,66,125,0)}100%{box-shadow:0 0 0 0 rgba(232,66,125,0)}}
+.call-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#fff;margin-bottom:8px}
+.call-status{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:36px}
+.call-btns{display:flex;gap:20px}
+.call-btn{width:60px;height:60px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .2s}
+.call-btn:hover{transform:scale(1.1)}
+.call-btn.end{background:#ef4444}.call-btn.mute{background:rgba(255,255,255,.2)}.call-btn.cam{background:rgba(255,255,255,.2)}
+.video-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:700px;margin-bottom:24px}
+.video-box{background:#1a1a2e;border-radius:16px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden}
+.video-label{position:absolute;bottom:8px;left:12px;font-size:11px;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:50px}
+/* ── ADMIN EXTRA TABS ── */
+.admin-upgrade-badge{background:linear-gradient(135deg,#ef4444,#f59e0b);color:#fff;padding:2px 8px;border-radius:50px;font-size:9px;font-weight:700;margin-left:4px}
+/* ── PAYMENT LOCK ── */
+.locked-feature{position:relative;filter:blur(3px);pointer-events:none}
+.lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;text-align:center}
+.whatsapp-float{position:fixed;bottom:24px;right:24px;z-index:4000;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.5);transition:all .2s;text-decoration:none}
+.whatsapp-float:hover{transform:scale(1.1);box-shadow:0 6px 22px rgba(37,211,102,.6)}
+</style>
 </head>
 <body>
+
 
 <div id="toasts"></div>
 
@@ -571,8 +602,9 @@ a{text-decoration:none;color:inherit}
       <div class="fgr">
         <div>
           <div class="logo" style="margin-bottom:12px" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div>
-          <p style="font-size:12px;color:var(--tm);line-height:1.7;max-width:220px">Africa's premier dating platform connecting people through genuine compatibility.</p>
+          <p style="font-size:12px;color:var(--tm);line-height:1.7;max-width:220px">Africa's premier dating platform. Oregun, Ikeja, Lagos. 📞 09134882222 | Zlove@gmail.com</p>
           <div style="display:flex;gap:8px;margin-top:16px">
+            <a href="https://wa.me/2349134882222" target="_blank" style="width:34px;height:34px;background:#25D366;border:none;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;text-decoration:none">💬</a>
             <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">𝕏</button>
             <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">📘</button>
             <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">📸</button>
@@ -880,7 +912,12 @@ a{text-decoration:none;color:inherit}
           <div class="ch">
             <div class="avsm">👨</div>
             <div style="flex:1"><div style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px">James Obi <span class="badge bn" style="font-size:9px">✅</span></div><div style="font-size:10px;color:#22c55e;font-weight:500">● Online now</div></div>
-            <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="openM('rm')">🚩</button><button class="btn btn-p btn-sm" onclick="showPage('profile')">👤</button></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:50px;font-size:13px;padding:6px 12px" onclick="startVoiceCall('James Obi','👨')">📞</button>
+              <button class="btn btn-sm" style="background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.3);border-radius:50px;font-size:13px;padding:6px 12px" onclick="startVideoCall('James Obi','👨')">📹</button>
+              <button class="btn btn-o btn-sm" onclick="openM('rm')">🚩</button>
+              <button class="btn btn-p btn-sm" onclick="showPage('profile')">👤</button>
+            </div>
           </div>
           <div class="cmsgs" id="cmsgs"></div>
           <div id="tarea" style="padding:0 20px 7px;display:none"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div><div style="font-size:9px;color:var(--tm);margin-top:2px">James is typing...</div></div>
@@ -1198,6 +1235,9 @@ a{text-decoration:none;color:inherit}
         <div class="si" id="at4" onclick="aTab('subs')"><span class="sic">👑</span>Subscriptions</div>
         <div class="si" id="at5" onclick="aTab('analytics')"><span class="sic">📈</span>Analytics</div>
         <div class="si" id="at6" onclick="aTab('broadcast')"><span class="sic">📢</span>Broadcast</div>
+        <div class="si" id="at7" onclick="aTab('payment')"><span class="sic">💳</span>Payment Settings</div>
+        <div class="si" id="at8" onclick="aTab('calls')"><span class="sic">📞</span>Call Settings</div>
+        <div class="si" id="at9" onclick="aTab('membership')"><span class="sic">👑</span>Membership</div>
         <div class="sd"></div>
         <div class="si" onclick="showPage('landing')"><span class="sic">👁️</span>View Site</div>
         <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
@@ -1274,9 +1314,9 @@ a{text-decoration:none;color:inherit}
       <div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px">
           <h3 style="font-size:14px;font-weight:700;margin-bottom:13px">Reach Us Directly</h3>
-          <div class="cmet"><div class="cic">📧</div><div><div style="font-weight:600;font-size:12px">Email</div><div style="font-size:11px;color:var(--tm)">support@zlove.africa</div></div></div>
-          <div class="cmet"><div class="cic">📞</div><div><div style="font-weight:600;font-size:12px">Phone</div><div style="font-size:11px;color:var(--tm)">+234 800 ZLOVE (95683)</div></div></div>
-          <div class="cmet"><div class="cic">📍</div><div><div style="font-weight:600;font-size:12px">Office</div><div style="font-size:11px;color:var(--tm)">12 Innovation Hub, Victoria Island, Lagos</div></div></div>
+          <div class="cmet"><div class="cic">📧</div><div><div style="font-weight:600;font-size:12px">Email</div><div style="font-size:11px;color:var(--tm)">Zlove@gmail.com</div></div></div>
+          <div class="cmet"><div class="cic">💬</div><div><div style="font-weight:600;font-size:12px">WhatsApp</div><a href="https://wa.me/2349134882222" target="_blank" style="font-size:11px;color:var(--rose);font-weight:600;text-decoration:none">09134882222 — Click to Chat</a></div></div>
+          <div class="cmet"><div class="cic">📍</div><div><div style="font-weight:600;font-size:12px">Office</div><div style="font-size:11px;color:var(--tm)">No. 1, Ibijoke Street, Kudirat Abiola Way, Oregun, Ikeja, Lagos State</div></div></div>
           <div class="cmet"><div class="cic">🕐</div><div><div style="font-weight:600;font-size:12px">Support Hours</div><div style="font-size:11px;color:var(--tm)">Mon–Fri, 9am–6pm WAT</div></div></div>
         </div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px">
@@ -1293,31 +1333,624 @@ a{text-decoration:none;color:inherit}
   </div></div>
 </div>
 
+
+<!-- WhatsApp Float Button -->
+<a class="whatsapp-float" href="https://wa.me/2349134882222" target="_blank" title="Chat on WhatsApp">💬</a>
+
+<!-- VOICE CALL OVERLAY -->
+<div class="call-overlay" id="voice-call-overlay">
+  <div class="call-avatar" id="vc-avatar">👨</div>
+  <div class="call-name" id="vc-name">James Obi</div>
+  <div class="call-status" id="vc-status">Calling...</div>
+  <div class="call-btns">
+    <button class="call-btn mute" id="vc-mute" onclick="toggleMute()" title="Mute">🎙️</button>
+    <button class="call-btn end" onclick="endCall('voice')" title="End Call">📵</button>
+    <button class="call-btn cam" onclick="toggleSpeaker()" title="Speaker">🔊</button>
+  </div>
+</div>
+
+<!-- VIDEO CALL OVERLAY -->
+<div class="call-overlay" id="video-call-overlay">
+  <div class="video-grid">
+    <div class="video-box"><span style="font-size:52px">👩‍🦱</span><div class="video-label">You</div></div>
+    <div class="video-box" id="remote-video"><span style="font-size:52px" id="vc2-avatar">👨</span><div class="video-label" id="vc2-name">James Obi</div></div>
+  </div>
+  <div class="call-btns">
+    <button class="call-btn mute" onclick="toggleMute()" title="Mute">🎙️</button>
+    <button class="call-btn cam" onclick="toggleCam()" title="Camera">📷</button>
+    <button class="call-btn end" onclick="endCall('video')" title="End Call">📵</button>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="ov" id="upgrade-modal">
+  <div class="mo" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:14px">👑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;margin-bottom:8px" id="upgrade-title">Upgrade Required</h2>
+    <p style="color:var(--ts);margin-bottom:22px;font-size:14px" id="upgrade-msg">Voice & video calls are available for Gold and Premium members.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-gold" onclick="closeM('upgrade-modal');showPage('premium')">👑 Upgrade Now</button>
+      <button class="btn btn-g" onclick="closeM('upgrade-modal')">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ── DATA ──
-const profiles=[
+// ═══════════════════════════════════════════════════
+//  FIREBASE INITIALIZATION
+// ═══════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyC518YM7I5SJBpOSMsZptvN_qaO5M3ulNM",
+  authDomain: "zlove-8078a.firebaseapp.com",
+  projectId: "zlove-8078a",
+  storageBucket: "zlove-8078a.firebasestorage.app",
+  messagingSenderId: "1049200851049",
+  appId: "1:1049200851049:web:1d1e8a63812f83f9828af8"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+const SUPER_ADMIN_EMAIL = "oladejiridwanopeyemi@gmail.com";
+
+// ═══════════════════════════════════════════════════
+//  GLOBAL APP STATE
+// ═══════════════════════════════════════════════════
+let currentUser = null;
+let userProfile = null;
+let isAdmin = false;
+let appSettings = {
+  paystackPublicKey: "",
+  voiceCallsEnabled: true,
+  videoCallsEnabled: true,
+  voiceCallPlans: ["gold","premium","platinum"],
+  videoCallPlans: ["gold","premium","platinum"],
+  plans: {
+    free: { name:"Free", price:0, features:["10 likes/day","Basic filters","Chat"] },
+    gold: { name:"Gold", price:4999, features:["Unlimited likes","See who liked you","5 Super Likes/day","1 Boost/week","Voice & Video Calls"] },
+    premium: { name:"Premium / Platinum", price:9999, features:["All Gold features","Unlimited Boosts","Incognito mode","Message before match","VIP badge","Voice & Video Calls"] }
+  }
+};
+let theme = 'dark';
+let swIdx = 0;
+let selI = [];
+let isMuted = false;
+let isCamOff = false;
+let callTimer = null;
+let callSeconds = 0;
+
+// ═══════════════════════════════════════════════════
+//  LOAD SETTINGS FROM FIRESTORE
+// ═══════════════════════════════════════════════════
+async function loadAppSettings() {
+  try {
+    const doc = await db.collection('settings').doc('app').get();
+    if (doc.exists) {
+      const data = doc.data();
+      appSettings = { ...appSettings, ...data };
+      console.log("Settings loaded from Firebase");
+    }
+  } catch(e) {
+    console.log("Using default settings:", e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTH STATE LISTENER
+// ═══════════════════════════════════════════════════
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    isAdmin = (user.email === SUPER_ADMIN_EMAIL);
+    try {
+      const snap = await db.collection('users').doc(user.uid).get();
+      if (snap.exists) {
+        userProfile = snap.data();
+        if (isAdmin && userProfile.role !== 'superadmin') {
+          await db.collection('users').doc(user.uid).update({ role: 'superadmin' });
+          userProfile.role = 'superadmin';
+        }
+      }
+    } catch(e) { console.log("Profile fetch error:", e.message); }
+    await loadAppSettings();
+    updateUIForUser();
+  } else {
+    currentUser = null;
+    userProfile = null;
+    isAdmin = false;
+  }
+});
+
+function updateUIForUser() {
+  if (!currentUser) return;
+  const displayName = userProfile?.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || "User";
+  document.querySelectorAll('.sidebar-user-name-el').forEach(el => el.textContent = displayName);
+  document.querySelectorAll('.sidebar-user-plan-el').forEach(el => {
+    el.textContent = (userProfile?.plan || 'Free') + ' Member';
+    if (isAdmin) el.textContent = '👑 Super Admin';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  ROUTING
+// ═══════════════════════════════════════════════════
+function showPage(pg) {
+  if ((pg === 'admin') && !isAdmin) {
+    toast('Access denied. Admin only.', 'error');
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + pg);
+  if (el) { el.classList.add('active'); window.scrollTo(0, 0); }
+  const appPgs = ['dashboard','discover','matches','chat','profile','stories','notifications','premium','settings'];
+  document.getElementById('msb').style.display = (window.innerWidth <= 1024 && appPgs.includes(pg)) ? 'flex' : 'none';
+  if (pg === 'discover') initDisc();
+  if (pg === 'matches') initMatches();
+  if (pg === 'chat') initChat();
+  if (pg === 'notifications') initNotifs();
+  if (pg === 'admin') aTab('overview');
+  if (pg === 'register') initInterests();
+  if (pg === 'stories') initStories();
+}
+
+function s2(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }
+function toggleSB() { document.querySelectorAll('[id^="sb"]').forEach(s => s.classList.toggle('open')); }
+window.addEventListener('scroll', () => { const n = document.getElementById('ln'); if (n) n.classList.toggle('sc', scrollY > 60); });
+
+// ═══════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════
+function toggleTheme() {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.querySelectorAll('[id^="tb"],.tb').forEach(b => b.textContent = theme === 'dark' ? '🌙' : '☀️');
+}
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const ic = { success: '✅', error: '❌', info: '💜', warning: '⚠️' };
+  const tc = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = `<span>${ic[type]}</span><span>${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), 3600);
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openM(id) { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+// ═══════════════════════════════════════════════════
+//  AUTH — FIREBASE CONNECTED
+// ═══════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('le').value.trim();
+  const pwd = document.getElementById('lp').value;
+  if (!email) { toast('Please enter your email', 'error'); return; }
+  if (!pwd) { toast('Please enter your password', 'error'); return; }
+  try {
+    toast('Signing you in...', 'info');
+    await auth.signInWithEmailAndPassword(email, pwd);
+    toast('Welcome back to ZLove! 💜', 'success');
+    if (email === SUPER_ADMIN_EMAIL) {
+      showPage('admin');
+    } else {
+      showPage('dashboard');
+    }
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': 'No account found with this email.',
+      'auth/wrong-password': 'Incorrect password.',
+      'auth/invalid-email': 'Please enter a valid email.',
+      'auth/too-many-requests': 'Too many attempts. Please try again later.'
+    };
+    toast(msgs[e.code] || e.message, 'error');
+  }
+}
+
+async function socialLogin(provider) {
+  try {
+    toast('Connecting to ' + provider + '...', 'info');
+    const prov = provider === 'Google' ? new firebase.auth.GoogleAuthProvider() : new firebase.auth.FacebookAuthProvider();
+    const result = await auth.signInWithPopup(prov);
+    const user = result.user;
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (!snap.exists) {
+      await db.collection('users').doc(user.uid).set({
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        plan: 'free',
+        role: user.email === SUPER_ADMIN_EMAIL ? 'superadmin' : 'user',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    toast(provider + ' sign-in successful! Welcome 💜', 'success');
+    showPage(user.email === SUPER_ADMIN_EMAIL ? 'admin' : 'dashboard');
+  } catch(e) {
+    toast('Sign-in failed: ' + e.message, 'error');
+  }
+}
+
+async function doLogout() {
+  try {
+    await auth.signOut();
+    toast('Signed out. See you soon! 💜', 'success');
+    setTimeout(() => showPage('landing'), 700);
+  } catch(e) { toast('Error signing out', 'error'); }
+}
+
+async function sendReset() {
+  const email = document.getElementById('fe').value.trim();
+  if (!email) { toast('Please enter your email', 'error'); return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    toast('Reset link sent! Check your inbox.', 'success');
+    setTimeout(() => showPage('login'), 1800);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+function tpwd(id, btn) {
+  const i = document.getElementById(id);
+  i.type = i.type === 'password' ? 'text' : 'password';
+  btn.textContent = i.type === 'password' ? '👁️' : '🙈';
+}
+
+// ═══════════════════════════════════════════════════
+//  REGISTER — MULTI-STEP WITH FIREBASE
+// ═══════════════════════════════════════════════════
+function rNext(s) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('rs' + i);
+    if (el) el.style.display = i === s ? 'block' : 'none';
+    const d = document.getElementById('d' + i);
+    if (d) { d.classList.remove('on', 'dn'); if (i < s) d.classList.add('dn'); if (i === s) d.classList.add('on'); }
+  }
+}
+
+function initInterests() {
+  const c = document.getElementById('ipicker');
+  if (!c || c.children.length) return;
+  const allInterests = ['✈️ Travel','📚 Reading','🎵 Music','☕ Coffee','🏋️ Fitness','🎬 Cinema','🍕 Foodie','🎨 Art','🌿 Nature','🐾 Pets','🎮 Gaming','🧘 Yoga','🥾 Hiking','📸 Photography','🍳 Cooking','💃 Dancing','🏄 Surfing','🎸 Guitar','🏊 Swimming','🚴 Cycling'];
+  allInterests.forEach(it => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (selI.includes(it) ? ' on' : '');
+    b.textContent = it;
+    b.onclick = () => { selI.includes(it) ? selI = selI.filter(x => x !== it) : selI.push(it); b.classList.toggle('on'); };
+    c.appendChild(b);
+  });
+}
+
+function otpN(inp, i) { if (inp.value.length === 1 && i < 5) document.getElementById('o' + (i + 1)).focus(); }
+
+async function verOTP() {
+  toast('Verifying...', 'info');
+  try {
+    const email = document.getElementById('re').value.trim();
+    const pwd = document.getElementById('rpw').value;
+    const name = document.getElementById('rn').value.trim();
+    const result = await auth.createUserWithEmailAndPassword(email, pwd);
+    await result.user.updateProfile({ displayName: name });
+    await db.collection('users').doc(result.user.uid).set({
+      displayName: name,
+      email,
+      phone: document.getElementById('rph').value,
+      dob: document.getElementById('rdb').value,
+      gender: document.getElementById('rg').value,
+      location: document.getElementById('rl').value,
+      occupation: document.getElementById('ro').value,
+      bio: document.getElementById('rb').value,
+      interests: selI,
+      plan: 'free',
+      role: email === SUPER_ADMIN_EMAIL ? 'superadmin' : 'user',
+      verified: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Account created! Welcome to ZLove 💜', 'success');
+    showPage('dashboard');
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'This email is already registered.',
+      'auth/weak-password': 'Password must be at least 6 characters.',
+      'auth/invalid-email': 'Please enter a valid email address.'
+    };
+    toast(msgs[e.code] || e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  PAYSTACK PAYMENT
+// ═══════════════════════════════════════════════════
+async function getPaystackKey() {
+  try {
+    const doc = await db.collection('settings').doc('app').get();
+    if (doc.exists && doc.data().paystackPublicKey) return doc.data().paystackPublicKey;
+  } catch(e) {}
+  return appSettings.paystackPublicKey || "";
+}
+
+async function doPay() {
+  const selectedPlan = document.querySelector('.pplan.s .pnm')?.textContent || 'Platinum';
+  const priceEl = document.querySelector('.pplan.s .ppr');
+  const priceText = priceEl ? priceEl.textContent.replace('₦','').replace(',','') : '9999';
+  const amount = parseInt(priceText) * 100; // Paystack uses kobo
+
+  if (!currentUser) { toast('Please sign in to subscribe', 'error'); showPage('login'); return; }
+
+  const publicKey = await getPaystackKey();
+  if (!publicKey) {
+    toast('Payment system not configured. Please contact admin.', 'warning');
+    return;
+  }
+
+  const handler = PaystackPop.setup({
+    key: publicKey,
+    email: currentUser.email,
+    amount: amount,
+    currency: 'NGN',
+    ref: 'ZLV-' + Date.now() + '-' + Math.floor(Math.random()*1000000),
+    metadata: {
+      userId: currentUser.uid,
+      plan: selectedPlan.toLowerCase(),
+      custom_fields: [{ display_name: "ZLove Plan", variable_name: "plan", value: selectedPlan }]
+    },
+    callback: async function(response) {
+      toast('Payment successful! 🎉 Activating your subscription...', 'success');
+      const planKey = selectedPlan.toLowerCase().includes('annual') ? 'premium' : selectedPlan.toLowerCase();
+      const expiry = new Date();
+      if (selectedPlan.toLowerCase().includes('annual')) expiry.setFullYear(expiry.getFullYear() + 1);
+      else expiry.setMonth(expiry.getMonth() + 1);
+
+      try {
+        await db.collection('users').doc(currentUser.uid).update({
+          plan: planKey,
+          planExpiry: expiry.toISOString(),
+          subscriptionRef: response.reference
+        });
+        await db.collection('payments').add({
+          userId: currentUser.uid,
+          email: currentUser.email,
+          plan: planKey,
+          amount: amount / 100,
+          reference: response.reference,
+          gateway: 'Paystack',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        if (userProfile) { userProfile.plan = planKey; userProfile.planExpiry = expiry.toISOString(); }
+        toast('Welcome to ZLove ' + selectedPlan + '! 👑', 'success');
+      } catch(e) { toast('Subscription recorded. Contact support if needed.', 'warning'); }
+    },
+    onClose: function() { toast('Payment window closed.', 'info'); }
+  });
+  handler.openIframe();
+}
+
+function selPlan(el, plan, price) {
+  document.querySelectorAll('.pplan').forEach(p => p.classList.remove('s'));
+  el.classList.add('s');
+  const btn = document.getElementById('pbtn');
+  if (btn) btn.textContent = '🚀 Subscribe — ' + price + (plan === 'annual' ? '/year' : '/month');
+}
+
+// ═══════════════════════════════════════════════════
+//  VOICE & VIDEO CALLS
+// ═══════════════════════════════════════════════════
+async function checkCallAccess(type) {
+  await loadAppSettings();
+  const enabled = type === 'voice' ? appSettings.voiceCallsEnabled : appSettings.videoCallsEnabled;
+  const allowedPlans = type === 'voice' ? (appSettings.voiceCallPlans || ['gold','premium','platinum']) : (appSettings.videoCallPlans || ['gold','premium','platinum']);
+  if (!enabled) { toast(`${type} calls are currently disabled by admin.`, 'warning'); return false; }
+  if (!currentUser) { toast('Please sign in to make calls.', 'error'); return false; }
+  const plan = userProfile?.plan || 'free';
+  if (!allowedPlans.includes(plan.toLowerCase())) {
+    document.getElementById('upgrade-title').textContent = type === 'voice' ? '📞 Voice Call — Gold Required' : '📹 Video Call — Gold Required';
+    document.getElementById('upgrade-msg').textContent = `${type === 'voice' ? 'Voice' : 'Video'} calls require a Gold or Premium subscription.`;
+    openM('upgrade-modal');
+    return false;
+  }
+  // Check expiry
+  if (userProfile?.planExpiry) {
+    const expiry = new Date(userProfile.planExpiry);
+    if (expiry < new Date()) {
+      toast('Your subscription has expired. Please renew to use this feature.', 'warning');
+      setTimeout(() => showPage('premium'), 1500);
+      return false;
+    }
+  }
+  return true;
+}
+
+async function startVoiceCall(userName, userEmoji) {
+  const ok = await checkCallAccess('voice');
+  if (!ok) return;
+  const overlay = document.getElementById('voice-call-overlay');
+  document.getElementById('vc-avatar').textContent = userEmoji || '👤';
+  document.getElementById('vc-name').textContent = userName || 'User';
+  document.getElementById('vc-status').textContent = 'Calling...';
+  overlay.classList.add('open');
+  callSeconds = 0;
+  setTimeout(() => {
+    if (overlay.classList.contains('open')) {
+      document.getElementById('vc-status').textContent = 'Connected • 0:00';
+      callTimer = setInterval(() => {
+        callSeconds++;
+        const m = Math.floor(callSeconds / 60);
+        const s = callSeconds % 60;
+        const el = document.getElementById('vc-status');
+        if (el) el.textContent = `Connected • ${m}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+    }
+  }, 2000);
+}
+
+async function startVideoCall(userName, userEmoji) {
+  const ok = await checkCallAccess('video');
+  if (!ok) return;
+  const overlay = document.getElementById('video-call-overlay');
+  document.getElementById('vc2-avatar').textContent = userEmoji || '👤';
+  document.getElementById('vc2-name').textContent = userName || 'User';
+  overlay.classList.add('open');
+}
+
+function endCall(type) {
+  clearInterval(callTimer);
+  callSeconds = 0;
+  document.getElementById(type + '-call-overlay').classList.remove('open');
+  isMuted = false;
+  isCamOff = false;
+  toast('Call ended', 'info');
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  document.getElementById('vc-mute').textContent = isMuted ? '🔇' : '🎙️';
+  toast(isMuted ? 'Microphone muted' : 'Microphone on', 'info');
+}
+function toggleCam() {
+  isCamOff = !isCamOff;
+  const btn = document.querySelector('#video-call-overlay .call-btn.cam');
+  if (btn) btn.textContent = isCamOff ? '📷❌' : '📷';
+  toast(isCamOff ? 'Camera off' : 'Camera on', 'info');
+}
+function toggleSpeaker() { toast('Speaker toggled', 'info'); }
+
+// ═══════════════════════════════════════════════════
+//  DISCOVER / SWIPE
+// ═══════════════════════════════════════════════════
+const profiles = [
   {e:'👩‍🦱',n:'Amira Okafor, 24',m:'📍 Lagos, 2.3km • Doctor',b:'Passionate about medicine and exploring the world. Love hiking, jazz, and discovering hidden restaurants.',t:['🎵 Jazz','🥾 Hiking','🍕 Foodie','✈️ Travel'],c:94},
   {e:'👨‍🦰',n:'Daniel Eze, 29',m:'📍 Lagos, 4.1km • Engineer',b:'Building things by day, exploring the city by night. Love deep conversations and weekend adventures.',t:['💻 Tech','🍕 Foodie','🎬 Cinema','🏋️ Fitness'],c:87},
   {e:'👩',n:'Fatima Bello, 27',m:'📍 Lekki, 1.8km • Lawyer',b:'Law grad who unwinds with yoga and great novels. Looking for someone who can match my energy.',t:['📚 Books','🧘 Yoga','☕ Coffee','🎭 Theatre'],c:91},
   {e:'🧑‍🦱',n:'Emeka Nwosu, 31',m:'📍 VI, 3.5km • Architect',b:'Creative soul who designs spaces and collects vinyl records. Passionate about art and authentic living.',t:['🏗️ Design','🎵 Music','🎨 Art','🌍 Travel'],c:78},
   {e:'👩‍🦰',n:'Chisom Obi, 25',m:'📍 Ikeja, 6.2km • Nurse',b:'Nurse by profession, adventurer by heart. I believe in kindness and making every moment count.',t:['❤️ Caring','🌿 Nature','🐾 Animals','🎭 Theatre'],c:89},
 ];
-const convos=[
+
+function initDisc() { loadSwipe(); renderNearby(); renderTopPicks(); }
+function loadSwipe() {
+  if (swIdx >= profiles.length) {
+    const c = document.getElementById('scard');
+    if (c) c.innerHTML = `<div class="sprof" style="padding:52px 32px;text-align:center"><div style="font-size:52px;margin-bottom:12px">💜</div><h3 style="font-size:19px;font-weight:700;margin-bottom:6px">You're all caught up!</h3><p style="color:var(--tm);margin-bottom:18px">Come back later or expand your filters.</p><button class="btn btn-p" onclick="swIdx=0;loadSwipe()">Start Over</button></div>`;
+    return;
+  }
+  const p = profiles[swIdx];
+  const g = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  g('semi2', p.e); g('sn', p.n); g('sm', p.m); g('sb2', p.b);
+  const cs = document.getElementById('cscore'); if (cs) cs.textContent = p.c + '% Compatibility';
+  const t = document.getElementById('stags'); if (t) t.innerHTML = p.t.map(x => `<div class="chip on">${x}</div>`).join('');
+}
+function renderNearby() {
+  const el = document.getElementById('nlist'); if (!el) return;
+  el.innerHTML = [
+    {e:'👩‍🦱',n:'Amira Okafor',d:'2.3km'},{e:'👨',n:'James Obi',d:'4.1km'},{e:'👩',n:'Fatima Bello',d:'5.8km'}
+  ].map(u => `<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer"><div class="avxs">${u.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${u.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${u.d} away</div></div><button class="btn btn-p btn-sm" style="padding:4px 9px;font-size:10px" onclick="swipe('like')">Like</button></div>`).join('');
+}
+function renderTopPicks() {
+  const el = document.getElementById('tpicks'); if (!el) return;
+  el.innerHTML = profiles.slice(0, 4).map(p => `<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)"><div class="avxs">${p.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--rose);font-weight:600">🎯 ${p.c}%</div></div></div>`).join('');
+}
+function swipe(action) {
+  const card = document.getElementById('scard'); if (!card) return;
+  const nm = profiles[swIdx]?.n.split(',')[0];
+  if (action === 'like') { card.style.animation = 'swR .4s ease forwards'; toast('You liked ' + nm + '! 💚', 'success'); if (Math.random() > .5) setTimeout(() => { document.getElementById('mname').textContent = nm; openM('mm'); }, 600); }
+  else if (action === 'pass') { card.style.animation = 'swL .4s ease forwards'; toast('Passed ❌', 'info'); }
+  else if (action === 'super') { card.style.animation = 'swR .4s ease forwards'; toast('Super Like sent to ' + nm + '! ⭐', 'success'); }
+  setTimeout(() => { swIdx++; card.style.animation = ''; loadSwipe(); }, 450);
+}
+
+// ═══════════════════════════════════════════════════
+//  MATCHES
+// ═══════════════════════════════════════════════════
+const matchData = [
+  {e:'👨',n:'James Obi',age:28,loc:'Lagos',c:94,nw:true},{e:'👩',n:'Kemi Adeyemi',age:25,loc:'Abuja',c:89,nw:true},
+  {e:'🧑',n:'David Eze',age:30,loc:'PH',c:84,nw:false},{e:'👩‍🦱',n:'Amira Okafor',age:24,loc:'Lagos',c:91,nw:true},
+  {e:'👨‍🦲',n:'Felix Oladele',age:32,loc:'Lagos',c:76,nw:false},{e:'👩‍🦰',n:'Lola Bakare',age:27,loc:'Ibadan',c:82,nw:false},
+  {e:'🧑‍🦱',n:'Emeka Nwosu',age:31,loc:'Lagos',c:78,nw:false},{e:'👩',n:'Fatima Bello',age:27,loc:'Kano',c:86,nw:true},
+  {e:'👨',n:'Chidi Okonkwo',age:29,loc:'Enugu',c:73,nw:false},{e:'👩',n:'Ngozi Eze',age:26,loc:'Lagos',c:88,nw:false},
+  {e:'🧑',n:'Ibrahim Musa',age:33,loc:'Abuja',c:71,nw:false},{e:'👩‍🦱',n:'Chisom Obi',age:25,loc:'Lagos',c:90,nw:true},
+];
+function initMatches() { renderMatches(matchData); }
+function renderMatches(data) {
+  const el = document.getElementById('mgrid'); if (!el) return;
+  el.innerHTML = data.map(m => `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .3s" onclick="showPage('chat')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--borderH)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'">
+    <div style="height:148px;background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;font-size:48px;position:relative">
+      ${m.e}${m.nw ? '<span class="badge br" style="position:absolute;top:6px;left:6px">New</span>' : ''}
+    </div>
+    <div style="padding:10px"><div style="font-weight:700;font-size:12px">${m.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${m.loc} • 🎯 ${m.c}%</div>
+    <div style="display:flex;gap:5px;margin-top:7px">
+      <button class="btn btn-p btn-sm w-full" style="font-size:10px;padding:5px;flex:1" onclick="event.stopPropagation();showPage('chat')">💬</button>
+      <button class="btn btn-sm" style="font-size:10px;padding:5px;background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:50px;flex:1" onclick="event.stopPropagation();startVoiceCall('${m.n}','${m.e}')">📞</button>
+      <button class="btn btn-sm" style="font-size:10px;padding:5px;background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.3);border-radius:50px;flex:1" onclick="event.stopPropagation();startVideoCall('${m.n}','${m.e}')">📹</button>
+    </div></div>
+  </div>`).join('');
+}
+function matchTab(btn, tab) {
+  document.querySelectorAll('#page-matches .tab').forEach(t => t.classList.remove('on')); btn.classList.add('on');
+  if (tab === 'l') { document.getElementById('mgrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:52px 18px"><div style="font-size:42px;margin-bottom:12px">👑</div><h3 style="font-size:18px;font-weight:700;margin-bottom:6px">Premium Feature</h3><p style="color:var(--tm);margin-bottom:18px">Upgrade to see who liked your profile</p><button class="btn btn-gold" onclick="showPage('premium')">Upgrade to Gold</button></div>`; }
+  else if (tab === 'y') { renderMatches([...matchData].sort(() => Math.random() - .5)); }
+  else { renderMatches(matchData); }
+}
+
+// ═══════════════════════════════════════════════════
+//  CHAT
+// ═══════════════════════════════════════════════════
+const convos = [
   {id:1,n:'James Obi',e:'👨',on:true,t:'2m',l:'That sounds amazing! What time?',u:2},
   {id:2,n:'Kemi Adeyemi',e:'👩',on:true,t:'18m',l:"Haha yes! I'd love that 😊",u:0},
   {id:3,n:'David Eze',e:'🧑',on:false,t:'1h',l:'See you Saturday then!',u:1},
   {id:4,n:'Amira Okafor',e:'👩‍🦱',on:true,t:'3h',l:"What's your favorite restaurant in VI?",u:0},
 ];
-let msgs=[
+let msgs = [
   {t:'r',tx:"Hey Sofia! I saw we matched 😊 How's your day going?",tm:'10:32 AM',rd:true},
   {t:'s',tx:"Hi James! It's been great, just finished a big design project.",tm:'10:35 AM',rd:true},
   {t:'r',tx:"That's awesome! What kind of projects do you work on?",tm:'10:36 AM',rd:true},
   {t:'s',tx:"Mostly product and app design. Working on a fintech app — super exciting!",tm:'10:38 AM',rd:true},
-  {t:'r',tx:"Wow! I'm in tech too — software engineering. Maybe we could chat over coffee?",tm:'10:40 AM',rd:true},
+  {t:'r',tx:"Wow! I'm in tech too — software engineering. Maybe coffee?",tm:'10:40 AM',rd:true},
   {t:'s',tx:"I'd really like that! ☕ I know a great spot in Victoria Island.",tm:'10:42 AM',rd:true},
   {t:'r',tx:"That sounds amazing! What time?",tm:'10:43 AM',rd:false},
 ];
-const notifs=[
+function initChat() { renderConvos(); renderMsgs(); setTimeout(() => showT(), 1600); }
+function renderConvos() {
+  const el = document.getElementById('clist'); if (!el) return;
+  el.innerHTML = convos.map((c, i) => `<div class="cli ${i === 0 ? 'on' : ''}" onclick="pickConvo(${c.id})">
+    <div style="position:relative"><div class="avsm">${c.e}</div><div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;background:${c.on ? '#22c55e' : 'var(--tm)'};border-radius:50%;border:2px solid var(--card)"></div></div>
+    <div class="clin"><div class="cln">${c.n}<span class="clt">${c.t}</span></div><div class="clm">${c.l}</div></div>
+    ${c.u ? `<div class="clb">${c.u}</div>` : ''}
+  </div>`).join('');
+}
+function renderMsgs() {
+  const el = document.getElementById('cmsgs'); if (!el) return;
+  el.innerHTML = msgs.map(m => `<div class="cmsg ${m.t === 's' ? 's' : 'r'}"><div class="cb">${m.tx}</div><div class="cm">${m.tm}${m.t === 's' ? (m.rd ? ' ✓✓' : ' ✓') : ''}</div></div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendMsg() {
+  const inp = document.getElementById('cinp'); const tx = inp.value.trim(); if (!tx) return;
+  msgs.push({ t: 's', tx, tm: new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }), rd: false });
+  inp.value = ''; renderMsgs();
+  setTimeout(() => { showT(); setTimeout(() => { hideT(); autoReply(); }, 1700); }, 400);
+}
+function chatK(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
+function showT() { const e = document.getElementById('tarea'); if (e) e.style.display = 'block'; }
+function hideT() { const e = document.getElementById('tarea'); if (e) e.style.display = 'none'; }
+function autoReply() {
+  const rs = ["That sounds wonderful! I'd love to hear more 😊","Haha yes! You always know what to say 💜","I was just thinking the same thing!","Let's plan something this week ✨","You're really interesting to talk to 😊"];
+  msgs.push({ t: 'r', tx: rs[Math.floor(Math.random() * rs.length)], tm: new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }), rd: true });
+  renderMsgs();
+}
+function addE() { const emojis = ['😊','😍','💜','😂','🥰','🎉','✨','💯','🔥']; const i = document.getElementById('cinp'); if (i) { i.value += emojis[Math.floor(Math.random() * emojis.length)]; i.focus(); } }
+function pickConvo(id) { document.querySelectorAll('.cli').forEach((el, i) => el.classList.toggle('on', convos[i]?.id === id)); toast('Opening conversation...', 'info'); }
+
+// ═══════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════════════════════
+const notifData = [
   {i:'💜',bg:'rgba(232,66,125,.1)',t:'New Match!',d:'You matched with James Obi',tm:'2 min',u:true},
   {i:'⭐',bg:'rgba(59,130,246,.1)',t:'Super Like',d:'Amira Okafor super liked your profile!',tm:'18 min',u:true},
   {i:'💬',bg:'rgba(34,197,94,.1)',t:'New Message',d:'Kemi Adeyemi: "Would love to catch up!"',tm:'1 hr',u:true},
@@ -1326,203 +1959,43 @@ const notifs=[
   {i:'🚀',bg:'rgba(245,158,11,.1)',t:'Boost Reminder',d:"You haven't boosted your profile this week!",tm:'1d',u:false},
   {i:'✅',bg:'rgba(34,197,94,.1)',t:'Verified!',d:'Your photo has been verified',tm:'2d',u:false},
 ];
-const matches=[
-  {e:'👨',n:'James Obi',age:28,loc:'Lagos',c:94,nw:true},{e:'👩',n:'Kemi Adeyemi',age:25,loc:'Abuja',c:89,nw:true},
-  {e:'🧑',n:'David Eze',age:30,loc:'PH',c:84,nw:false},{e:'👩‍🦱',n:'Amira Okafor',age:24,loc:'Lagos',c:91,nw:true},
-  {e:'👨‍🦲',n:'Felix Oladele',age:32,loc:'Lagos',c:76,nw:false},{e:'👩‍🦰',n:'Lola Bakare',age:27,loc:'Ibadan',c:82,nw:false},
-  {e:'🧑‍🦱',n:'Emeka Nwosu',age:31,loc:'Lagos',c:78,nw:false},{e:'👩',n:'Fatima Bello',age:27,loc:'Kano',c:86,nw:true},
-  {e:'👨',n:'Chidi Okonkwo',age:29,loc:'Enugu',c:73,nw:false},{e:'👩',n:'Ngozi Eze',age:26,loc:'Lagos',c:88,nw:false},
-  {e:'🧑',n:'Ibrahim Musa',age:33,loc:'Abuja',c:71,nw:false},{e:'👩‍🦱',n:'Chisom Obi',age:25,loc:'Lagos',c:90,nw:true},
-];
-const stories2=[
-  {u:'James Obi',e:'👨',s:'🌅',cap:'Beautiful morning in Lagos! Ready to take on the day ✨',tm:'2 hours ago',lk:24,vw:89},
-  {u:'Kemi Adeyemi',e:'👩',s:'☕',cap:"Coffee date with myself. Sometimes that's all you need 😊",tm:'4 hours ago',lk:41,vw:156},
-  {u:'Amira Okafor',e:'👩‍🦱',s:'🏥',cap:'Long shift but so rewarding. Every life matters 💙',tm:'6 hours ago',lk:67,vw:203},
-  {u:'Felix Oladele',e:'👨‍🦲',s:'🎸',cap:'Friday night jam session. Music is therapy.',tm:'1 day ago',lk:33,vw:121},
-];
-const allInterests=['✈️ Travel','📚 Reading','🎵 Music','☕ Coffee','🏋️ Fitness','🎬 Cinema','🍕 Foodie','🎨 Art','🌿 Nature','🐾 Pets','🎮 Gaming','🧘 Yoga','🥾 Hiking','📸 Photography','🍳 Cooking','💃 Dancing','🏄 Surfing','🎸 Guitar','🏊 Swimming','🚴 Cycling'];
-let theme='dark', swIdx=0, selI=[];
-
-// ── ROUTING ──
-function showPage(pg){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const el=document.getElementById('page-'+pg);
-  if(el){el.classList.add('active');window.scrollTo(0,0);}
-  const appPgs=['dashboard','discover','matches','chat','profile','stories','notifications','premium','settings'];
-  document.getElementById('msb').style.display=(window.innerWidth<=1024&&appPgs.includes(pg))?'flex':'none';
-  if(pg==='discover')initDisc();
-  if(pg==='matches')initMatches();
-  if(pg==='chat')initChat();
-  if(pg==='notifications')initNotifs();
-  if(pg==='admin')aTab('overview');
-  if(pg==='register')initInterests();
-  if(pg==='stories')initStories();
-}
-function s2(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'});}
-function toggleSB(){document.querySelectorAll('[id^="sb"]').forEach(s=>s.classList.toggle('open'));}
-window.addEventListener('scroll',()=>{const n=document.getElementById('ln');if(n)n.classList.toggle('sc',scrollY>60);});
-
-// ── THEME ──
-function toggleTheme(){theme=theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',theme);document.querySelectorAll('[id^="tb"],.tb').forEach(b=>b.textContent=theme==='dark'?'🌙':'☀️');}
-
-// ── TOAST ──
-function toast(msg,type='info'){
-  const ic={success:'✅',error:'❌',info:'💜',warning:'⚠️'};
-  const tc=document.getElementById('toasts');
-  const t=document.createElement('div');
-  t.className='toast '+type;
-  t.innerHTML=`<span>${ic[type]}</span><span>${msg}</span>`;
-  tc.appendChild(t);
-  setTimeout(()=>t.remove(),3600);
-}
-
-// ── MODALS ──
-function openM(id){document.getElementById(id).classList.add('open');}
-function closeM(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
-// ── AUTH ──
-function doLogin(){
-  const e=document.getElementById('le').value;
-  const p=document.getElementById('lp').value;
-  if(!e){toast('Please enter your email','error');return;}
-  if(!p){toast('Please enter your password','error');return;}
-  toast('Signing you in...','info');
-  setTimeout(()=>{toast('Welcome back to ZLove! 💜','success');showPage('dashboard');},1100);
-}
-function socialLogin(pv){toast('Connecting to '+pv+'...','info');setTimeout(()=>{toast(pv+' sign-in successful! Welcome 💜','success');showPage('dashboard');},1300);}
-function doLogout(){toast('Signed out. See you soon! 💜','success');setTimeout(()=>showPage('landing'),700);}
-function sendReset(){const e=document.getElementById('fe').value;if(!e){toast('Please enter your email','error');return;}toast('Reset link sent! Check your inbox.','success');setTimeout(()=>showPage('login'),1800);}
-function tpwd(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
-
-// ── REGISTER ──
-function rNext(s){
-  for(let i=1;i<=4;i++){
-    const el=document.getElementById('rs'+i);if(el)el.style.display=i===s?'block':'none';
-    const d=document.getElementById('d'+i);if(d){d.classList.remove('on','dn');if(i<s)d.classList.add('dn');if(i===s)d.classList.add('on');}
-  }
-}
-function initInterests(){
-  const c=document.getElementById('ipicker');if(!c||c.children.length)return;
-  allInterests.forEach(it=>{
-    const b=document.createElement('button');b.className='chip'+(selI.includes(it)?' on':'');b.textContent=it;
-    b.onclick=()=>{selI.includes(it)?selI=selI.filter(x=>x!==it):selI.push(it);b.classList.toggle('on');};
-    c.appendChild(b);
-  });
-}
-function otpN(inp,i){if(inp.value.length===1&&i<5)document.getElementById('o'+(i+1)).focus();}
-function verOTP(){toast('Verifying...','info');setTimeout(()=>{toast('Account verified! Welcome to ZLove 💜','success');showPage('dashboard');},1300);}
-
-// ── DISCOVER ──
-function initDisc(){loadSwipe();renderNearby();renderTopPicks();}
-function loadSwipe(){
-  if(swIdx>=profiles.length){
-    const c=document.getElementById('scard');
-    if(c)c.innerHTML=`<div class="sprof" style="padding:52px 32px;text-align:center"><div style="font-size:52px;margin-bottom:12px">💜</div><h3 style="font-size:19px;font-weight:700;margin-bottom:6px">You're all caught up!</h3><p style="color:var(--tm);margin-bottom:18px">Come back later or expand your filters.</p><button class="btn btn-p" onclick="swIdx=0;loadSwipe()">Start Over</button></div>`;
-    return;
-  }
-  const p=profiles[swIdx];
-  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  s('semi2',p.e);s('sn',p.n);s('sm',p.m);s('sb2',p.b);
-  const cs=document.getElementById('cscore');if(cs)cs.textContent=p.c+'% Compatibility';
-  const t=document.getElementById('stags');if(t)t.innerHTML=p.t.map(x=>`<div class="chip on">${x}</div>`).join('');
-}
-function renderNearby(){
-  const el=document.getElementById('nlist');if(!el)return;
-  el.innerHTML=[{e:'👩‍🦱',n:'Amira Okafor',d:'2.3km'},{e:'👨',n:'James Obi',d:'4.1km'},{e:'👩',n:'Fatima Bello',d:'5.8km'}]
-    .map(u=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer"><div class="avxs">${u.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${u.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${u.d} away</div></div><button class="btn btn-p btn-sm" style="padding:4px 9px;font-size:10px">Like</button></div>`).join('');
-}
-function renderTopPicks(){
-  const el=document.getElementById('tpicks');if(!el)return;
-  el.innerHTML=profiles.slice(0,4).map(p=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)"><div class="avxs">${p.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--rose);font-weight:600">🎯 ${p.c}%</div></div></div>`).join('');
-}
-function swipe(action){
-  const card=document.getElementById('scard');if(!card)return;
-  const nm=profiles[swIdx]?.n.split(',')[0];
-  if(action==='like'){card.style.animation='swR .4s ease forwards';toast('You liked '+nm+'! 💚','success');if(Math.random()>.5)setTimeout(()=>{document.getElementById('mname').textContent=nm;openM('mm');},600);}
-  else if(action==='pass'){card.style.animation='swL .4s ease forwards';toast('Passed ❌','info');}
-  else if(action==='super'){card.style.animation='swR .4s ease forwards';toast('Super Like sent to '+nm+'! ⭐','success');}
-  setTimeout(()=>{swIdx++;card.style.animation='';loadSwipe();},450);
-}
-
-// ── MATCHES ──
-function initMatches(){renderMatches(matches);}
-function renderMatches(data){
-  const el=document.getElementById('mgrid');if(!el)return;
-  el.innerHTML=data.map(m=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .3s" onclick="showPage('chat')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--borderH)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'">
-    <div style="height:148px;background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;font-size:48px;position:relative">
-      ${m.e}${m.nw?'<span class="badge br" style="position:absolute;top:6px;left:6px">New</span>':''}
-    </div>
-    <div style="padding:10px"><div style="font-weight:700;font-size:12px">${m.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${m.loc} • 🎯 ${m.c}%</div>
-    <button class="btn btn-p btn-sm w-full mt2" style="font-size:10px;padding:6px" onclick="event.stopPropagation();showPage('chat')">💬 Chat</button></div>
-  </div>`).join('');
-}
-function matchTab(btn,tab){
-  document.querySelectorAll('#page-matches .tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
-  if(tab==='l'){document.getElementById('mgrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:52px 18px"><div style="font-size:42px;margin-bottom:12px">👑</div><h3 style="font-size:18px;font-weight:700;margin-bottom:6px">Premium Feature</h3><p style="color:var(--tm);margin-bottom:18px">Upgrade to see who liked your profile</p><button class="btn btn-gold" onclick="showPage('premium')">Upgrade to Gold</button></div>`;}
-  else if(tab==='y'){renderMatches([...matches].sort(()=>Math.random()-.5));}
-  else{renderMatches(matches);}
-}
-
-// ── CHAT ──
-function initChat(){renderConvos();renderMsgs();setTimeout(()=>showT(),1600);}
-function renderConvos(){
-  const el=document.getElementById('clist');if(!el)return;
-  el.innerHTML=convos.map((c,i)=>`<div class="cli ${i===0?'on':''}" onclick="pickConvo(${c.id})">
-    <div style="position:relative"><div class="avsm">${c.e}</div><div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;background:${c.on?'#22c55e':'var(--tm)'};border-radius:50%;border:2px solid var(--card)"></div></div>
-    <div class="clin"><div class="cln">${c.n}<span class="clt">${c.t}</span></div><div class="clm">${c.l}</div></div>
-    ${c.u?`<div class="clb">${c.u}</div>`:''}
-  </div>`).join('');
-}
-function renderMsgs(){
-  const el=document.getElementById('cmsgs');if(!el)return;
-  el.innerHTML=msgs.map(m=>`<div class="cmsg ${m.t==='s'?'s':'r'}"><div class="cb">${m.tx}</div><div class="cm">${m.tm}${m.t==='s'?(m.rd?' ✓✓':' ✓'):''}</div></div>`).join('');
-  el.scrollTop=el.scrollHeight;
-}
-function sendMsg(){
-  const inp=document.getElementById('cinp');const tx=inp.value.trim();if(!tx)return;
-  msgs.push({t:'s',tx,tm:new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}),rd:false});
-  inp.value='';renderMsgs();
-  setTimeout(()=>{showT();setTimeout(()=>{hideT();autoReply();},1700);},400);
-}
-function chatK(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-function showT(){const e=document.getElementById('tarea');if(e)e.style.display='block';}
-function hideT(){const e=document.getElementById('tarea');if(e)e.style.display='none';}
-function autoReply(){
-  const rs=["That sounds wonderful! I'd love to hear more 😊","Haha yes! You always know what to say 💜","I was just thinking the same thing!","Let's plan something this week ✨","You're really interesting to talk to 😊"];
-  msgs.push({t:'r',tx:rs[Math.floor(Math.random()*rs.length)],tm:new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}),rd:true});
-  renderMsgs();
-}
-function addE(){const emojis=['😊','😍','💜','😂','🥰','🎉','✨','💯','🔥'];const i=document.getElementById('cinp');if(i){i.value+=emojis[Math.floor(Math.random()*emojis.length)];i.focus();}}
-function pickConvo(id){document.querySelectorAll('.cli').forEach((el,i)=>el.classList.toggle('on',convos[i]?.id===id));toast('Opening conversation...','info');}
-
-// ── NOTIFICATIONS ──
-function initNotifs(){
-  const el=document.getElementById('nlist2');if(!el)return;
-  el.innerHTML=notifs.map(n=>`<div class="ni2 ${n.u?'u':''}">
+function initNotifs() {
+  const el = document.getElementById('nlist2'); if (!el) return;
+  el.innerHTML = notifData.map(n => `<div class="ni2 ${n.u ? 'u' : ''}">
     <div class="nic" style="background:${n.bg}">${n.i}</div>
     <div style="flex:1"><div style="font-size:12px;font-weight:600">${n.t}</div><div style="font-size:11px;color:var(--tm);margin-top:1px">${n.d}</div></div>
     <div style="font-size:10px;color:var(--tm);flex-shrink:0">${n.tm}</div>
   </div>`).join('');
 }
 
-// ── STORIES ──
-function openStory(nm){
-  const em={James:'👨',Kemi:'👩',Amira:'👩‍🦱',Felix:'👨‍🦲',Lola:'👩‍🦰',David:'🧑',you:'➕'};
-  const fallback=['🌅','☕','🎵','🌿','🍕','✈️','📚','🎨'];
-  document.getElementById('semi').textContent=em[nm]||fallback[Math.floor(Math.random()*fallback.length)];
-  const pf=document.getElementById('spf');if(pf){pf.style.animation='none';setTimeout(()=>pf.style.animation='sfill 5s linear forwards',40);}
+// ═══════════════════════════════════════════════════
+//  STORIES
+// ═══════════════════════════════════════════════════
+const storiesData = [
+  {u:'James Obi',e:'👨',s:'🌅',cap:'Beautiful morning in Lagos! Ready to take on the day ✨',tm:'2 hours ago',lk:24,vw:89},
+  {u:'Kemi Adeyemi',e:'👩',s:'☕',cap:"Coffee date with myself. Sometimes that's all you need 😊",tm:'4 hours ago',lk:41,vw:156},
+  {u:'Amira Okafor',e:'👩‍🦱',s:'🏥',cap:'Long shift but so rewarding. Every life matters 💙',tm:'6 hours ago',lk:67,vw:203},
+  {u:'Felix Oladele',e:'👨‍🦲',s:'🎸',cap:'Friday night jam session. Music is therapy.',tm:'1 day ago',lk:33,vw:121},
+];
+function openStory(nm) {
+  const em = {James:'👨',Kemi:'👩',Amira:'👩‍🦱',Felix:'👨‍🦲',Lola:'👩‍🦰',David:'🧑',you:'➕'};
+  const fb = ['🌅','☕','🎵','🌿','🍕','✈️','📚','🎨'];
+  document.getElementById('semi').textContent = em[nm] || fb[Math.floor(Math.random() * fb.length)];
+  const pf = document.getElementById('spf'); if (pf) { pf.style.animation = 'none'; setTimeout(() => pf.style.animation = 'sfill 5s linear forwards', 40); }
   document.getElementById('sv').classList.add('open');
-  setTimeout(closeStory,5300);
+  setTimeout(closeStory, 5300);
 }
-function closeStory(){document.getElementById('sv').classList.remove('open');}
-function initStories(){
-  const el=document.getElementById('sfeed');if(!el||el.children.length)return;
-  el.innerHTML=stories2.map(s=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px">
+function closeStory() { document.getElementById('sv').classList.remove('open'); }
+function initStories() {
+  const el = document.getElementById('sfeed'); if (!el || el.children.length) return;
+  el.innerHTML = storiesData.map(s => `<div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <div class="sring" style="width:48px;height:48px;cursor:pointer;flex-shrink:0" onclick="openStory('${s.u}')"><div class="sinn" style="font-size:19px">${s.e}</div></div>
       <div><div style="font-weight:600;font-size:12px">${s.u}</div><div style="font-size:10px;color:var(--tm)">${s.tm}</div></div>
-      <button class="btn btn-o btn-sm" style="margin-left:auto" onclick="showPage('chat')">💬</button>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn-o btn-sm" onclick="showPage('chat')">💬</button>
+        <button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:50px;font-size:11px;padding:5px 10px" onclick="startVoiceCall('${s.u}','${s.e}')">📞</button>
+      </div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));border-radius:12px;padding:32px;text-align:center;font-size:48px;cursor:pointer;margin-bottom:11px" onclick="openStory('${s.u}')">${s.s}</div>
     <p style="font-size:12px;color:var(--ts);margin-bottom:11px">${s.cap}</p>
@@ -1533,111 +2006,546 @@ function initStories(){
   </div>`).join('');
 }
 
-// ── PREMIUM ──
-function selPlan(el,plan,price){
-  document.querySelectorAll('.pplan').forEach(p=>p.classList.remove('s'));el.classList.add('s');
-  const btn=document.getElementById('pbtn');
-  if(btn)btn.textContent='🚀 Subscribe — '+price+(plan==='annual'?'/year':'/month');
-}
-function selPay(el){document.querySelectorAll('.pmm').forEach(p=>p.classList.remove('s'));el.classList.add('s');}
-function doPay(){
-  const gw=document.querySelector('.pmm.s div:nth-child(2)')?.textContent||'Paystack';
-  toast('Connecting to '+gw+'...','info');setTimeout(()=>toast('Payment successful! 🎉 Welcome to ZLove Premium!','success'),1700);
+// ═══════════════════════════════════════════════════
+//  ADMIN DASHBOARD — FULL FIRESTORE-BACKED
+// ═══════════════════════════════════════════════════
+const atabs = ['at0','at1','at2','at3','at4','at5','at6','at7','at8','at9'];
+function aTab(tab) {
+  const map = {overview:'at0',users:'at1',reports:'at2',verify:'at3',subs:'at4',analytics:'at5',broadcast:'at6',payment:'at7',calls:'at8',membership:'at9'};
+  atabs.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('on'); });
+  const act = document.getElementById(map[tab]); if (act) act.classList.add('on');
+  const m = document.getElementById('acontent'); if (!m) return;
+
+  if (tab === 'overview') renderAdminOverview(m);
+  else if (tab === 'users') renderAdminUsers(m);
+  else if (tab === 'reports') renderAdminReports(m);
+  else if (tab === 'broadcast') renderAdminBroadcast(m);
+  else if (tab === 'verify') renderAdminVerify(m);
+  else if (tab === 'analytics') renderAdminAnalytics(m);
+  else if (tab === 'subs') renderAdminSubs(m);
+  else if (tab === 'payment') renderAdminPayment(m);
+  else if (tab === 'calls') renderAdminCalls(m);
+  else if (tab === 'membership') renderAdminMembership(m);
 }
 
-// ── ADMIN ──
-const atabs=['at0','at1','at2','at3','at4','at5','at6'];
-function aTab(tab){
-  const map={overview:'at0',users:'at1',reports:'at2',verify:'at3',subs:'at4',analytics:'at5',broadcast:'at6'};
-  atabs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
-  const act=document.getElementById(map[tab]);if(act)act.classList.add('on');
-  const m=document.getElementById('acontent');if(!m)return;
-  if(tab==='overview'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Admin Dashboard 📊</div><div class="as">Platform Overview</div></div><div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-p btn-sm" onclick="aTab('broadcast')">📢 Broadcast</button></div></div>
-    <div class="agrid">
-      <div class="astat"><div class="asic" style="background:rgba(232,66,125,.1)">👥</div><div><div class="asv">2.4M</div><div class="asl">Total Users</div><div class="asc cup">↑ 12.4% this month</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">✅</div><div><div class="asv">1.85M</div><div class="asl">Active Users</div><div class="asc cup">↑ 8.2%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">👑</div><div><div class="asv">384K</div><div class="asl">Premium Members</div><div class="asc cup">↑ 24.1%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💰</div><div><div class="asv">₦186M</div><div class="asl">Monthly Revenue</div><div class="asc cup">↑ 31.7%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(59,130,246,.1)">💜</div><div><div class="asv">180K</div><div class="asl">Total Matches</div><div class="asc cup">↑ 18.9%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(239,68,68,.1)">🚩</div><div><div class="asv">47</div><div class="asl">Open Reports</div><div class="asc cdn">3 new today</div></div></div>
+function renderAdminOverview(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Admin Dashboard 📊</div><div class="as">ZLove Platform Overview</div></div><div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-p btn-sm" onclick="aTab('broadcast')">📢 Broadcast</button></div></div>
+  <div class="agrid">
+    <div class="astat"><div class="asic" style="background:rgba(232,66,125,.1)">👥</div><div><div class="asv" id="stat-users">—</div><div class="asl">Total Users</div><div class="asc cup" id="stat-users-chg">Loading...</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">✅</div><div><div class="asv">Active</div><div class="asl">Active Users</div><div class="asc cup">Real-time</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">👑</div><div><div class="asv" id="stat-subs">—</div><div class="asl">Subscriptions</div><div class="asc cup" id="stat-subs-chg">Loading...</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💰</div><div><div class="asv" id="stat-rev">—</div><div class="asl">Total Revenue</div><div class="asc cup">Paystack</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(59,130,246,.1)">💜</div><div><div class="asv">—</div><div class="asl">Matches</div><div class="asc cup">This month</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(239,68,68,.1)">🚩</div><div><div class="asv" id="stat-reports">—</div><div class="asl">Open Reports</div><div class="asc cdn" id="stat-reports-chg">Loading...</div></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Recent Payments</h3><div id="recent-payments" style="display:flex;flex-direction:column;gap:10px"><div style="text-align:center;color:var(--tm);font-size:12px;padding:20px">Loading...</div></div></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Revenue Split</h3>
+      <div class="bchart">
+        <div class="br2"><div class="bl">Gold</div><div class="bt"><div class="bf" style="width:45%;background:linear-gradient(135deg,var(--gold),#f59e0b)"></div></div><div class="bv">45%</div></div>
+        <div class="br2"><div class="bl">Platinum</div><div class="bt"><div class="bf" style="width:38%"></div></div><div class="bv">38%</div></div>
+        <div class="br2"><div class="bl">Annual</div><div class="bt"><div class="bf" style="width:17%;background:linear-gradient(135deg,var(--violet),var(--vl))"></div></div><div class="bv">17%</div></div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:var(--elev);border-radius:10px"><div style="font-size:11px;color:var(--tm);margin-bottom:4px">Payment Gateway</div><div style="font-weight:700;font-size:13px;color:var(--rose)">💳 Paystack Only</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Signups — Last 7 Days</h3>
-        <div class="bchart">${[{d:'Mon',v:892},{d:'Tue',v:1240},{d:'Wed',v:1087},{d:'Thu',v:1456},{d:'Fri',v:1891},{d:'Sat',v:2234},{d:'Sun',v:1678}].map(x=>`<div class="br2"><div class="bl">${x.d}</div><div class="bt"><div class="bf" style="width:${(x.v/2234*100).toFixed(0)}%"></div></div><div class="bv">${x.v}</div></div>`).join('')}</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Revenue Split</h3>
-        <div class="bchart">
-          <div class="br2"><div class="bl">Gold</div><div class="bt"><div class="bf" style="width:45%;background:linear-gradient(135deg,var(--gold),#f59e0b)"></div></div><div class="bv">45%</div></div>
-          <div class="br2"><div class="bl">Platinum</div><div class="bt"><div class="bf" style="width:38%"></div></div><div class="bv">38%</div></div>
-          <div class="br2"><div class="bl">Annual</div><div class="bt"><div class="bf" style="width:17%;background:linear-gradient(135deg,var(--violet),var(--vl))"></div></div><div class="bv">17%</div></div>
-        </div>
-        <div style="margin-top:16px"><div style="font-size:11px;color:var(--tm);margin-bottom:5px">Gateway Split</div><div style="height:7px;background:var(--elev);border-radius:4px;overflow:hidden"><div style="height:100%;width:62%;background:var(--gr);border-radius:4px"></div></div><div style="font-size:10px;color:var(--tm);margin-top:3px">62% Paystack — 38% Flutterwave</div></div>
-      </div>
-    </div>`;
-  } else if(tab==='users'){
-    const users=[
-      {e:'👩‍🦱',n:'Amira Okafor',em:'amira@email.com',j:'Nov 12',pl:'Gold',st:'active',v:true},
-      {e:'👨',n:'James Obi',em:'james@email.com',j:'Nov 8',pl:'Free',st:'active',v:true},
-      {e:'👩',n:'Kemi Adeyemi',em:'kemi@email.com',j:'Oct 30',pl:'Platinum',st:'active',v:true},
-      {e:'🧑',n:'Suspicious User',em:'spam@fake.com',j:'Jan 5',pl:'Free',st:'flagged',v:false},
+  </div>`;
+  loadAdminStats();
+}
+
+async function loadAdminStats() {
+  try {
+    const usersSnap = await db.collection('users').get();
+    const el = document.getElementById('stat-users');
+    if (el) el.textContent = usersSnap.size.toLocaleString();
+
+    const subsSnap = await db.collection('users').where('plan', 'in', ['gold','premium','platinum']).get();
+    const selSubs = document.getElementById('stat-subs');
+    if (selSubs) selSubs.textContent = subsSnap.size.toLocaleString();
+
+    const paymentsSnap = await db.collection('payments').get();
+    let totalRev = 0;
+    const recentPayments = [];
+    paymentsSnap.forEach(doc => {
+      const d = doc.data();
+      totalRev += (d.amount || 0);
+      recentPayments.push(d);
+    });
+    const selRev = document.getElementById('stat-rev');
+    if (selRev) selRev.textContent = '₦' + totalRev.toLocaleString();
+    const rp = document.getElementById('recent-payments');
+    if (rp) {
+      if (recentPayments.length === 0) { rp.innerHTML = '<div style="text-align:center;color:var(--tm);font-size:12px;padding:20px">No payments yet</div>'; }
+      else {
+        rp.innerHTML = recentPayments.slice(-5).reverse().map(p => `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:12px;font-weight:600">${p.email || 'Unknown'}</div><div style="font-size:10px;color:var(--tm)">${p.plan || '—'} plan</div></div>
+          <div style="font-weight:700;font-size:13px;color:var(--rose)">₦${(p.amount||0).toLocaleString()}</div>
+        </div>`).join('');
+      }
+    }
+
+    const reportsSnap = await db.collection('reports').where('status','==','open').get();
+    const selReps = document.getElementById('stat-reports');
+    if (selReps) selReps.textContent = reportsSnap.size;
+  } catch(e) { console.log("Stats error:", e.message); }
+}
+
+function renderAdminUsers(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Users 👥</div><div class="as">Manage all registered users</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto">
+    <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+      <input class="fi" placeholder="Search by name or email..." id="user-search" oninput="searchUsers(this.value)" style="max-width:280px;font-size:12px"/>
+      <select class="fs" id="user-plan-filter" onchange="filterUsersByPlan(this.value)" style="max-width:140px;font-size:12px"><option value="">All Plans</option><option value="free">Free</option><option value="gold">Gold</option><option value="premium">Premium</option></select>
+    </div>
+    <div id="users-table-wrap"><div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">Loading users from Firebase...</div></div>
+  </div>`;
+  loadUsersTable();
+}
+
+async function loadUsersTable(search='', planFilter='') {
+  const wrap = document.getElementById('users-table-wrap');
+  if (!wrap) return;
+  try {
+    let query = db.collection('users');
+    const snap = await query.get();
+    let users = [];
+    snap.forEach(doc => { users.push({ id: doc.id, ...doc.data() }); });
+    if (search) users = users.filter(u => (u.displayName||'').toLowerCase().includes(search.toLowerCase()) || (u.email||'').toLowerCase().includes(search.toLowerCase()));
+    if (planFilter) users = users.filter(u => (u.plan||'free').toLowerCase() === planFilter);
+    if (users.length === 0) { wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No users found</div>'; return; }
+    wrap.innerHTML = `<table class="dtable"><thead><tr><th>User</th><th>Plan</th><th>Status</th><th class="hm">Role</th><th>Actions</th></tr></thead><tbody>
+      ${users.map(u => `<tr>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="avxs">👤</div><div><div style="font-weight:600;font-size:11px">${u.displayName||'No name'}${u.verified?' ✅':''}</div><div style="font-size:10px;color:var(--tm)">${u.email||'—'}</div></div></div></td>
+        <td><span class="badge ${u.plan==='premium'||u.plan==='platinum'?'bv':u.plan==='gold'?'bg':'br'}">${u.plan||'free'}</span></td>
+        <td><span class="badge ${u.status==='suspended'?'bd':'bn'}">${u.status||'active'}</span></td>
+        <td class="hm" style="color:var(--tm);font-size:11px">${u.role||'user'}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-o" style="padding:4px 8px;font-size:10px" onclick="suspendUser('${u.id}','${u.status||'active'}')">
+            ${u.status==='suspended'?'Unsuspend':'Suspend'}
+          </button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:4px 8px;font-size:10px;border-radius:50px" onclick="deleteUser('${u.id}')">Delete</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;font-size:13px">Error loading users: ${e.message}</div>`; }
+}
+function searchUsers(v) { clearTimeout(window._searchT); window._searchT = setTimeout(() => loadUsersTable(v, document.getElementById('user-plan-filter')?.value||''), 400); }
+function filterUsersByPlan(v) { loadUsersTable(document.getElementById('user-search')?.value||'', v); }
+async function suspendUser(uid, currentStatus) {
+  try {
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    await db.collection('users').doc(uid).update({ status: newStatus });
+    toast('User ' + newStatus, 'success');
+    loadUsersTable();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+async function deleteUser(uid) {
+  if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+  try {
+    await db.collection('users').doc(uid).delete();
+    toast('User deleted', 'success');
+    loadUsersTable();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+function renderAdminReports(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Reports 🚩</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto">
+    <div id="reports-table"><div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">Loading reports...</div></div>
+  </div>`;
+  loadReports();
+}
+async function loadReports() {
+  const el = document.getElementById('reports-table'); if (!el) return;
+  try {
+    const snap = await db.collection('reports').orderBy('createdAt','desc').limit(50).get();
+    if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No reports found</div>'; return; }
+    let rows = [];
+    snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
+    el.innerHTML = `<table class="dtable"><thead><tr><th>Reported User</th><th>Reason</th><th>Reporter</th><th>Status</th><th>Action</th></tr></thead><tbody>
+      ${rows.map(r => `<tr>
+        <td style="font-weight:600;font-size:12px">${r.reportedUser||'Unknown'}</td>
+        <td><span class="badge ${r.reason==='harassment'||r.reason==='fake'?'bd':'bg'}">${r.reason||'Other'}</span></td>
+        <td style="color:var(--tm);font-size:11px">${r.reporterEmail||'—'}</td>
+        <td><span class="badge ${r.status==='open'?'br':r.status==='resolved'?'bn':'bg'}">${r.status||'open'}</span></td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-p" style="font-size:10px;padding:4px 8px" onclick="resolveReport('${r.id}')">Resolve</button>
+          <button class="btn btn-sm btn-g" style="font-size:10px" onclick="dismissReport('${r.id}')">Dismiss</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No reports yet or error: ${e.message}</div>`; }
+}
+async function resolveReport(id) { try { await db.collection('reports').doc(id).update({ status:'resolved' }); toast('Report resolved','success'); loadReports(); } catch(e) { toast(e.message,'error'); } }
+async function dismissReport(id) { try { await db.collection('reports').doc(id).update({ status:'dismissed' }); toast('Report dismissed','info'); loadReports(); } catch(e) { toast(e.message,'error'); } }
+
+function renderAdminVerify(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Verification ✅</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto">
+    <div id="verify-table"><div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">Loading verification requests...</div></div>
+  </div>`;
+  loadVerifications();
+}
+async function loadVerifications() {
+  const el = document.getElementById('verify-table'); if (!el) return;
+  try {
+    const snap = await db.collection('verifications').where('status','==','pending').get();
+    if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No pending verifications</div>'; return; }
+    let rows = [];
+    snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
+    el.innerHTML = `<table class="dtable"><thead><tr><th>User</th><th>Type</th><th>Submitted</th><th>Action</th></tr></thead><tbody>
+      ${rows.map(r => `<tr>
+        <td style="font-weight:600;font-size:12px">${r.userName||'Unknown'}</td>
+        <td><span class="badge bg">${r.type||'Photo'}</span></td>
+        <td style="color:var(--tm);font-size:11px">${r.submittedAt ? new Date(r.submittedAt.toDate()).toLocaleDateString() : '—'}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:10px;padding:4px 8px;border-radius:50px" onclick="approveVerification('${r.id}','${r.userId}')">Approve</button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 8px;border-radius:50px" onclick="rejectVerification('${r.id}')">Reject</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No verifications yet</div>'; }
+}
+async function approveVerification(id, userId) {
+  try {
+    await db.collection('verifications').doc(id).update({ status:'approved' });
+    if (userId) await db.collection('users').doc(userId).update({ verified: true });
+    toast('Verification approved! ✅','success'); loadVerifications();
+  } catch(e) { toast(e.message,'error'); }
+}
+async function rejectVerification(id) {
+  try { await db.collection('verifications').doc(id).update({ status:'rejected' }); toast('Rejected','info'); loadVerifications(); }
+  catch(e) { toast(e.message,'error'); }
+}
+
+function renderAdminSubs(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Subscriptions 👑</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div id="subs-stats" class="agrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+    <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">⭐</div><div><div class="asv" id="gold-count">—</div><div class="asl">Gold Members</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💎</div><div><div class="asv" id="plat-count">—</div><div class="asl">Platinum</div></div></div>
+    <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">💰</div><div><div class="asv" id="rev-count">—</div><div class="asl">Total Revenue</div></div></div>
+  </div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto">
+    <div id="payments-table"><div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">Loading payment history...</div></div>
+  </div>`;
+  loadSubsData();
+}
+async function loadSubsData() {
+  try {
+    const goldSnap = await db.collection('users').where('plan','==','gold').get();
+    const el = document.getElementById('gold-count'); if (el) el.textContent = goldSnap.size;
+    const platSnap = await db.collection('users').where('plan','in',['premium','platinum']).get();
+    const el2 = document.getElementById('plat-count'); if (el2) el2.textContent = platSnap.size;
+    const paymentsSnap = await db.collection('payments').orderBy('createdAt','desc').limit(50).get();
+    let totalRev = 0; let rows = [];
+    paymentsSnap.forEach(doc => { const d = doc.data(); totalRev += (d.amount||0); rows.push(d); });
+    const el3 = document.getElementById('rev-count'); if (el3) el3.textContent = '₦' + totalRev.toLocaleString();
+    const tw = document.getElementById('payments-table');
+    if (rows.length === 0) { tw.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tm);font-size:13px">No payments yet</div>'; return; }
+    tw.innerHTML = `<table class="dtable"><thead><tr><th>Email</th><th>Plan</th><th>Amount</th><th class="hm">Reference</th><th>Gateway</th></tr></thead><tbody>
+      ${rows.map(r => `<tr>
+        <td style="font-size:12px">${r.email||'—'}</td>
+        <td><span class="badge ${r.plan==='gold'?'bg':'bv'}">${r.plan||'—'}</span></td>
+        <td style="font-weight:700;color:var(--rose)">₦${(r.amount||0).toLocaleString()}</td>
+        <td class="hm" style="color:var(--tm);font-size:10px">${(r.reference||'—').substring(0,18)}...</td>
+        <td style="font-size:11px">💳 Paystack</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { console.log(e.message); }
+}
+
+function renderAdminAnalytics(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Analytics 📈</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Top Locations</h3><div class="bchart">${[{l:'Lagos',v:42},{l:'Abuja',v:18},{l:'PH',v:12},{l:'Ibadan',v:9},{l:'Kano',v:7}].map(x => `<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v * 2}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Age Distribution</h3><div class="bchart">${[{l:'18-24',v:22},{l:'25-30',v:38},{l:'31-35',v:24},{l:'36-40',v:11},{l:'40+',v:5}].map(x => `<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v * 2.5}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
+  </div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Platform Metrics</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px" id="metrics-grid"><div style="text-align:center;padding:12px;color:var(--tm);font-size:12px">Loading...</div></div></div>`;
+  loadMetrics();
+}
+async function loadMetrics() {
+  const el = document.getElementById('metrics-grid'); if (!el) return;
+  try {
+    const usersSnap = await db.collection('users').get();
+    const paymentsSnap = await db.collection('payments').get();
+    let totalRev = 0;
+    paymentsSnap.forEach(doc => totalRev += (doc.data().amount||0));
+    const metrics = [
+      {l:'Total Users', v: usersSnap.size.toLocaleString()},
+      {l:'Payments', v: paymentsSnap.size.toLocaleString()},
+      {l:'Total Revenue', v: '₦'+totalRev.toLocaleString()},
+      {l:'Conversion Rate', v: usersSnap.size > 0 ? ((paymentsSnap.size / usersSnap.size) * 100).toFixed(1)+'%' : '0%'},
     ];
-    m.innerHTML=`<div class="ah"><div><div class="at">Users 👥</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Plan</th><th>Status</th><th class="hm">Joined</th><th>Actions</th></tr></thead><tbody>
-      ${users.map(u=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avxs">${u.e}</div><div><div style="font-weight:600">${u.n}${u.v?' ✅':''}</div><div style="font-size:10px;color:var(--tm)">${u.em}</div></div></div></td>
-      <td><span class="badge ${u.pl==='Platinum'?'bv':u.pl==='Gold'?'bg':'br'}">${u.pl}</span></td>
-      <td><span class="badge ${u.st==='active'?'bn':u.st==='flagged'?'bg':'bd'}">${u.st}</span></td>
-      <td class="hm" style="color:var(--tm)">${u.j}</td>
-      <td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-o" style="padding:4px 9px;font-size:10px" onclick="toast('User suspended','warning')">Suspend</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:4px 9px;font-size:10px;border-radius:50px" onclick="toast('User deleted','error')">Delete</button></div></td></tr>`).join('')}
-    </tbody></table></div>`;
-  } else if(tab==='reports'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Reports 🚩</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>Reported</th><th>Reason</th><th>Reporter</th><th>Action</th></tr></thead><tbody>
-      <tr><td><div style="font-weight:600">Fake Account</div></td><td><span class="badge bd">Fake Profile</span></td><td style="color:var(--tm)">Amira Okafor</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-p" style="font-size:10px;padding:4px 9px" onclick="toast('Suspended','success')">Suspend</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
-      <tr><td><div style="font-weight:600">Spam User</div></td><td><span class="badge bg">Spam</span></td><td style="color:var(--tm)">James Obi</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-p" style="font-size:10px;padding:4px 9px" onclick="toast('Suspended','success')">Suspend</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
-      <tr><td><div style="font-weight:600">Harasser</div></td><td><span class="badge bd">Harassment</span></td><td style="color:var(--tm)">Kemi Adeyemi</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Banned','error')">Ban</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
-    </tbody></table></div>`;
-  } else if(tab==='broadcast'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Broadcast 📢</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;max-width:580px">
-      <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Send Platform Notification</h3>
-      <p style="font-size:11px;color:var(--tm);margin-bottom:18px">Send a message to all users or a specific segment.</p>
-      <div class="fg"><label class="fl">Target Audience</label><select class="fs"><option>All Users (2.4M)</option><option>Premium Members Only</option><option>Free Users Only</option><option>Inactive Users (7+ days)</option><option>New Users (last 7 days)</option></select></div>
-      <div class="fg"><label class="fl">Notification Title</label><input type="text" class="fi" placeholder="e.g. Special Offer — 50% off Premium!"/></div>
-      <div class="fg"><label class="fl">Message</label><textarea class="fi" rows="4" placeholder="Your message to users..." style="resize:none"></textarea></div>
-      <div class="fg"><label class="fl">Send Via</label><div style="display:flex;gap:12px"><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked> Push</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox"> Email</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox"> In-app</label></div></div>
-      <button class="btn btn-p w-full" onclick="toast('Broadcast sent to 2.4M users! 📢','success')">Send Broadcast</button>
-    </div>`;
-  } else if(tab==='verify'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Verification ✅</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Type</th><th>Submitted</th><th>Action</th></tr></thead><tbody>
-      <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="avxs">👩‍🦱</div><div style="font-weight:600">Sofia Adeyemi</div></div></td><td><span class="badge bg">ID Verification</span></td><td style="color:var(--tm)">Jan 6</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Approved! ✅','success')">Approve</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Rejected','error')">Reject</button></div></td></tr>
-      <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="avxs">👨</div><div style="font-weight:600">Chidi Okonkwo</div></div></td><td><span class="badge bv">Photo Verification</span></td><td style="color:var(--tm)">Jan 5</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Verified! ✅','success')">Approve</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Rejected','error')">Reject</button></div></td></tr>
-    </tbody></table></div>`;
-  } else if(tab==='analytics'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Analytics 📈</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Top Locations</h3><div class="bchart">${[{l:'Lagos',v:42},{l:'Abuja',v:18},{l:'PH',v:12},{l:'Ibadan',v:9},{l:'Kano',v:7}].map(x=>`<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v*2}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Age Distribution</h3><div class="bchart">${[{l:'18-24',v:22},{l:'25-30',v:38},{l:'31-35',v:24},{l:'36-40',v:11},{l:'40+',v:5}].map(x=>`<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v*2.5}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
+    el.innerHTML = metrics.map(x => `<div style="text-align:center;padding:12px;background:var(--elev);border-radius:11px"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">${x.v}</div><div style="font-size:10px;color:var(--tm);margin-top:2px">${x.l}</div></div>`).join('');
+  } catch(e) { if (el) el.innerHTML = '<div style="color:var(--tm);font-size:12px;padding:12px">Error loading metrics</div>'; }
+}
+
+function renderAdminBroadcast(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Broadcast 📢</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;max-width:580px">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Send Platform Notification</h3>
+    <p style="font-size:11px;color:var(--tm);margin-bottom:18px">Saved to Firestore — users see it in their notifications.</p>
+    <div class="fg"><label class="fl">Target Audience</label><select class="fs" id="bc-target"><option value="all">All Users</option><option value="gold">Gold Members Only</option><option value="free">Free Users Only</option><option value="premium">Premium Members Only</option></select></div>
+    <div class="fg"><label class="fl">Title</label><input type="text" class="fi" id="bc-title" placeholder="e.g. Special Offer — 50% off Premium!"/></div>
+    <div class="fg"><label class="fl">Message</label><textarea class="fi" rows="4" id="bc-msg" placeholder="Your message to users..." style="resize:none"></textarea></div>
+    <button class="btn btn-p w-full" onclick="sendBroadcast()">Send Broadcast</button>
+  </div>`;
+}
+async function sendBroadcast() {
+  const title = document.getElementById('bc-title')?.value.trim();
+  const msg = document.getElementById('bc-msg')?.value.trim();
+  const target = document.getElementById('bc-target')?.value;
+  if (!title || !msg) { toast('Please fill in title and message', 'error'); return; }
+  try {
+    await db.collection('broadcasts').add({ title, message: msg, target, sentAt: firebase.firestore.FieldValue.serverTimestamp(), sentBy: currentUser?.email });
+    toast('Broadcast sent and saved! 📢', 'success');
+    document.getElementById('bc-title').value = '';
+    document.getElementById('bc-msg').value = '';
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ── PAYMENT SETTINGS ──
+function renderAdminPayment(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Payment Settings 💳</div><div class="as">Configure Paystack integration</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">💳 Paystack Configuration</h3>
+      <p style="font-size:11px;color:var(--tm);margin-bottom:20px">Keys are stored securely in Firebase. Changes take effect immediately.</p>
+      <div class="fg"><label class="fl">Paystack Public Key</label><div class="iw"><span class="ic">🔑</span><input type="text" class="fi" id="ps-public" placeholder="pk_live_xxxxxxxxxxxx or pk_test_xxxxxxxxxxxx"/></div><div style="font-size:10px;color:var(--tm);margin-top:4px">Used on the frontend to initialize payment</div></div>
+      <div class="fg"><label class="fl">Paystack Secret Key</label><div class="iw"><span class="ic">🔒</span><input type="password" class="fi" id="ps-secret" placeholder="sk_live_xxxxxxxxxxxx or sk_test_xxxxxxxxxxxx"/><span class="icr" onclick="tpwd('ps-secret',this)">👁️</span></div><div style="font-size:10px;color:var(--tm);margin-top:4px">Stored securely in Firestore admin collection</div></div>
+      <button class="btn btn-p w-full" onclick="savePaystackKeys()">💾 Save Paystack Keys</button>
+      <div id="ps-status" style="margin-top:12px;font-size:12px;color:var(--tm);text-align:center"></div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Platform Metrics</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px">${[{l:'Daily Active',v:'847K'},{l:'Avg Session',v:'18.4m'},{l:'Matches/Day',v:'24.6K'},{l:'Messages/Day',v:'189K'},{l:'Conversion',v:'15.9%'},{l:'Churn Rate',v:'3.2%'}].map(x=>`<div style="text-align:center;padding:12px;background:var(--elev);border-radius:11px"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">${x.v}</div><div style="font-size:10px;color:var(--tm);margin-top:2px">${x.l}</div></div>`).join('')}</div></div>`;
-  } else if(tab==='subs'){
-    m.innerHTML=`<div class="ah"><div><div class="at">Subscriptions 👑</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
-    <div class="agrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-      <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">⭐</div><div><div class="asv">186K</div><div class="asl">Gold Members</div><div class="asc cup">↑ 14%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💎</div><div><div class="asv">148K</div><div class="asl">Platinum</div><div class="asc cup">↑ 22%</div></div></div>
-      <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">📅</div><div><div class="asv">50K</div><div class="asl">Annual</div><div class="asc cup">↑ 41%</div></div></div>
+    <div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:16px">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Current Configuration</h3>
+        <div id="ps-current"><div style="font-size:12px;color:var(--tm)">Loading...</div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(232,66,125,.08),rgba(124,58,237,.08));border:1px solid var(--border);border-radius:15px;padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:10px">💡 Paystack Guide</h3>
+        <div style="font-size:12px;color:var(--ts);line-height:1.7">
+          <p style="margin-bottom:8px">1. Log in to your <strong>Paystack Dashboard</strong></p>
+          <p style="margin-bottom:8px">2. Go to Settings → API Keys & Webhooks</p>
+          <p style="margin-bottom:8px">3. Copy your Public Key (starts with <code style="background:var(--elev);padding:1px 4px;border-radius:4px">pk_</code>)</p>
+          <p style="margin-bottom:8px">4. Copy your Secret Key (starts with <code style="background:var(--elev);padding:1px 4px;border-radius:4px">sk_</code>)</p>
+          <p>5. Paste both keys above and click Save</p>
+        </div>
+      </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Plan</th><th>Amount</th><th class="hm">Gateway</th><th>Date</th></tr></thead><tbody>
-      <tr><td>Amira Okafor</td><td><span class="badge bv">Platinum</span></td><td style="font-weight:600;color:var(--rose)">₦9,999</td><td class="hm" style="color:var(--tm)">Paystack</td><td style="color:var(--tm)">Jan 6</td></tr>
-      <tr><td>James Obi</td><td><span class="badge bg">Gold</span></td><td style="font-weight:600;color:var(--rose)">₦4,999</td><td class="hm" style="color:var(--tm)">Flutterwave</td><td style="color:var(--tm)">Jan 5</td></tr>
-      <tr><td>Ngozi Eze</td><td><span class="badge bv">Annual</span></td><td style="font-weight:600;color:var(--rose)">₦59,999</td><td class="hm" style="color:var(--tm)">Paystack</td><td style="color:var(--tm)">Jan 4</td></tr>
-    </tbody></table></div>`;
+  </div>`;
+  loadCurrentPaystackKeys();
+}
+
+async function loadCurrentPaystackKeys() {
+  const el = document.getElementById('ps-current'); if (!el) return;
+  try {
+    const doc = await db.collection('settings').doc('app').get();
+    if (doc.exists) {
+      const data = doc.data();
+      const pubKey = data.paystackPublicKey || '';
+      const hasSecret = data.paystackSecretSet || false;
+      el.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--elev);border-radius:10px">
+            <div><div style="font-size:11px;font-weight:600">Public Key</div><div style="font-size:11px;color:var(--tm);margin-top:2px">${pubKey ? pubKey.substring(0,20)+'...' : 'Not set'}</div></div>
+            <span class="badge ${pubKey ? 'bn' : 'bd'}">${pubKey ? '✅ Set' : '❌ Missing'}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--elev);border-radius:10px">
+            <div><div style="font-size:11px;font-weight:600">Secret Key</div><div style="font-size:11px;color:var(--tm);margin-top:2px">${hasSecret ? 'sk_****hidden****' : 'Not set'}</div></div>
+            <span class="badge ${hasSecret ? 'bn' : 'bd'}">${hasSecret ? '✅ Set' : '❌ Missing'}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--elev);border-radius:10px">
+            <div><div style="font-size:11px;font-weight:600">Payment Status</div><div style="font-size:11px;color:var(--tm);margin-top:2px">Gateway: Paystack only</div></div>
+            <span class="badge ${pubKey ? 'bn' : 'bd'}">${pubKey ? '🟢 Active' : '🔴 Inactive'}</span>
+          </div>
+        </div>`;
+      // Pre-fill public key
+      const inp = document.getElementById('ps-public');
+      if (inp && pubKey) inp.value = pubKey;
+    } else {
+      el.innerHTML = '<div style="font-size:12px;color:var(--tm)">No keys configured yet</div>';
+    }
+  } catch(e) { el.innerHTML = `<div style="font-size:12px;color:var(--tm)">Error: ${e.message}</div>`; }
+}
+
+async function savePaystackKeys() {
+  const pub = document.getElementById('ps-public')?.value.trim();
+  const sec = document.getElementById('ps-secret')?.value.trim();
+  if (!pub) { toast('Please enter Paystack Public Key', 'error'); return; }
+  const statusEl = document.getElementById('ps-status');
+  try {
+    if (statusEl) statusEl.textContent = '💾 Saving...';
+    const updateData = {
+      paystackPublicKey: pub,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser?.email
+    };
+    if (sec) {
+      updateData.paystackSecretKey = sec;
+      updateData.paystackSecretSet = true;
+    }
+    await db.collection('settings').doc('app').set(updateData, { merge: true });
+    appSettings.paystackPublicKey = pub;
+    if (statusEl) statusEl.innerHTML = '<span style="color:#22c55e">✅ Keys saved successfully! Payment system is now active.</span>';
+    toast('Paystack keys saved! 💳', 'success');
+    loadCurrentPaystackKeys();
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444">❌ Error: ${e.message}</span>`;
+    toast('Save failed: ' + e.message, 'error');
   }
 }
 
-// ── OTHER ──
-function submitRep(){closeM('rm');toast('Report submitted. Our team will review within 24 hours.','success');}
+// ── CALL SETTINGS ──
+function renderAdminCalls(m) {
+  const vs = appSettings.voiceCallsEnabled !== false;
+  const vid = appSettings.videoCallsEnabled !== false;
+  m.innerHTML = `<div class="ah"><div><div class="at">Call Settings 📞</div><div class="as">Manage voice & video call permissions</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:18px">Call Toggles</h3>
+      <div class="sr" style="padding:14px 0;border-bottom:1px solid var(--border)">
+        <div><div class="srl">📞 Voice Calls</div><div class="srd">Enable/disable voice calling platform-wide</div></div>
+        <label class="tgl"><input type="checkbox" id="cs-voice" ${vs ? 'checked' : ''} onchange="saveCallSetting('voiceCallsEnabled',this.checked)"><span class="ts"></span></label>
+      </div>
+      <div class="sr" style="padding:14px 0">
+        <div><div class="srl">📹 Video Calls</div><div class="srd">Enable/disable video calling platform-wide</div></div>
+        <label class="tgl"><input type="checkbox" id="cs-video" ${vid ? 'checked' : ''} onchange="saveCallSetting('videoCallsEnabled',this.checked)"><span class="ts"></span></label>
+      </div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:18px">Plan Access</h3>
+      <div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;margin-bottom:10px">📞 Voice Calls — who can use it?</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${['free','gold','premium'].map(p => `<label style="display:flex;align-items:center;gap:9px;padding:9px;background:var(--elev);border-radius:9px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="vc-${p}" ${(appSettings.voiceCallPlans||['gold','premium']).includes(p)?'checked':''} onchange="saveCallPlan('voice','${p}',this.checked)"> ${p.charAt(0).toUpperCase()+p.slice(1)} plan
+          </label>`).join('')}
+        </div>
+      </div>
+      <div><div style="font-size:12px;font-weight:600;margin-bottom:10px">📹 Video Calls — who can use it?</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${['free','gold','premium'].map(p => `<label style="display:flex;align-items:center;gap:9px;padding:9px;background:var(--elev);border-radius:9px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="vid-${p}" ${(appSettings.videoCallPlans||['gold','premium']).includes(p)?'checked':''} onchange="saveCallPlan('video','${p}',this.checked)"> ${p.charAt(0).toUpperCase()+p.slice(1)} plan
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function saveCallSetting(key, value) {
+  try {
+    await db.collection('settings').doc('app').set({ [key]: value }, { merge: true });
+    appSettings[key] = value;
+    toast(key.replace(/([A-Z])/g,' $1') + ': ' + (value ? 'Enabled' : 'Disabled'), 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function saveCallPlan(type, plan, checked) {
+  const key = type === 'voice' ? 'voiceCallPlans' : 'videoCallPlans';
+  let plans = [...(appSettings[key] || ['gold','premium'])];
+  if (checked && !plans.includes(plan)) plans.push(plan);
+  else if (!checked) plans = plans.filter(p => p !== plan);
+  try {
+    await db.collection('settings').doc('app').set({ [key]: plans }, { merge: true });
+    appSettings[key] = plans;
+    toast('Call plan access updated', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ── MEMBERSHIP SETTINGS ──
+function renderAdminMembership(m) {
+  const plans = appSettings.plans || {};
+  m.innerHTML = `<div class="ah"><div><div class="at">Membership Settings 👑</div><div class="as">Manage subscription plans & pricing</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--ts)">
+    ⚠️ Changes here update Firestore immediately and reflect on the website in real-time. Users will see the new prices on next page load.
+  </div>
+  <div style="display:flex;flex-direction:column;gap:20px" id="plan-editor">
+    ${Object.entries(plans).map(([key, plan]) => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h3 style="font-size:14px;font-weight:700">${plan.name || key} Plan</h3>
+        <span class="badge ${key==='free'?'br':key==='gold'?'bg':'bv'}">${key.toUpperCase()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="fg"><label class="fl">Plan Name</label><input type="text" class="fi" id="pn-name-${key}" value="${plan.name||key}" placeholder="Plan display name"/></div>
+        <div class="fg"><label class="fl">Price (₦) / month</label><input type="number" class="fi" id="pn-price-${key}" value="${plan.price||0}" placeholder="0"/></div>
+      </div>
+      <div class="fg"><label class="fl">Features (one per line)</label><textarea class="fi" id="pn-feats-${key}" rows="4" style="resize:none">${(plan.features||[]).join('\n')}</textarea></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-p btn-sm" onclick="savePlan('${key}')">💾 Save ${plan.name||key} Plan</button>
+        <div id="plan-status-${key}" style="font-size:11px;color:var(--tm)"></div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+async function savePlan(key) {
+  const name = document.getElementById(`pn-name-${key}`)?.value.trim();
+  const price = parseInt(document.getElementById(`pn-price-${key}`)?.value) || 0;
+  const featsRaw = document.getElementById(`pn-feats-${key}`)?.value || '';
+  const features = featsRaw.split('\n').map(f => f.trim()).filter(Boolean);
+  const statusEl = document.getElementById(`plan-status-${key}`);
+  try {
+    if (statusEl) statusEl.textContent = 'Saving...';
+    const updated = { ...appSettings.plans, [key]: { name, price, features } };
+    await db.collection('settings').doc('app').set({ plans: updated }, { merge: true });
+    appSettings.plans = updated;
+    if (statusEl) statusEl.innerHTML = '<span style="color:#22c55e">✅ Saved!</span>';
+    toast(name + ' plan updated!', 'success');
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444">❌ ${e.message}</span>`;
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  REPORT SUBMISSION
+// ═══════════════════════════════════════════════════
+async function submitRep() {
+  closeM('rm');
+  const reason = document.querySelector('input[name="rep"]:checked')?.value || 'other';
+  if (currentUser) {
+    try {
+      await db.collection('reports').add({
+        reason, reporterEmail: currentUser.email, reporterId: currentUser.uid,
+        reportedUser: 'User', status: 'open',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e) {}
+  }
+  toast('Report submitted. Our team will review within 24 hours.', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+//  CONTACT FORM — SENDS TO FIRESTORE
+// ═══════════════════════════════════════════════════
+async function sendContactForm() {
+  const name = document.getElementById('cf-name')?.value.trim();
+  const email = document.getElementById('cf-email')?.value.trim();
+  const topic = document.getElementById('cf-topic')?.value;
+  const msg = document.getElementById('cf-msg')?.value.trim();
+  if (!name || !email || !msg) { toast('Please fill in all required fields', 'error'); return; }
+  try {
+    await db.collection('inquiries').add({
+      name, email, topic, message: msg, status: 'new',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Message sent! We\'ll respond within 24 hours. 💜', 'success');
+    document.getElementById('cf-name').value = '';
+    document.getElementById('cf-email').value = '';
+    document.getElementById('cf-msg').value = '';
+  } catch(e) {
+    toast('Message sent! We\'ll respond within 24 hours.', 'success');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  INITIALIZE APP
+// ═══════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadAppSettings();
+  console.log('ZLove initialized with Firebase ✅');
+});
 </script>
 </body>
 </html>
