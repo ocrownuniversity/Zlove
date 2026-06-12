@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ZLove – Find Your Person</title>
+<meta name="description" content="Africa's #1 premium dating platform. AI-powered matching, verified profiles, real-time chat."/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--rose:#E8427D;--violet:#7C3AED;--vl:#9B5CF0;--gold:#F59E0B;--bg:#0D0D12;--bg2:#141420;--card:#1C1C2E;--elev:#252538;--border:rgba(255,255,255,.08);--borderH:rgba(232,66,125,.4);--tp:#F5F0FF;--ts:#A09ABF;--tm:#6B6585;--glass:rgba(28,28,46,.85);--sr:0 0 40px rgba(232,66,125,.15);--sc:0 8px 32px rgba(0,0,0,.4);--gh:linear-gradient(135deg,#0D0D12,#1a0d2e,#0D0D12);--gr:linear-gradient(135deg,#E8427D,#7C3AED);--gc:linear-gradient(145deg,#1C1C2E,#252538)}
+[data-theme=light]{--bg:#FDF8FF;--bg2:#F3EEF9;--card:#FFF;--elev:#F0EBF8;--border:rgba(0,0,0,.08);--tp:#1A1025;--ts:#5A4E6E;--tm:#9B8FB0;--glass:rgba(255,255,255,.9);--sc:0 8px 32px rgba(124,58,237,.08);--gh:linear-gradient(135deg,#FDF8FF,#F0E6FF,#FDF8FF);--gc:linear-gradient(145deg,#FFF,#F5F0FF)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--tp);line-height:1.6;overflow-x:hidden;transition:background .3s,color .3s}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input,textarea,select{font-family:inherit;outline:none}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--rose);border-radius:3px}
+.page{display:none;min-height:100vh}.page.active{display:block}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 26px;border-radius:50px;font-size:14px;font-weight:600;transition:all .25s;cursor:pointer;border:none}
+.btn-p{background:var(--gr);color:#fff;box-shadow:0 4px 20px rgba(232,66,125,.3)}.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,66,125,.5)}
+.btn-o{background:transparent;color:var(--rose);border:2px solid var(--rose)}.btn-o:hover{background:var(--rose);color:#fff;transform:translateY(-2px)}
+.btn-g{background:transparent;color:var(--ts)}.btn-g:hover{color:var(--rose)}
+.btn-sm{padding:7px 18px;font-size:12px}.btn-lg{padding:15px 38px;font-size:16px}
+.btn-gold{background:linear-gradient(135deg,#F59E0B,#EF4444);color:#fff}.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,158,11,.4)}
+.w-full{width:100%}
+
+/* FORMS */
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--ts);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
+.fi{width:100%;padding:12px 15px;background:var(--elev);border:1.5px solid var(--border);border-radius:12px;color:var(--tp);font-size:14px;transition:all .2s}
+.fi:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(232,66,125,.1)}
+.fi::placeholder{color:var(--tm)}
+.fs{width:100%;padding:12px 15px;background:var(--elev);border:1.5px solid var(--border);border-radius:12px;color:var(--tp);font-size:14px;appearance:none;cursor:pointer}
+.fs:focus{border-color:var(--rose)}
+.iw{position:relative}.iw .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.iw .fi{padding-left:40px}.iw .icr{position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:14px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:50px;font-size:10px;font-weight:700}
+.br{background:rgba(232,66,125,.15);color:var(--rose)}.bv{background:rgba(124,58,237,.15);color:var(--vl)}.bg{background:rgba(245,158,11,.15);color:var(--gold)}.bn{background:rgba(34,197,94,.15);color:#22c55e}.bd{background:rgba(239,68,68,.15);color:#ef4444}
+
+/* TOGGLE */
+.tgl{position:relative;width:44px;height:24px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0;position:absolute}
+.ts{position:absolute;inset:0;background:var(--elev);border:1px solid var(--border);border-radius:50px;cursor:pointer;transition:all .3s}
+.ts::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;background:var(--tm);border-radius:50%;transition:all .3s}
+.tgl input:checked+.ts{background:var(--gr);border-color:transparent}
+.tgl input:checked+.ts::before{transform:translateX(20px);background:#fff}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:15px 0;transition:all .3s}
+.nav.sc{background:var(--glass);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 0}
+.ni{display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:9px;font-family:'Playfair Display',serif;font-size:24px;font-weight:900;cursor:pointer}
+.li{width:34px;height:34px;background:var(--gr);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.nl{display:flex;align-items:center;gap:3px}
+.nla{padding:8px 14px;border-radius:9px;font-size:13px;font-weight:500;color:var(--ts);cursor:pointer;transition:all .2s}
+.nla:hover{color:var(--tp);background:var(--elev)}
+.na{display:flex;align-items:center;gap:9px}
+.tb{width:36px;height:36px;border-radius:50%;background:var(--elev);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s}
+.tb:hover{border-color:var(--rose)}
+
+/* SIDEBAR + APP */
+.al{display:flex;min-height:100vh}
+.sb{width:260px;position:fixed;top:0;left:0;bottom:0;background:var(--bg2);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:transform .3s}
+.sbl{display:flex;align-items:center;gap:9px;padding:7px 9px;margin-bottom:22px;font-family:'Playfair Display',serif;font-size:20px;font-weight:900;cursor:pointer}
+.sbu{display:flex;align-items:center;gap:10px;padding:11px 9px;background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:18px;cursor:pointer;transition:all .2s}
+.sbu:hover{border-color:var(--borderH)}
+.sbn{display:flex;flex-direction:column;gap:1px;flex:1}
+.si{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;font-size:13px;font-weight:500;color:var(--ts);cursor:pointer;transition:all .2s;position:relative}
+.si:hover{background:var(--elev);color:var(--tp)}
+.si.on{background:rgba(232,66,125,.1);color:var(--rose);font-weight:600}
+.sic{font-size:16px;width:19px;text-align:center;flex-shrink:0}
+.snb{position:absolute;right:9px;min-width:17px;height:17px;background:var(--rose);border-radius:50px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;padding:0 3px}
+.sd{height:1px;background:var(--border);margin:7px 0}
+.am{margin-left:260px;flex:1;min-height:100vh;padding:22px}
+.ah{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.at{font-family:'Playfair Display',serif;font-size:22px;font-weight:800}
+.as{font-size:12px;color:var(--tm);margin-top:2px}
+
+/* TOAST */
+#toasts{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--elev);border:1px solid var(--border);border-radius:11px;box-shadow:var(--sc);font-size:12px;animation:tIn .3s ease;min-width:240px;max-width:320px}
+@keyframes tIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+.toast.success{border-left:3px solid #22c55e}.toast.error{border-left:3px solid #ef4444}.toast.info{border-left:3px solid var(--rose)}.toast.warning{border-left:3px solid var(--gold)}
+
+/* MODALS */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:18px}
+.ov.open{display:flex}
+.mo{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;animation:mIn .3s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.92) translateY(18px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.mt2{font-family:'Playfair Display',serif;font-size:19px;font-weight:700}
+.mc{width:32px;height:32px;border-radius:50%;background:var(--elev);border:none;color:var(--ts);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px}
+.mc:hover{background:rgba(232,66,125,.15);color:var(--rose)}
+
+/* TABS */
+.tabs{display:flex;background:var(--elev);border-radius:11px;padding:3px;gap:2px;overflow-x:auto}
+.tab{flex:1;min-width:max-content;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;color:var(--tm);background:transparent;transition:all .2s;white-space:nowrap;cursor:pointer}
+.tab.on{background:var(--card);color:var(--rose);box-shadow:0 2px 7px rgba(0,0,0,.2)}
+
+/* PROGRESS */
+.pb{height:5px;background:var(--elev);border-radius:3px;overflow:hidden}
+.pf{height:100%;background:var(--gr);border-radius:3px;transition:width .5s}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.3)}28%{transform:scale(1)}42%{transform:scale(1.15)}70%{transform:scale(1)}}
+@keyframes swL{to{transform:translateX(-130%) rotate(-20deg);opacity:0}}
+@keyframes swR{to{transform:translateX(130%) rotate(20deg);opacity:0}}
+@keyframes sfill{to{width:100%}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fu{animation:fadeUp .5s ease forwards}.hb{animation:hb 1.5s ease infinite}.float{animation:float 3.5s ease-in-out infinite}
+
+/* OTP */
+.otp-row{display:flex;gap:9px;justify-content:center}
+.otp-i{width:48px;height:56px;text-align:center;font-size:20px;font-weight:700;background:var(--elev);border:2px solid var(--border);border-radius:11px;color:var(--tp)}
+.otp-i:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(232,66,125,.1)}
+
+/* STEP DOTS */
+.steps{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:24px}
+.sd2{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .3s}
+.sd2.on{background:var(--rose);width:20px;border-radius:4px}.sd2.dn{background:var(--rose)}
+
+/* AVATAR */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--gr);color:#fff;font-weight:700;flex-shrink:0}
+.avxs{width:28px;height:28px;font-size:12px}.avsm{width:40px;height:40px;font-size:16px}.avmd{width:54px;height:54px;font-size:21px}
+
+/* INTEREST TAG */
+.itag{padding:6px 13px;background:rgba(232,66,125,.08);border:1px solid rgba(232,66,125,.2);border-radius:50px;font-size:12px;color:var(--rose);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center}
+.itag:hover,.itag.s{background:rgba(232,66,125,.18);border-color:var(--rose)}
+
+/* CHIP */
+.chip{padding:5px 11px;border-radius:50px;background:var(--elev);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--ts);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center}
+.chip:hover,.chip.on{background:rgba(232,66,125,.1);border-color:var(--rose);color:var(--rose)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;background:var(--gh);position:relative;overflow:hidden;padding:95px 0 55px}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.orb1{width:480px;height:480px;background:rgba(232,66,125,.12);top:-80px;right:-80px}
+.orb2{width:380px;height:380px;background:rgba(124,58,237,.1);bottom:-40px;left:-40px}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;position:relative;z-index:1}
+.hey{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(232,66,125,.1);border:1px solid rgba(232,66,125,.25);border-radius:50px;font-size:11px;font-weight:700;color:var(--rose);margin-bottom:22px}
+.ht{font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,80px);font-weight:900;line-height:1.05;margin-bottom:20px}
+.gt{background:var(--gr);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hs{font-size:16px;color:var(--ts);max-width:460px;margin-bottom:32px;line-height:1.7}
+.hbtns{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin-bottom:44px}
+.stats{display:flex;gap:32px;flex-wrap:wrap}
+.sv{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;line-height:1}
+.sl{font-size:10px;color:var(--tm);margin-top:2px;text-transform:uppercase;letter-spacing:.7px}
+
+/* MATCH CARD */
+.mcs{position:relative;width:310px;max-width:100%;margin:0 auto}
+.mc2{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--sc)}
+.mci{height:280px;background:linear-gradient(135deg,rgba(232,66,125,.2),rgba(124,58,237,.2));display:flex;align-items:center;justify-content:center;font-size:80px;position:relative}
+.vtag{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border-radius:50px;padding:4px 10px;font-size:10px;font-weight:600;color:#fff}
+.mcb{padding:16px}
+.mcn{font-family:'Playfair Display',serif;font-size:19px;font-weight:700}
+.mcm{font-size:12px;color:var(--ts);margin-top:3px}
+.mct{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.mctag{padding:3px 10px;background:var(--elev);border-radius:50px;font-size:10px;color:var(--ts)}
+.mca{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px}
+.ma{width:48px;height:48px;border-radius:50%;border:2px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .2s}
+.ma:hover{transform:scale(1.1)}
+.fc{position:absolute;animation:float 3.8s ease-in-out infinite}
+.fcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;box-shadow:var(--sc);font-size:11px;white-space:nowrap}
+
+/* SECTIONS */
+.slbl{display:inline-block;padding:4px 12px;background:rgba(232,66,125,.1);border:1px solid rgba(232,66,125,.2);border-radius:50px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--rose);margin-bottom:12px}
+.stitle{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);font-weight:900;margin-bottom:12px}
+.ssub{font-size:15px;color:var(--ts);max-width:520px}
+
+/* FEATURES */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:52px}
+.fc2{padding:28px;border-radius:20px;background:var(--gc);border:1px solid var(--border);transition:all .3s}
+.fc2:hover{transform:translateY(-5px);border-color:var(--borderH);box-shadow:var(--sr)}
+.fic{width:48px;height:48px;border-radius:13px;background:rgba(232,66,125,.12);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.ftitle{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:8px}
+.fdesc{font-size:13px;color:var(--ts);line-height:1.7}
+
+/* PRICING */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;max-width:860px;margin:52px auto 0}
+.pc{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:28px;position:relative;transition:all .3s}
+.pc.pop{border-color:var(--rose);box-shadow:var(--sr)}
+.pbadge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gr);color:#fff;padding:4px 16px;border-radius:50px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.pplan{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tm);margin-bottom:6px}
+.pprice{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;line-height:1;margin-bottom:3px}
+.pper{font-size:12px;color:var(--tm);margin-bottom:20px}
+.pfs{display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
+.pf2{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ts)}
+
+/* TESTIMONIALS */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:48px}
+.tc{padding:24px;background:var(--card);border:1px solid var(--border);border-radius:17px;position:relative}
+.tc::before{content:'"';position:absolute;top:12px;right:18px;font-family:'Playfair Display',serif;font-size:50px;color:rgba(232,66,125,.1);line-height:1}
+.tstars{color:var(--gold);margin-bottom:11px;font-size:13px}
+.ttxt{font-size:13px;color:var(--ts);line-height:1.75;margin-bottom:16px;font-style:italic}
+.tau{display:flex;align-items:center;gap:10px}
+
+/* CTA */
+.cta{padding:85px 0;background:var(--gr);text-align:center;position:relative;overflow:hidden}
+
+/* FOOTER */
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 0 26px}
+.fgr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:40px}
+.fls{display:flex;flex-direction:column;gap:8px}
+.fl2{font-size:12px;color:var(--tm);cursor:pointer;transition:color .2s}.fl2:hover{color:var(--rose)}
+.fbot{border-top:1px solid var(--border);padding-top:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.fbot p{font-size:11px;color:var(--tm)}
+
+/* AUTH */
+.apg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--gh);padding:75px 18px;position:relative;overflow:hidden}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:32px;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:var(--sc)}
+.atitle{font-family:'Playfair Display',serif;font-size:24px;font-weight:800;text-align:center;margin-bottom:6px}
+.asub{font-size:13px;color:var(--ts);text-align:center;margin-bottom:26px}
+.adiv{display:flex;align-items:center;gap:11px;margin:18px 0;color:var(--tm);font-size:11px}
+.adiv::before,.adiv::after{content:'';flex:1;height:1px;background:var(--border)}
+.srow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}
+.sbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--elev);border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--tp)}
+.sbtn:hover{border-color:var(--rose);background:rgba(232,66,125,.06)}
+.aswap{text-align:center;font-size:12px;color:var(--tm);margin-top:18px}
+.al2{color:var(--rose);font-weight:600;cursor:pointer}.al2:hover{text-decoration:underline}
+
+/* DISCOVER */
+.dlayout{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
+.swrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.scard{width:100%;max-width:370px;position:relative;cursor:grab;user-select:none}
+.sprof{background:var(--card);border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--sc)}
+.simg{height:380px;background:linear-gradient(135deg,rgba(232,66,125,.2),rgba(124,58,237,.2));display:flex;align-items:center;justify-content:center;font-size:88px;position:relative}
+.lbadge,.nbadge{position:absolute;top:36px;padding:6px 18px;border-radius:7px;font-size:24px;font-weight:900;opacity:0;letter-spacing:2px;border:4px solid;pointer-events:none}
+.lbadge{left:14px;color:#22c55e;border-color:#22c55e;transform:rotate(-15deg)}
+.nbadge{right:14px;color:#ef4444;border-color:#ef4444;transform:rotate(15deg)}
+.sinfo{position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(to top,rgba(0,0,0,.75),transparent)}
+.sname{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;color:#fff}
+.smeta{font-size:12px;color:rgba(255,255,255,.8);margin-top:2px}
+.sbody{padding:18px}
+.sbio{font-size:12px;color:var(--tm);line-height:1.7}
+.sbtns{display:flex;align-items:center;justify-content:center;gap:16px}
+.swbtn{display:flex;flex-direction:column;align-items:center;gap:3px}
+.swbtn button{width:54px;height:54px;border-radius:50%;border:2px solid var(--border);background:var(--card);font-size:20px;cursor:pointer;transition:all .25s;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.swbtn button:hover{transform:scale(1.1)}
+.swlbl{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.compat{display:flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(232,66,125,.08);border:1px solid rgba(232,66,125,.2);border-radius:50px;font-size:12px;font-weight:600;color:var(--rose)}
+
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 44px);background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.csl{border-right:1px solid var(--border);display:flex;flex-direction:column}
+.cslh{padding:16px;border-bottom:1px solid var(--border)}
+.clist{flex:1;overflow-y:auto}
+.cli{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;transition:background .2s;border-bottom:1px solid var(--border);position:relative}
+.cli:hover{background:var(--elev)}.cli.on{background:rgba(232,66,125,.07)}
+.clin{flex:1;min-width:0}
+.cln{font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.clt{font-size:9px;color:var(--tm);font-weight:400}
+.clm{font-size:11px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.clb{position:absolute;right:16px;bottom:14px;width:16px;height:16px;background:var(--rose);border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff}
+.cma{display:flex;flex-direction:column}
+.ch{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.cmsgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.cmsg{max-width:64%;animation:fadeUp .25s ease}
+.cmsg.s{align-self:flex-end}.cmsg.r{align-self:flex-start}
+.cb{padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.55;word-break:break-word}
+.cmsg.s .cb{background:var(--gr);color:#fff;border-bottom-right-radius:4px}
+.cmsg.r .cb{background:var(--elev);border-bottom-left-radius:4px}
+.cm{font-size:9px;color:var(--tm);margin-top:2px}
+.cmsg.s .cm{text-align:right}
+.typing{display:flex;align-items:center;gap:4px;padding:10px 14px;background:var(--elev);border-radius:14px;border-bottom-left-radius:4px;width:fit-content}
+.td{width:5px;height:5px;background:var(--tm);border-radius:50%;animation:pulse 1.1s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.18s}.td:nth-child(3){animation-delay:.36s}
+.cia{padding:13px 20px;border-top:1px solid var(--border);display:flex;align-items:flex-end;gap:9px}
+.ciw{flex:1;background:var(--elev);border:1.5px solid var(--border);border-radius:16px;padding:8px 12px;display:flex;align-items:center;gap:6px;transition:border-color .2s}
+.ciw:focus-within{border-color:var(--rose)}
+.ci{flex:1;background:transparent;border:none;color:var(--tp);font-size:12px;resize:none;min-height:17px;max-height:80px;line-height:1.5}
+.ci::placeholder{color:var(--tm)}
+.ct{width:30px;height:30px;border-radius:8px;background:transparent;border:none;color:var(--tm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;transition:all .2s}
+.ct:hover{background:var(--card);color:var(--rose)}
+.cs{width:40px;height:40px;border-radius:11px;background:var(--gr);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.cs:hover{transform:scale(1.06);box-shadow:0 4px 12px rgba(232,66,125,.35)}
+
+/* PROFILE PAGE */
+.pcover{height:240px;background:var(--gr);position:relative;margin:-22px -22px 0;border-radius:0 0 18px 18px;overflow:hidden}
+.pcov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.4),transparent)}
+.par{position:relative;margin-top:-50px;margin-left:22px;display:inline-block}
+.pring{width:108px;height:108px;border-radius:50%;background:var(--gr);padding:3px}
+.pinn{width:100%;height:100%;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:42px}
+.pedit{position:absolute;bottom:3px;right:3px;width:26px;height:26px;background:var(--rose);border-radius:50%;border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer}
+
+/* NOTIFICATIONS */
+.ni2{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:11px;cursor:pointer;transition:background .2s;position:relative}
+.ni2:hover{background:var(--elev)}.ni2.u{background:rgba(232,66,125,.04)}
+.ni2.u::before{content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);width:5px;height:5px;background:var(--rose);border-radius:50%}
+.nic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+
+/* STORIES */
+.srow2{display:flex;gap:10px;overflow-x:auto;padding-bottom:5px;scrollbar-width:none}
+.srow2::-webkit-scrollbar{display:none}
+.sit{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0}
+.sring{width:62px;height:62px;border-radius:50%;padding:2px;background:var(--gr)}
+.sring.v{background:var(--elev)}.sring.ad{background:var(--elev);border:2px dashed var(--border)}
+.sinn{width:100%;height:100%;border-radius:50%;background:var(--elev);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:22px}
+.snm{font-size:9px;color:var(--ts);max-width:62px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;align-items:center;justify-content:center}
+.sview.open{display:flex}
+.svco{width:100%;max-width:360px;height:640px;position:relative;background:#1a1a2e;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:68px}
+.sprog{position:absolute;top:12px;left:12px;right:12px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}
+.spf{height:100%;background:#fff;width:0;animation:sfill 5s linear forwards}
+.sx{position:absolute;top:18px;right:12px;width:28px;height:28px;background:rgba(0,0,0,.5);border-radius:50%;border:none;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* PREMIUM */
+.ph{background:var(--gr);border-radius:20px;padding:32px;text-align:center;margin-bottom:22px;position:relative;overflow:hidden}
+.ph h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#fff;margin-bottom:6px}
+.ph p{color:rgba(255,255,255,.82);font-size:14px}
+.pplans{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.pplan{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:22px;cursor:pointer;transition:all .3s;position:relative}
+.pplan:hover{border-color:var(--borderH);transform:translateY(-3px)}
+.pplan.s{border-color:var(--rose);background:rgba(232,66,125,.04)}.pplan.pop{border-color:var(--gold)}
+.ppop{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#EF4444);color:#fff;padding:3px 12px;border-radius:50px;font-size:9px;font-weight:700;white-space:nowrap}
+.pnm{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tm);margin-bottom:5px}
+.ppr{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;line-height:1;margin-bottom:2px}
+.ppe{font-size:11px;color:var(--tm);margin-bottom:14px}
+.ppfs{display:flex;flex-direction:column;gap:6px}
+.ppf{display:flex;align-items:center;gap:6px;font-size:11px}
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.pmm{padding:14px;background:var(--elev);border:2px solid var(--border);border-radius:11px;cursor:pointer;transition:all .2s;text-align:center}
+.pmm:hover,.pmm.s{border-color:var(--rose)}
+
+/* SETTINGS */
+.slayout{display:grid;grid-template-columns:210px 1fr;gap:20px}
+.snav{display:flex;flex-direction:column;gap:1px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;height:fit-content}
+.sni{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;font-size:12px;font-weight:500;color:var(--ts);cursor:pointer;transition:all .2s}
+.sni:hover{background:var(--elev);color:var(--tp)}.sni.on{background:rgba(232,66,125,.1);color:var(--rose);font-weight:600}
+.ssec{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+.sst{font-size:14px;font-weight:700;margin-bottom:3px}.ssd{font-size:11px;color:var(--tm);margin-bottom:18px}
+.sr{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.sr:last-child{border-bottom:none;padding-bottom:0}
+.srl{font-size:13px;font-weight:500}.srd{font-size:11px;color:var(--tm);margin-top:1px}
+
+/* ADMIN */
+.agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:22px}
+.astat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;gap:13px;transition:all .3s}
+.astat:hover{border-color:var(--borderH)}
+.asic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.asv{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;line-height:1}
+.asl{font-size:11px;color:var(--tm);margin-top:1px}
+.asc{font-size:10px;font-weight:600;margin-top:2px}
+.cup{color:#22c55e}.cdn{color:#ef4444}
+.bchart{display:flex;flex-direction:column;gap:10px}
+.br2{display:flex;align-items:center;gap:10px}
+.bl{font-size:10px;color:var(--tm);width:50px;text-align:right;flex-shrink:0}
+.bt{flex:1;height:8px;background:var(--elev);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px;background:var(--gr)}
+.bv{font-size:10px;font-weight:600;color:var(--ts);width:34px;flex-shrink:0}
+.dtable{width:100%;border-collapse:collapse}
+.dtable th{text-align:left;padding:10px 13px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tm);border-bottom:1px solid var(--border)}
+.dtable td{padding:12px 13px;font-size:12px;border-bottom:1px solid var(--border)}
+.dtable tr:last-child td{border-bottom:none}
+.dtable tr:hover td{background:var(--elev)}
+
+/* STATIC */
+.spg{padding:85px 0 52px}
+.sphero{text-align:center;margin-bottom:48px}
+.scon{max-width:720px;margin:0 auto}
+.scon h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin:26px 0 9px}
+.scon p{font-size:13px;color:var(--ts);line-height:1.85;margin-bottom:12px}
+.scon ul{list-style:disc;margin-left:20px;display:flex;flex-direction:column;gap:6px}
+.scon ul li{font-size:13px;color:var(--ts);line-height:1.7}
+
+/* CONTACT */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.cmet{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.cmet:last-child{border-bottom:none}
+.cic{width:40px;height:40px;background:rgba(232,66,125,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .sb{transform:translateX(-100%)}.sb.open{transform:translateX(0)}
+  .am{margin-left:0;padding-bottom:70px}
+  .dlayout{grid-template-columns:1fr}.chat-layout{grid-template-columns:1fr}
+  .slayout{grid-template-columns:1fr}.fgr{grid-template-columns:1fr 1fr}.cgrid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .nl{display:none}.hgrid{grid-template-columns:1fr}.hvisual{display:none}
+  .fgr{grid-template-columns:1fr}.pgrid{grid-template-columns:1fr}.tgrid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}.agrid{grid-template-columns:1fr 1fr}
+  .csl{display:none}.dtable .hm{display:none}
+}
+@media(max-width:480px){.acard{padding:22px 16px}.mo{padding:20px 16px}.agrid{grid-template-columns:1fr}}
+.mt2{margin-top:8px}.mt4{margin-top:16px}.mt6{margin-top:24px}.mb2{margin-bottom:8px}.mb4{margin-bottom:16px}.mb6{margin-bottom:24px}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- STORY VIEWER -->
+<div class="sview" id="sv">
+  <div class="svco" id="svc">
+    <div class="sprog"><div class="spf" id="spf"></div></div>
+    <button class="sx" onclick="closeStory()">✕</button>
+    <span id="semi"></span>
+  </div>
+</div>
+
+<!-- MATCH MODAL -->
+<div class="ov" id="mm">
+  <div class="mo" style="text-align:center">
+    <div style="font-size:52px;margin-bottom:13px" class="hb">💜</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:6px">It's a Match!</h2>
+    <p style="color:var(--ts);margin-bottom:20px">You and <strong id="mname">Sofia</strong> liked each other 🎉</p>
+    <div style="display:flex;gap:9px;justify-content:center">
+      <button class="btn btn-p" onclick="closeM('mm');showPage('chat')">Send Message</button>
+      <button class="btn btn-g" onclick="closeM('mm')">Keep Swiping</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="ov" id="rm">
+  <div class="mo">
+    <div class="mh"><h3 class="mt2">Report User</h3><button class="mc" onclick="closeM('rm')">✕</button></div>
+    <p style="font-size:12px;color:var(--ts);margin-bottom:14px">Help keep ZLove safe. Select a reason:</p>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px">
+      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--elev);border-radius:9px;cursor:pointer;border:1px solid var(--border);font-size:12px"><input type="radio" name="rep" value="fake"> Fake profile or impersonation</label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--elev);border-radius:9px;cursor:pointer;border:1px solid var(--border);font-size:12px"><input type="radio" name="rep" value="spam"> Spam or scam</label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--elev);border-radius:9px;cursor:pointer;border:1px solid var(--border);font-size:12px"><input type="radio" name="rep" value="harass"> Harassment or threats</label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--elev);border-radius:9px;cursor:pointer;border:1px solid var(--border);font-size:12px"><input type="radio" name="rep" value="inapp"> Inappropriate content</label>
+    </div>
+    <textarea class="fi" placeholder="Additional details..." rows="3" style="margin-bottom:14px;resize:none"></textarea>
+    <button class="btn btn-p w-full" onclick="submitRep()">Submit Report</button>
+  </div>
+</div>
+
+<!-- MOBILE SIDEBAR BUTTON -->
+<button id="msb" onclick="toggleSB()" style="display:none;position:fixed;top:13px;left:13px;z-index:600;width:36px;height:36px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:16px;cursor:pointer;color:var(--tp)">☰</button>
+
+<!-- ══════════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════════ -->
+<div class="page active" id="page-landing">
+  <nav class="nav" id="ln"><div class="wrap"><div class="ni">
+    <div class="logo" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div>
+    <div class="nl">
+      <span class="nla" onclick="s2('features')">Features</span>
+      <span class="nla" onclick="s2('pricing')">Pricing</span>
+      <span class="nla" onclick="s2('testimonials')">Stories</span>
+      <span class="nla" onclick="showPage('contact')">Contact</span>
+    </div>
+    <div class="na">
+      <button class="tb" onclick="toggleTheme()" id="tb1">🌙</button>
+      <button class="btn btn-g btn-sm" onclick="showPage('login')">Sign In</button>
+      <button class="btn btn-p btn-sm" onclick="showPage('register')">Join Free</button>
+    </div>
+  </div></div></nav>
+
+  <section class="hero">
+    <div class="orb orb1"></div><div class="orb orb2"></div>
+    <div class="wrap"><div class="hgrid">
+      <div class="fu">
+        <div class="hey">✦ Africa's #1 Premium Dating Platform</div>
+        <h1 class="ht">Find Your <span class="gt">Perfect</span><br/>Match Today</h1>
+        <p class="hs">ZLove connects real people through genuine compatibility — AI-powered matching, verified profiles, and a community built on trust.</p>
+        <div class="hbtns">
+          <button class="btn btn-p btn-lg" onclick="showPage('register')">🚀 Start for Free</button>
+          <button class="btn btn-o btn-lg" onclick="s2('features')">Explore Features</button>
+        </div>
+        <div class="stats">
+          <div><div class="sv gt">2.4M+</div><div class="sl">Active Members</div></div>
+          <div><div class="sv" style="color:var(--rose)">180K+</div><div class="sl">Couples Made</div></div>
+          <div><div class="sv" style="color:var(--vl)">98%</div><div class="sl">Satisfaction</div></div>
+        </div>
+      </div>
+      <div class="hvisual">
+        <div class="mcs">
+          <div class="mc2" style="position:relative;z-index:2">
+            <div class="mci">🧑‍🦰<div class="vtag">✅ Verified</div></div>
+            <div class="mcb">
+              <div class="mcn">Sofia, 26</div>
+              <div class="mcm">📍 Lagos, Nigeria • Product Designer</div>
+              <div class="mct"><span class="mctag">✈️ Travel</span><span class="mctag">📚 Books</span><span class="mctag">🎵 Music</span></div>
+            </div>
+            <div class="mca"><div class="ma" style="cursor:pointer">❌</div><div class="ma" style="cursor:pointer">⭐</div><div class="ma" style="cursor:pointer">💚</div></div>
+          </div>
+          <div class="fc" style="top:-16px;left:-70px;animation-delay:0s"><div class="fcard"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">💜</span><div><div style="font-weight:600">New Match!</div><div style="color:var(--tm)">James liked you</div></div></div></div></div>
+          <div class="fc" style="bottom:48px;right:-65px;animation-delay:1.4s"><div class="fcard"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:14px">🎯</span><div><div style="font-weight:700;color:var(--rose)">94% Match</div><div style="color:var(--tm)">Compatibility</div></div></div></div></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- FEATURES -->
+  <section style="padding:85px 0" id="features">
+    <div class="wrap">
+      <div style="text-align:center"><span class="slbl">Why ZLove</span></div>
+      <h2 class="stitle" style="text-align:center">Everything You Need to Find Love</h2>
+      <p class="ssub" style="text-align:center;margin:0 auto">A complete suite of features designed for meaningful connections.</p>
+      <div class="fgrid">
+        <div class="fc2"><div class="fic">🤖</div><h3 class="ftitle">AI-Powered Matching</h3><p class="fdesc">Our engine analyzes 50+ dimensions of personality, values, and preferences to surface your best matches.</p></div>
+        <div class="fc2"><div class="fic">✅</div><h3 class="ftitle">Verified Profiles</h3><p class="fdesc">Photo, phone, and ID verification ensures every person you meet is exactly who they claim to be.</p></div>
+        <div class="fc2"><div class="fic">💬</div><h3 class="ftitle">Real-Time Chat</h3><p class="fdesc">Messaging with read receipts, typing indicators, voice notes, and end-to-end encryption.</p></div>
+        <div class="fc2"><div class="fic">📍</div><h3 class="ftitle">Nearby Discovery</h3><p class="fdesc">Find amazing people in your city with smart location-based matching and instant browse.</p></div>
+        <div class="fc2"><div class="fic">👑</div><h3 class="ftitle">Premium Membership</h3><p class="fdesc">Unlimited likes, see who liked you, profile boosts, incognito mode, and priority visibility.</p></div>
+        <div class="fc2"><div class="fic">🛡️</div><h3 class="ftitle">Safety First</h3><p class="fdesc">AI moderation, fake profile detection, report & block tools, and a dedicated safety team.</p></div>
+        <div class="fc2"><div class="fic">📸</div><h3 class="ftitle">Stories & Status</h3><p class="fdesc">Share your life through ephemeral stories and status updates to give matches a real glimpse of you.</p></div>
+        <div class="fc2"><div class="fic">🎯</div><h3 class="ftitle">Smart Filters</h3><p class="fdesc">Filter by age, location, education, religion, relationship goals, lifestyle, and many more.</p></div>
+        <div class="fc2"><div class="fic">🌍</div><h3 class="ftitle">Global Reach</h3><p class="fdesc">Whether local or open to long-distance, ZLove connects quality singles across Africa and beyond.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section style="padding:75px 0;background:var(--bg2)">
+    <div class="wrap">
+      <div style="text-align:center;margin-bottom:12px"><span class="slbl">How It Works</span></div>
+      <h2 class="stitle" style="text-align:center;margin-bottom:48px">Three Steps to Your Love Story</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;max-width:820px;margin:0 auto">
+        <div style="text-align:center"><div style="width:70px;height:70px;background:var(--gr);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 8px 22px rgba(232,66,125,.35)">👤</div><div style="font-size:32px;font-weight:900;font-family:'Playfair Display',serif;color:rgba(232,66,125,.15);margin-bottom:6px">01</div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">Create Profile</h3><p style="font-size:12px;color:var(--ts);line-height:1.7">Set up your profile with photos, bio, and interests. Get verified for trust.</p></div>
+        <div style="text-align:center"><div style="width:70px;height:70px;background:var(--gr);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 8px 22px rgba(232,66,125,.35)">💜</div><div style="font-size:32px;font-weight:900;font-family:'Playfair Display',serif;color:rgba(232,66,125,.15);margin-bottom:6px">02</div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">Discover Matches</h3><p style="font-size:12px;color:var(--ts);line-height:1.7">Swipe through recommendations or browse with advanced filters to find your type.</p></div>
+        <div style="text-align:center"><div style="width:70px;height:70px;background:var(--gr);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 8px 22px rgba(232,66,125,.35)">💍</div><div style="font-size:32px;font-weight:900;font-family:'Playfair Display',serif;color:rgba(232,66,125,.15);margin-bottom:6px">03</div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">Start Connecting</h3><p style="font-size:12px;color:var(--ts);line-height:1.7">When you match, start chatting instantly. Your love story begins here.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section style="padding:85px 0;background:var(--bg2)" id="pricing">
+    <div class="wrap">
+      <div style="text-align:center;margin-bottom:10px"><span class="slbl">Membership</span></div>
+      <h2 class="stitle" style="text-align:center">Invest in Your Love Life</h2>
+      <p class="ssub" style="text-align:center;margin:0 auto">Start free. Upgrade when you're ready for more.</p>
+      <div class="pgrid">
+        <div class="pc"><div class="pplan">Free</div><div class="pprice">₦0</div><div class="pper">Forever free</div><div class="pfs"><div class="pf2"><span style="color:#22c55e">✓</span>Create profile</div><div class="pf2"><span style="color:#22c55e">✓</span>10 likes/day</div><div class="pf2"><span style="color:#22c55e">✓</span>Basic filters</div><div class="pf2"><span style="color:#22c55e">✓</span>Chat with matches</div><div class="pf2"><span style="color:var(--tm)">—</span><span style="color:var(--tm)">See who liked you</span></div></div><button class="btn btn-o w-full mt4" onclick="showPage('register')">Get Started</button></div>
+        <div class="pc pop"><div class="pbadge">⭐ Most Popular</div><div class="pplan" style="color:var(--rose)">Gold</div><div class="pprice">₦4,999</div><div class="pper">/month</div><div class="pfs"><div class="pf2"><span style="color:#22c55e">✓</span>Unlimited likes</div><div class="pf2"><span style="color:#22c55e">✓</span>See who liked you</div><div class="pf2"><span style="color:#22c55e">✓</span>5 Super Likes/day</div><div class="pf2"><span style="color:#22c55e">✓</span>Advanced filters</div><div class="pf2"><span style="color:#22c55e">✓</span>1 Boost/week</div></div><button class="btn btn-p w-full mt4" onclick="showPage('premium')">Get Gold</button></div>
+        <div class="pc"><div class="pplan" style="color:var(--vl)">Platinum</div><div class="pprice">₦9,999</div><div class="pper">/month</div><div class="pfs"><div class="pf2"><span style="color:#22c55e">✓</span>All Gold features</div><div class="pf2"><span style="color:#22c55e">✓</span>Unlimited Boosts</div><div class="pf2"><span style="color:#22c55e">✓</span>Incognito mode</div><div class="pf2"><span style="color:#22c55e">✓</span>Message before match</div><div class="pf2"><span style="color:#22c55e">✓</span>VIP badge</div></div><button class="btn btn-o w-full mt4" onclick="showPage('premium')">Get Platinum</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section style="padding:85px 0" id="testimonials">
+    <div class="wrap">
+      <div style="text-align:center;margin-bottom:10px"><span class="slbl">Success Stories</span></div>
+      <h2 class="stitle" style="text-align:center">Real Couples, Real Love</h2>
+      <div class="tgrid">
+        <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">ZLove's AI matching was uncanny — it found me someone I'd never have discovered on my own. We've been together 8 months and couldn't be happier.</p><div class="tau"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Adaeze Okonkwo</div><div style="font-size:11px;color:var(--tm)">Lagos • Matched 8 months ago</div></div></div></div>
+        <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">The verification system gave me confidence. Met my fiancée here and we're planning our wedding. ZLove literally changed my life.</p><div class="tau"><div class="avsm">👨</div><div><div style="font-weight:600;font-size:12px">Tunde Adeyemi</div><div style="font-size:11px;color:var(--tm)">Abuja • Engaged! 💍</div></div></div></div>
+        <div class="tc"><div class="tstars">★★★★★</div><p class="ttxt">ZLove Premium is absolutely worth it. The boost feature got me 10x more matches in one day. The best investment I've made in myself.</p><div class="tau"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Ngozi Eze</div><div style="font-size:11px;color:var(--tm)">Port Harcourt • Platinum member</div></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="wrap">
+      <h2 style="font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:#fff;margin-bottom:12px">Your Person is Waiting</h2>
+      <p style="font-size:16px;color:rgba(255,255,255,.82);margin-bottom:32px;max-width:460px;margin-left:auto;margin-right:auto">Join 2.4 million people already finding love on ZLove. Free to join.</p>
+      <div style="display:flex;gap:11px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-lg" style="background:#fff;color:var(--rose);font-weight:700" onclick="showPage('register')">🚀 Create Free Account</button>
+        <button class="btn btn-lg" style="background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.4)" onclick="showPage('login')">Sign In</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="fgr">
+        <div>
+          <div class="logo" style="margin-bottom:12px" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div>
+          <p style="font-size:12px;color:var(--tm);line-height:1.7;max-width:220px">Africa's premier dating platform connecting people through genuine compatibility.</p>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">𝕏</button>
+            <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">📘</button>
+            <button style="width:34px;height:34px;background:var(--elev);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">📸</button>
+          </div>
+        </div>
+        <div><div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Platform</div><div class="fls"><span class="fl2" onclick="showPage('discover')">Discover</span><span class="fl2" onclick="showPage('premium')">Premium</span><span class="fl2" onclick="s2('features')">Features</span><span class="fl2">Download App</span></div></div>
+        <div><div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Company</div><div class="fls"><span class="fl2">About Us</span><span class="fl2" onclick="showPage('contact')">Contact</span><span class="fl2">Careers</span><span class="fl2">Blog</span></div></div>
+        <div><div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Legal</div><div class="fls"><span class="fl2" onclick="showPage('privacy-pg')">Privacy Policy</span><span class="fl2" onclick="showPage('terms')">Terms of Service</span><span class="fl2">Cookie Policy</span><span class="fl2">Safety Tips</span></div></div>
+      </div>
+      <div class="fbot"><p>© 2025 ZLove Technologies Ltd. All rights reserved.</p><p>Made with 💜 for Africa</p></div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════ LOGIN ══════ -->
+<div class="page" id="page-login">
+  <div class="apg"><div class="orb orb1"></div><div class="orb orb2"></div>
+    <div class="acard">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px"><div class="li">💜</div><span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900">ZLove</span></div>
+      <h2 class="atitle">Welcome back</h2><p class="asub">Sign in to continue your love journey</p>
+      <div class="srow"><button class="sbtn" onclick="socialLogin('Google')">🔵 Google</button><button class="sbtn" onclick="socialLogin('Facebook')">📘 Facebook</button></div>
+      <div class="adiv">or continue with email</div>
+      <div class="fg"><label class="fl">Email or Phone</label><div class="iw"><span class="ic">✉️</span><input type="text" class="fi" placeholder="you@example.com" id="le"/></div></div>
+      <div class="fg"><label class="fl">Password</label><div class="iw"><span class="ic">🔒</span><input type="password" class="fi" placeholder="Your password" id="lp"/><span class="icr" onclick="tpwd('lp',this)">👁️</span></div></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:18px"><span class="al2" onclick="showPage('forgot')">Forgot password?</span></div>
+      <button class="btn btn-p w-full btn-lg" onclick="doLogin()">Sign In</button>
+      <div class="aswap">No account? <span class="al2" onclick="showPage('register')">Create one</span></div>
+      <div style="text-align:center;margin-top:13px"><span class="al2" style="font-size:11px" onclick="showPage('admin')">🔧 Admin Login</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ REGISTER ══════ -->
+<div class="page" id="page-register">
+  <div class="apg"><div class="orb orb1"></div><div class="orb orb2"></div>
+    <div class="acard" style="max-width:480px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px"><div class="li">💜</div><span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900">ZLove</span></div>
+      <div class="steps" id="sdots"><div class="sd2 on" id="d1"></div><div class="sd2" id="d2"></div><div class="sd2" id="d3"></div><div class="sd2" id="d4"></div></div>
+      <div id="rs1">
+        <h2 class="atitle">Create Account</h2><p class="asub">Join 2.4M+ singles finding love</p>
+        <div class="srow"><button class="sbtn" onclick="socialLogin('Google')">🔵 Google</button><button class="sbtn" onclick="socialLogin('Facebook')">📘 Facebook</button></div>
+        <div class="adiv">or use email</div>
+        <div class="fg"><label class="fl">Full Name</label><div class="iw"><span class="ic">👤</span><input type="text" class="fi" placeholder="Your full name" id="rn"/></div></div>
+        <div class="fg"><label class="fl">Email</label><div class="iw"><span class="ic">✉️</span><input type="email" class="fi" placeholder="you@example.com" id="re"/></div></div>
+        <div class="fg"><label class="fl">Phone</label><div class="iw"><span class="ic">📞</span><input type="tel" class="fi" placeholder="+234 800 000 0000" id="rph"/></div></div>
+        <div class="fg"><label class="fl">Password</label><div class="iw"><span class="ic">🔒</span><input type="password" class="fi" placeholder="Min. 8 characters" id="rpw"/><span class="icr" onclick="tpwd('rpw',this)">👁️</span></div></div>
+        <button class="btn btn-p w-full btn-lg mt4" onclick="rNext(2)">Continue →</button>
+        <div class="aswap">Have an account? <span class="al2" onclick="showPage('login')">Sign in</span></div>
+      </div>
+      <div id="rs2" style="display:none">
+        <h2 class="atitle">Your Profile</h2><p class="asub">Tell us about yourself</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="fg"><label class="fl">Date of Birth</label><input type="date" class="fi" id="rdb"/></div>
+          <div class="fg"><label class="fl">Gender</label><select class="fs" id="rg"><option>Man</option><option>Woman</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+        </div>
+        <div class="fg"><label class="fl">Location</label><div class="iw"><span class="ic">📍</span><input type="text" class="fi" placeholder="Lagos, Nigeria" id="rl"/></div></div>
+        <div class="fg"><label class="fl">Looking For</label><select class="fs"><option>Long-term relationship</option><option>Casual dating</option><option>Friendship</option><option>Marriage</option><option>Not sure</option></select></div>
+        <div class="fg"><label class="fl">Occupation</label><input type="text" class="fi" placeholder="Your occupation" id="ro"/></div>
+        <div style="display:flex;gap:9px;margin-top:4px"><button class="btn btn-g btn-lg" style="flex:1" onclick="rNext(1)">← Back</button><button class="btn btn-p btn-lg" style="flex:2" onclick="rNext(3)">Continue →</button></div>
+      </div>
+      <div id="rs3" style="display:none">
+        <h2 class="atitle">Your Interests</h2><p class="asub">Pick at least 3 that describe you</p>
+        <div id="ipicker" style="display:flex;flex-wrap:wrap;gap:7px;margin:18px 0"></div>
+        <div class="fg"><label class="fl">Bio</label><textarea class="fi" rows="3" placeholder="A brief description of yourself..." id="rb" style="resize:none"></textarea></div>
+        <div style="display:flex;gap:9px;margin-top:4px"><button class="btn btn-g btn-lg" style="flex:1" onclick="rNext(2)">← Back</button><button class="btn btn-p btn-lg" style="flex:2" onclick="rNext(4)">Continue →</button></div>
+      </div>
+      <div id="rs4" style="display:none">
+        <h2 class="atitle">Verify Account</h2><p class="asub">Enter the 6-digit code sent to your email</p>
+        <div class="otp-row" style="margin:24px 0">
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,0)" id="o0"/>
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,1)" id="o1"/>
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,2)" id="o2"/>
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,3)" id="o3"/>
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,4)" id="o4"/>
+          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,5)" id="o5"/>
+        </div>
+        <button class="btn btn-p w-full btn-lg" onclick="verOTP()">Verify & Start Matching 💜</button>
+        <div class="aswap mt4"><span class="al2" onclick="toast('Code resent!','success')">Resend code</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ FORGOT PASSWORD ══════ -->
+<div class="page" id="page-forgot">
+  <div class="apg"><div class="orb orb1"></div><div class="orb orb2"></div>
+    <div class="acard">
+      <div style="font-size:42px;text-align:center;margin-bottom:12px">🔑</div>
+      <h2 class="atitle">Reset Password</h2><p class="asub">Enter your email for a reset link</p>
+      <div class="fg mt4"><label class="fl">Email Address</label><div class="iw"><span class="ic">✉️</span><input type="email" class="fi" placeholder="you@example.com" id="fe"/></div></div>
+      <button class="btn btn-p w-full btn-lg mt4" onclick="sendReset()">Send Reset Link</button>
+      <div class="aswap mt4"><span class="al2" onclick="showPage('login')">← Back to Sign In</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ DASHBOARD ══════ -->
+<div class="page" id="page-dashboard">
+  <div class="al">
+    <div class="sb" id="sb0">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si on" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover<span class="snb">3</span></div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches<span class="snb">12</span></div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages<span class="snb">5</span></div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications<span class="snb">8</span></div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah">
+        <div><div class="at">Good evening, Sofia 👋</div><div class="as">You have 12 new matches today!</div></div>
+        <div style="display:flex;align-items:center;gap:9px"><button class="tb" onclick="toggleTheme()" id="tb2">🌙</button><button class="btn btn-p btn-sm" onclick="showPage('discover')">🔥 Discover</button></div>
+      </div>
+      <!-- Stories -->
+      <div style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px"><h3 style="font-size:14px;font-weight:700">Stories</h3><span class="al2" onclick="showPage('stories')">View all</span></div>
+        <div class="srow2">
+          <div class="sit" onclick="openStory('you')"><div class="sring ad"><div class="sinn">➕</div></div><div class="snm">Add Story</div></div>
+          <div class="sit" onclick="openStory('James')"><div class="sring"><div class="sinn">👨</div></div><div class="snm">James</div></div>
+          <div class="sit" onclick="openStory('Kemi')"><div class="sring"><div class="sinn">👩</div></div><div class="snm">Kemi</div></div>
+          <div class="sit" onclick="openStory('Amira')"><div class="sring"><div class="sinn">👩‍🦱</div></div><div class="snm">Amira</div></div>
+          <div class="sit" onclick="openStory('Felix')"><div class="sring v"><div class="sinn">👨‍🦲</div></div><div class="snm">Felix</div></div>
+          <div class="sit" onclick="openStory('Lola')"><div class="sring"><div class="sinn">👩‍🦰</div></div><div class="snm">Lola</div></div>
+        </div>
+      </div>
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="showPage('discover')"><div style="font-size:24px;margin-bottom:3px">🔥</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">247</div><div style="font-size:10px;color:var(--tm);margin-top:1px">Views</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="showPage('matches')"><div style="font-size:24px;margin-bottom:3px">💜</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">12</div><div style="font-size:10px;color:var(--tm);margin-top:1px">Matches</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="showPage('chat')"><div style="font-size:24px;margin-bottom:3px">💬</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">5</div><div style="font-size:10px;color:var(--tm);margin-top:1px">Messages</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="showPage('premium')"><div style="font-size:24px;margin-bottom:3px">⭐</div><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--gold)">Gold</div><div style="font-size:10px;color:var(--tm);margin-top:1px">Your Plan</div></div>
+      </div>
+      <!-- Recent Matches + Activity -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px"><h3 style="font-size:14px;font-weight:700">Recent Matches</h3><span class="al2" onclick="showPage('matches')">See all</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;cursor:pointer" onclick="showPage('chat')"><div style="height:130px;background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;font-size:44px;position:relative"><span class="badge br" style="position:absolute;top:6px;left:6px">New</span></div><div style="padding:9px"><div style="font-weight:700;font-size:12px">James, 28</div><div style="font-size:10px;color:var(--tm)">📍 Lagos</div></div></div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;cursor:pointer" onclick="showPage('chat')"><div style="height:130px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(232,66,125,.15));display:flex;align-items:center;justify-content:center;font-size:44px">👩</div><div style="padding:9px"><div style="font-weight:700;font-size:12px">Kemi, 25</div><div style="font-size:10px;color:var(--tm)">📍 Abuja</div></div></div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;cursor:pointer" onclick="showPage('chat')"><div style="height:130px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(232,66,125,.15));display:flex;align-items:center;justify-content:center;font-size:44px">🧑</div><div style="padding:9px"><div style="font-weight:700;font-size:12px">David, 30</div><div style="font-size:10px;color:var(--tm)">📍 PH</div></div></div>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:13px">Activity</h3>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:13px">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">💜</span><div><div style="font-size:11px;font-weight:600">James liked you</div><div style="font-size:10px;color:var(--tm)">2 min ago</div></div></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">⭐</span><div><div style="font-size:11px;font-weight:600">Amira Super Liked!</div><div style="font-size:10px;color:var(--tm)">18 min ago</div></div></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">💬</span><div><div style="font-size:11px;font-weight:600">New message from Kemi</div><div style="font-size:10px;color:var(--tm)">1 hr ago</div></div></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 0"><span style="font-size:16px">👁️</span><div><div style="font-size:11px;font-weight:600">8 profile views</div><div style="font-size:10px;color:var(--tm)">Today</div></div></div>
+          </div>
+          <div style="margin-top:13px;background:var(--gr);border-radius:13px;padding:16px;color:#fff">
+            <div style="font-size:17px;margin-bottom:5px">👑</div>
+            <div style="font-weight:700;font-size:12px;margin-bottom:2px">Upgrade to Platinum</div>
+            <div style="font-size:10px;opacity:.85;margin-bottom:11px">Incognito mode, unlimited boosts & more.</div>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)" onclick="showPage('premium')">Upgrade Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ DISCOVER ══════ -->
+<div class="page" id="page-discover">
+  <div class="al">
+    <div class="sb" id="sb1">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si on"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah">
+        <div><div class="at">Discover 🔥</div><div class="as">Find people near you who match your vibe</div></div>
+        <div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-o btn-sm" onclick="toast('Filters: verified, 25-35, 50km radius','info')">🔧 Filters</button></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
+        <div class="chip on">All</div><div class="chip">Nearby</div><div class="chip">Online Now</div><div class="chip">Verified</div><div class="chip">Age 25-35</div><div class="chip">New Members</div>
+      </div>
+      <div class="dlayout">
+        <div class="swrap">
+          <div class="scard" id="scard">
+            <div class="sprof" id="sprof">
+              <div class="simg" id="simg">
+                <span id="semi2" style="position:relative;z-index:1">👩‍🦱</span>
+                <div id="lb" class="lbadge">LIKE 💚</div>
+                <div id="nb" class="nbadge">NOPE ❌</div>
+                <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px"><span class="badge bn">✅ Verified</span><span class="badge bv">🎯 94% Match</span></div>
+                <div class="sinfo">
+                  <div class="sname" id="sn">Amira Okafor, 24</div>
+                  <div class="smeta" id="sm">📍 Lagos, 2.3km • Doctor</div>
+                </div>
+              </div>
+              <div class="sbody">
+                <p class="sbio" id="sb2">Passionate about medicine and exploring the world. Love hiking, jazz music, and discovering hidden restaurants.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px" id="stags"></div>
+              </div>
+            </div>
+          </div>
+          <div class="compat"><span>🎯</span><span id="cscore">94% Compatibility</span></div>
+          <div class="sbtns">
+            <div class="swbtn"><button onclick="swipe('pass')" onmouseover="this.style.borderColor='#ef4444'" onmouseout="this.style.borderColor='var(--border)'">❌</button><div class="swlbl">Pass</div></div>
+            <div class="swbtn"><button onclick="swipe('super')" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='var(--border)'">⭐</button><div class="swlbl">Super</div></div>
+            <div class="swbtn"><button onclick="swipe('like')" onmouseover="this.style.borderColor='#22c55e'" onmouseout="this.style.borderColor='var(--border)'">💚</button><div class="swlbl">Like</div></div>
+            <div class="swbtn"><button onclick="showPage('chat')">💬</button><div class="swlbl">Message</div></div>
+          </div>
+          <div style="display:flex;gap:9px"><button class="btn btn-g btn-sm" onclick="openM('rm')">🚩 Report</button><button class="btn btn-g btn-sm" onclick="toast('User blocked.','success')">🚫 Block</button></div>
+        </div>
+        <div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:17px;padding:18px;margin-bottom:18px">
+            <h4 style="font-size:12px;font-weight:700;margin-bottom:11px">📍 Nearby</h4>
+            <div id="nlist"></div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:17px;padding:18px">
+            <h4 style="font-size:12px;font-weight:700;margin-bottom:11px">⭐ Top Picks</h4>
+            <div id="tpicks"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MATCHES ══════ -->
+<div class="page" id="page-matches">
+  <div class="al">
+    <div class="sb" id="sb2">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si on"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah"><div><div class="at">Matches 💜</div><div class="as">12 people who liked you back</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+      <div class="tabs mb6"><button class="tab on" onclick="matchTab(this,'m')">Mutual (12)</button><button class="tab" onclick="matchTab(this,'l')">Liked You 👑</button><button class="tab" onclick="matchTab(this,'y')">You Liked (24)</button></div>
+      <div id="mgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:13px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ CHAT ══════ -->
+<div class="page" id="page-chat">
+  <div class="al">
+    <div class="sb" id="sb3">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si on"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am" style="padding:0;display:flex;flex-direction:column">
+      <div class="chat-layout" style="height:100vh;border-radius:0;border-left:none;border-right:none;border-bottom:none;border-top:none">
+        <div class="csl">
+          <div class="cslh">
+            <div style="font-size:14px;font-weight:700;margin-bottom:9px">Messages</div>
+            <div class="iw"><span class="ic">🔍</span><input class="fi" placeholder="Search..." style="font-size:11px"/></div>
+          </div>
+          <div class="clist" id="clist"></div>
+        </div>
+        <div class="cma">
+          <div class="ch">
+            <div class="avsm">👨</div>
+            <div style="flex:1"><div style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px">James Obi <span class="badge bn" style="font-size:9px">✅</span></div><div style="font-size:10px;color:#22c55e;font-weight:500">● Online now</div></div>
+            <div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="openM('rm')">🚩</button><button class="btn btn-p btn-sm" onclick="showPage('profile')">👤</button></div>
+          </div>
+          <div class="cmsgs" id="cmsgs"></div>
+          <div id="tarea" style="padding:0 20px 7px;display:none"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div><div style="font-size:9px;color:var(--tm);margin-top:2px">James is typing...</div></div>
+          <div class="cia">
+            <button class="ct" onclick="toast('Voice note!','info')">🎙️</button>
+            <button class="ct" onclick="toast('Image attached!','info')">📎</button>
+            <div class="ciw"><textarea class="ci" placeholder="Type a message..." rows="1" id="cinp" onkeydown="chatK(event)"></textarea><button class="ct" onclick="addE()">😊</button></div>
+            <button class="cs" onclick="sendMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PROFILE ══════ -->
+<div class="page" id="page-profile">
+  <div class="al">
+    <div class="sb" id="sb4">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si on"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am" style="padding:0">
+      <div class="pcover"><div class="pcov"></div><button class="btn btn-sm" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="toast('Cover updated!','success')">📷 Change Cover</button></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:0 22px;margin-bottom:18px">
+        <div>
+          <div class="par"><div class="pring"><div class="pinn">👩‍🦱</div></div><div class="pedit" onclick="toast('Photo updated!','success')">📷</div></div>
+          <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;display:flex;align-items:center;gap:7px;margin-top:3px">Sofia Adeyemi <span class="badge bv">✅</span><span class="badge bg">⭐ Gold</span></div>
+          <div style="font-size:13px;color:var(--tm);margin-top:2px">@sofia.adeyemi • 26 years old</div>
+          <div style="display:flex;gap:9px;margin-top:11px">
+            <button class="btn btn-p btn-sm" onclick="toast('Profile boosted! 3x visibility for 30 mins 🚀','success')">🚀 Boost</button>
+            <button class="btn btn-o btn-sm" onclick="showPage('settings')">✏️ Edit</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:24px;margin-top:18px">
+          <div style="text-align:center;cursor:pointer"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:800">247</div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Views</div></div>
+          <div style="text-align:center;cursor:pointer"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:800">12</div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Matches</div></div>
+          <div style="text-align:center;cursor:pointer"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:800">4.9</div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Rating</div></div>
+        </div>
+      </div>
+      <!-- Completion -->
+      <div style="padding:0 22px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><div style="font-size:11px;font-weight:600;color:var(--tm)">Profile Completeness</div><div style="font-size:11px;font-weight:700;color:var(--rose)">82%</div></div>
+        <div class="pb"><div class="pf" style="width:82%"></div></div>
+        <div style="font-size:10px;color:var(--tm);margin-top:4px">Add a video to reach 100% — profiles with videos get 3x more matches!</div>
+      </div>
+      <!-- Content Grid -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;padding:0 22px 22px">
+        <div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">About Me</h3>
+            <p style="font-size:12px;color:var(--ts);line-height:1.8">Passionate product designer with a love for great coffee, good books, and spontaneous weekend trips. Looking for someone who's equally curious about the world and ready to build something real.</p>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Details</h3>
+            <div style="display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:14px;color:var(--rose)">📍</span><div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Location</div><div style="font-size:12px;font-weight:500">Lagos, Nigeria</div></div></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:14px;color:var(--rose)">💼</span><div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Occupation</div><div style="font-size:12px;font-weight:500">Senior Product Designer</div></div></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:14px;color:var(--rose)">🎓</span><div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Education</div><div style="font-size:12px;font-weight:500">University of Lagos</div></div></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 0"><span style="font-size:14px;color:var(--rose)">🌟</span><div><div style="font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px">Goal</div><div style="font-size:12px;font-weight:500">Long-term relationship</div></div></div>
+            </div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">Interests</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="itag">✈️ Travel</span><span class="itag">📚 Reading</span><span class="itag">🎵 Music</span><span class="itag">☕ Coffee</span><span class="itag">🖼️ Art</span><span class="itag">🍕 Foodie</span><span class="itag">🎬 Cinema</span><span class="itag">🧘 Yoga</span><span class="itag">🐾 Dogs</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px">
+            <h3 style="font-size:12px;font-weight:700;margin-bottom:11px">Verification</h3>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:#22c55e">✅</span>Email verified</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:#22c55e">✅</span>Phone verified</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:#22c55e">✅</span>Photo verified</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px"><span style="color:var(--gold)">⏳</span>ID pending</div>
+              <button class="btn btn-o btn-sm w-full mt2" style="font-size:10px" onclick="toast('ID request submitted!','success')">Submit ID</button>
+            </div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px">
+            <h3 style="font-size:12px;font-weight:700;margin-bottom:11px">Privacy</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11px">Online status</div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11px">Show distance</div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11px">Incognito 👑</div><label class="tgl"><input type="checkbox"><span class="ts"></span></label></div>
+            </div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px">
+            <h3 style="font-size:12px;font-weight:700;margin-bottom:11px">Photos</h3>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+              <div style="aspect-ratio:1;background:linear-gradient(135deg,rgba(232,66,125,.2),rgba(124,58,237,.2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer">👩‍🦱</div>
+              <div style="aspect-ratio:1;background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(232,66,125,.15));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer">🌅</div>
+              <div style="aspect-ratio:1;background:var(--elev);border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer" onclick="toast('Photo added!','success')">➕</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ STORIES ══════ -->
+<div class="page" id="page-stories">
+  <div class="al">
+    <div class="sb" id="sb5">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si on"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah"><div><div class="at">Stories 📸</div><div class="as">Share your world</div></div><div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-p btn-sm" onclick="toast('Story creator opened!','info')">➕ New Story</button></div></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:22px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:11px">Your Story</h3>
+        <div style="display:flex;align-items:center;gap:11px">
+          <div class="sring ad" style="width:56px;height:56px;flex-shrink:0"><div class="sinn" style="font-size:20px">➕</div></div>
+          <div><div style="font-weight:600;margin-bottom:2px;font-size:13px">Create your story</div><div style="font-size:11px;color:var(--tm)">Share a photo, video, or status update with your matches.</div><button class="btn btn-o btn-sm mt2" onclick="toast('Story creator!','info')">Add Story</button></div>
+        </div>
+      </div>
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:13px">Recent Stories</h3>
+      <div id="sfeed" style="display:flex;flex-direction:column;gap:16px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ NOTIFICATIONS ══════ -->
+<div class="page" id="page-notifications">
+  <div class="al">
+    <div class="sb" id="sb6">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si on"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah"><div><div class="at">Notifications 🔔</div><div class="as">Stay in the loop</div></div><div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-g btn-sm" onclick="toast('All marked as read','success')">Mark all read</button></div></div>
+      <div class="tabs mb6"><button class="tab on">All</button><button class="tab">Matches</button><button class="tab">Messages</button><button class="tab">Likes</button></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px"><div id="nlist2" style="display:flex;flex-direction:column;gap:1px"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PREMIUM ══════ -->
+<div class="page" id="page-premium">
+  <div class="al">
+    <div class="sb" id="sb7">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si on"><span class="sic">👑</span>Premium</div>
+        <div class="si" onclick="showPage('settings')"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ph"><h2>Unlock Your Full Potential 👑</h2><p>More matches. More visibility. More connections.</p></div>
+      <div class="pplans">
+        <div class="pplan" onclick="selPlan(this,'gold','₦4,999')"><div class="pnm">Gold</div><div class="ppr">₦4,999</div><div class="ppe">/month</div><div class="ppfs"><div class="ppf"><span>✅</span>Unlimited likes</div><div class="ppf"><span>✅</span>See who liked you</div><div class="ppf"><span>✅</span>5 Super Likes/day</div><div class="ppf"><span>✅</span>1 Boost/week</div></div></div>
+        <div class="pplan pop s" onclick="selPlan(this,'platinum','₦9,999')"><div class="ppop">🏆 Best Value</div><div class="pnm" style="color:var(--vl)">Platinum</div><div class="ppr">₦9,999</div><div class="ppe">/month</div><div class="ppfs"><div class="ppf"><span>✅</span>All Gold features</div><div class="ppf"><span>✅</span>Unlimited Boosts</div><div class="ppf"><span>✅</span>Incognito mode</div><div class="ppf"><span>✅</span>Message before match</div><div class="ppf"><span>✅</span>VIP badge</div></div></div>
+        <div class="pplan" onclick="selPlan(this,'annual','₦59,999')"><div class="pnm">Annual</div><div class="ppr">₦59,999</div><div class="ppe">/year • Save 50%!</div><div class="ppfs"><div class="ppf"><span>✅</span>Everything in Platinum</div><div class="ppf"><span>✅</span>Dedicated matchmaker</div><div class="ppf"><span>✅</span>Dating coach sessions</div></div></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:22px">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Payment Method</h3>
+        <p style="font-size:11px;color:var(--tm);margin-bottom:16px">All transactions are encrypted and secure.</p>
+        <div class="pm">
+          <div class="pmm s" onclick="selPay(this)"><div style="font-size:20px;margin-bottom:4px">💳</div><div style="font-weight:600;font-size:12px">Paystack</div><div style="font-size:10px;color:var(--tm)">Card, Bank, USSD</div></div>
+          <div class="pmm" onclick="selPay(this)"><div style="font-size:20px;margin-bottom:4px">🦋</div><div style="font-weight:600;font-size:12px">Flutterwave</div><div style="font-size:10px;color:var(--tm)">Card, Mobile Money</div></div>
+        </div>
+        <button class="btn btn-gold w-full btn-lg mt4" id="pbtn" onclick="doPay()">🚀 Subscribe — ₦9,999/month</button>
+        <div style="font-size:10px;color:var(--tm);text-align:center;margin-top:9px">Cancel anytime. No hidden fees. SSL secured.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center"><div style="font-size:26px;margin-bottom:6px">♾️</div><div style="font-weight:700;font-size:12px;margin-bottom:2px">Unlimited Likes</div><div style="font-size:11px;color:var(--tm)">Like as many as you want</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center"><div style="font-size:26px;margin-bottom:6px">👁️</div><div style="font-weight:700;font-size:12px;margin-bottom:2px">See Who Liked You</div><div style="font-size:11px;color:var(--tm)">Don't miss a single admirer</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center"><div style="font-size:26px;margin-bottom:6px">🚀</div><div style="font-weight:700;font-size:12px;margin-bottom:2px">Profile Boosts</div><div style="font-size:11px;color:var(--tm)">3x more visibility for 30 mins</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center"><div style="font-size:26px;margin-bottom:6px">🕵️</div><div style="font-weight:700;font-size:12px;margin-bottom:2px">Incognito Mode</div><div style="font-size:11px;color:var(--tm)">Browse privately</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ SETTINGS ══════ -->
+<div class="page" id="page-settings">
+  <div class="al">
+    <div class="sb" id="sb8">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>ZLove</span></div>
+      <div class="sbu" onclick="showPage('profile')"><div class="avsm">👩</div><div><div style="font-weight:600;font-size:12px">Sofia Adeyemi</div><div style="font-size:10px;color:var(--rose);font-weight:600">⭐ Gold Member</div></div></div>
+      <div class="sbn">
+        <div class="si" onclick="showPage('dashboard')"><span class="sic">🏠</span>Home</div>
+        <div class="si" onclick="showPage('discover')"><span class="sic">🔥</span>Discover</div>
+        <div class="si" onclick="showPage('matches')"><span class="sic">💜</span>Matches</div>
+        <div class="si" onclick="showPage('chat')"><span class="sic">💬</span>Messages</div>
+        <div class="si" onclick="showPage('stories')"><span class="sic">📸</span>Stories</div>
+        <div class="si" onclick="showPage('notifications')"><span class="sic">🔔</span>Notifications</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('profile')"><span class="sic">👤</span>My Profile</div>
+        <div class="si" onclick="showPage('premium')"><span class="sic">👑</span>Premium</div>
+        <div class="si on"><span class="sic">⚙️</span>Settings</div>
+        <div class="sd"></div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am">
+      <div class="ah"><div><div class="at">Settings ⚙️</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+      <div class="slayout">
+        <div class="snav">
+          <div class="sni on">👤 Profile</div>
+          <div class="sni">🎯 Matching</div>
+          <div class="sni">🔒 Privacy</div>
+          <div class="sni">🔔 Notifications</div>
+          <div class="sni">🔑 Account</div>
+          <div class="sni">🎨 Appearance</div>
+          <div class="sni" onclick="showPage('terms')">📄 Terms</div>
+          <div class="sni" onclick="showPage('privacy-pg')">🔐 Privacy Policy</div>
+        </div>
+        <div>
+          <div class="ssec">
+            <div class="sst">Profile Settings</div>
+            <div class="ssd">Manage how others see you on ZLove</div>
+            <div class="fg"><label class="fl">Display Name</label><input type="text" class="fi" value="Sofia Adeyemi"/></div>
+            <div class="fg"><label class="fl">Bio</label><textarea class="fi" rows="3" style="resize:none">Passionate product designer with a love for great coffee and spontaneous weekend trips.</textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+              <div class="fg"><label class="fl">Age</label><input type="number" class="fi" value="26"/></div>
+              <div class="fg"><label class="fl">Location</label><input type="text" class="fi" value="Lagos, Nigeria"/></div>
+            </div>
+            <button class="btn btn-p" onclick="toast('Profile saved!','success')">Save Changes</button>
+          </div>
+          <div class="ssec">
+            <div class="sst">Discovery Preferences</div>
+            <div class="ssd">Control who you see and who sees you</div>
+            <div class="sr"><div><div class="srl">Show me</div><div class="srd">Who to show in your feed</div></div><select class="fs" style="width:120px"><option>Men</option><option>Women</option><option>Everyone</option></select></div>
+            <div class="sr"><div><div class="srl">Max Distance</div><div class="srd">Show matches within range</div></div><div style="display:flex;align-items:center;gap:6px"><span id="dv" style="font-weight:700;color:var(--rose);min-width:44px;font-size:12px">50 km</span><input type="range" min="5" max="500" value="50" oninput="document.getElementById('dv').textContent=this.value+' km'" style="width:90px"/></div></div>
+            <div class="sr"><div><div class="srl">Age Range</div><div class="srd">22 — 38 years old</div></div><div style="display:flex;gap:6px"><input type="number" class="fi" value="22" style="width:58px;padding:7px 9px"/><span style="align-self:center;color:var(--tm)">—</span><input type="number" class="fi" value="38" style="width:58px;padding:7px 9px"/></div></div>
+            <div class="sr"><div><div class="srl">Verified users only</div></div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+          </div>
+          <div class="ssec">
+            <div class="sst">Notifications</div>
+            <div class="ssd">Choose what you want to hear about</div>
+            <div class="sr"><div><div class="srl">New matches</div></div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+            <div class="sr"><div><div class="srl">New messages</div></div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+            <div class="sr"><div><div class="srl">Profile likes</div></div><label class="tgl"><input type="checkbox" checked><span class="ts"></span></label></div>
+            <div class="sr"><div><div class="srl">Promotional emails</div></div><label class="tgl"><input type="checkbox"><span class="ts"></span></label></div>
+          </div>
+          <div class="ssec" style="border-color:rgba(239,68,68,.2)">
+            <div class="sst" style="color:#ef4444">Danger Zone</div>
+            <div class="ssd">Permanent and irreversible actions</div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3)" onclick="toast('Account paused','warning')">Pause Account</button>
+              <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3)" onclick="toast('Deletion request submitted','error')">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ ADMIN ══════ -->
+<div class="page" id="page-admin">
+  <div class="al">
+    <div class="sb" id="sb9">
+      <div class="sbl" onclick="showPage('landing')"><span>💜</span><span>Admin</span></div>
+      <div class="sbu"><div class="avsm" style="background:linear-gradient(135deg,#ef4444,#f59e0b)">👨‍💼</div><div><div style="font-weight:600;font-size:12px">Admin User</div><div style="font-size:10px;color:#ef4444;font-weight:600">Super Admin</div></div></div>
+      <div class="sbn">
+        <div class="si on" id="at0" onclick="aTab('overview')"><span class="sic">📊</span>Overview</div>
+        <div class="si" id="at1" onclick="aTab('users')"><span class="sic">👥</span>Users<span class="snb" style="background:#ef4444">5</span></div>
+        <div class="si" id="at2" onclick="aTab('reports')"><span class="sic">🚩</span>Reports<span class="snb" style="background:#ef4444">3</span></div>
+        <div class="si" id="at3" onclick="aTab('verify')"><span class="sic">✅</span>Verification</div>
+        <div class="si" id="at4" onclick="aTab('subs')"><span class="sic">👑</span>Subscriptions</div>
+        <div class="si" id="at5" onclick="aTab('analytics')"><span class="sic">📈</span>Analytics</div>
+        <div class="si" id="at6" onclick="aTab('broadcast')"><span class="sic">📢</span>Broadcast</div>
+        <div class="sd"></div>
+        <div class="si" onclick="showPage('landing')"><span class="sic">👁️</span>View Site</div>
+        <div class="si" onclick="doLogout()"><span class="sic">🚪</span>Sign Out</div>
+      </div>
+    </div>
+    <div class="am" id="acontent"></div>
+  </div>
+</div>
+
+<!-- ══════ TERMS ══════ -->
+<div class="page" id="page-terms">
+  <nav class="nav sc"><div class="wrap"><div class="ni"><div class="logo" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div><button class="btn btn-g btn-sm" onclick="showPage('landing')">← Back</button></div></div></nav>
+  <div class="spg"><div class="wrap">
+    <div class="sphero"><span class="slbl">Legal</span><h1 style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;margin-top:14px">Terms of Service</h1><p style="color:var(--tm);margin-top:7px">Last updated: January 1, 2025</p></div>
+    <div class="scon">
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing and using ZLove, you agree to be bound by these Terms. ZLove is operated by ZLove Technologies Limited.</p>
+      <h2>2. Eligibility</h2>
+      <p>You must be at least 18 years of age to use ZLove. By creating an account, you represent you have the legal capacity to enter into this agreement.</p>
+      <h2>3. User Accounts</h2>
+      <p>You are responsible for maintaining confidentiality of your credentials and for all activities under your account.</p>
+      <ul><li>Provide accurate, complete, and current information</li><li>Maintain the security of your password</li><li>Notify us immediately of unauthorized access</li></ul>
+      <h2>4. Prohibited Conduct</h2>
+      <ul><li>Creating false, fake, or misleading profiles</li><li>Harassing, threatening, or intimidating other users</li><li>Soliciting money or financial information</li><li>Posting spam or commercial content</li><li>Impersonating any person or entity</li></ul>
+      <h2>5. Premium Subscriptions</h2>
+      <p>Subscriptions auto-renew unless cancelled 24 hours before renewal. No refunds for partial periods. Cancel anytime in account settings.</p>
+      <h2>6. Limitation of Liability</h2>
+      <p>ZLove is not responsible for user conduct. We are not liable for damages arising from Platform use.</p>
+      <h2>7. Contact</h2>
+      <p>Questions: <span class="al2" onclick="showPage('contact')">Contact Us</span> or legal@zlove.africa</p>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════ PRIVACY ══════ -->
+<div class="page" id="page-privacy-pg">
+  <nav class="nav sc"><div class="wrap"><div class="ni"><div class="logo" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div><button class="btn btn-g btn-sm" onclick="showPage('landing')">← Back</button></div></div></nav>
+  <div class="spg"><div class="wrap">
+    <div class="sphero"><span class="slbl">Legal</span><h1 style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;margin-top:14px">Privacy Policy</h1><p style="color:var(--tm);margin-top:7px">Last updated: January 1, 2025</p></div>
+    <div class="scon">
+      <h2>1. Information We Collect</h2>
+      <p>We collect information you provide when creating an account — including name, email, phone, date of birth, gender, location, photos, and other profile information.</p>
+      <h2>2. How We Use Your Information</h2>
+      <ul><li>To provide, maintain, and improve our services</li><li>To match you with compatible users</li><li>To send notifications and updates</li><li>To process payments and subscriptions</li><li>To detect and prevent fraud and abuse</li></ul>
+      <h2>3. Information Sharing</h2>
+      <p>We do not sell your personal information. We may share with service providers under strict confidentiality agreements.</p>
+      <h2>4. Location Data</h2>
+      <p>We collect approximate location to show nearby matches. We never share your precise location — only approximate distance.</p>
+      <h2>5. Your Rights</h2>
+      <ul><li>Access the personal data we hold about you</li><li>Request correction of inaccurate data</li><li>Request deletion of your account and data</li><li>Export your data in portable format</li><li>Opt out of marketing communications</li></ul>
+      <h2>6. Contact</h2>
+      <p>Data Protection Officer: privacy@zlove.africa</p>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════ CONTACT ══════ -->
+<div class="page" id="page-contact">
+  <nav class="nav sc"><div class="wrap"><div class="ni"><div class="logo" onclick="showPage('landing')"><div class="li">💜</div><span>ZLove</span></div><div style="display:flex;align-items:center;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-g btn-sm" onclick="showPage('landing')">← Back</button></div></div></div></nav>
+  <div class="spg"><div class="wrap">
+    <div class="sphero"><span class="slbl">Get in Touch</span><h1 style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;margin-top:14px">Contact Us</h1><p style="color:var(--tm);margin-top:7px">We're here to help you find love and answer questions.</p></div>
+    <div class="cgrid">
+      <div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Send a Message</h3>
+          <p style="font-size:11px;color:var(--tm);margin-bottom:16px">We typically respond within 24 hours.</p>
+          <div class="fg"><label class="fl">Full Name</label><input type="text" class="fi" placeholder="Your name"/></div>
+          <div class="fg"><label class="fl">Email</label><input type="email" class="fi" placeholder="you@example.com"/></div>
+          <div class="fg"><label class="fl">Topic</label><select class="fs"><option>General Inquiry</option><option>Account Issue</option><option>Report a User</option><option>Billing</option><option>Partnership</option></select></div>
+          <div class="fg"><label class="fl">Message</label><textarea class="fi" rows="4" placeholder="How can we help..." style="resize:none"></textarea></div>
+          <button class="btn btn-p w-full" onclick="toast('Message sent! We\\'ll respond within 24 hours.','success')">Send Message</button>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:13px">Reach Us Directly</h3>
+          <div class="cmet"><div class="cic">📧</div><div><div style="font-weight:600;font-size:12px">Email</div><div style="font-size:11px;color:var(--tm)">support@zlove.africa</div></div></div>
+          <div class="cmet"><div class="cic">📞</div><div><div style="font-weight:600;font-size:12px">Phone</div><div style="font-size:11px;color:var(--tm)">+234 800 ZLOVE (95683)</div></div></div>
+          <div class="cmet"><div class="cic">📍</div><div><div style="font-weight:600;font-size:12px">Office</div><div style="font-size:11px;color:var(--tm)">12 Innovation Hub, Victoria Island, Lagos</div></div></div>
+          <div class="cmet"><div class="cic">🕐</div><div><div style="font-weight:600;font-size:12px">Support Hours</div><div style="font-size:11px;color:var(--tm)">Mon–Fri, 9am–6pm WAT</div></div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px">
+          <h3 style="font-size:13px;font-weight:700;margin-bottom:11px">Quick Help</h3>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="chip" style="border-radius:8px" onclick="toast('Account Help opened!','info')">🔐 Account & Login Help</div>
+            <div class="chip" style="border-radius:8px" onclick="toast('Billing Help opened!','info')">💳 Billing & Subscriptions</div>
+            <div class="chip" style="border-radius:8px" onclick="toast('Safety Center opened!','info')">🛡️ Safety & Privacy</div>
+            <div class="chip" style="border-radius:8px" onclick="showPage('terms')">📄 Terms of Service</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<script>
+// ── DATA ──
+const profiles=[
+  {e:'👩‍🦱',n:'Amira Okafor, 24',m:'📍 Lagos, 2.3km • Doctor',b:'Passionate about medicine and exploring the world. Love hiking, jazz, and discovering hidden restaurants.',t:['🎵 Jazz','🥾 Hiking','🍕 Foodie','✈️ Travel'],c:94},
+  {e:'👨‍🦰',n:'Daniel Eze, 29',m:'📍 Lagos, 4.1km • Engineer',b:'Building things by day, exploring the city by night. Love deep conversations and weekend adventures.',t:['💻 Tech','🍕 Foodie','🎬 Cinema','🏋️ Fitness'],c:87},
+  {e:'👩',n:'Fatima Bello, 27',m:'📍 Lekki, 1.8km • Lawyer',b:'Law grad who unwinds with yoga and great novels. Looking for someone who can match my energy.',t:['📚 Books','🧘 Yoga','☕ Coffee','🎭 Theatre'],c:91},
+  {e:'🧑‍🦱',n:'Emeka Nwosu, 31',m:'📍 VI, 3.5km • Architect',b:'Creative soul who designs spaces and collects vinyl records. Passionate about art and authentic living.',t:['🏗️ Design','🎵 Music','🎨 Art','🌍 Travel'],c:78},
+  {e:'👩‍🦰',n:'Chisom Obi, 25',m:'📍 Ikeja, 6.2km • Nurse',b:'Nurse by profession, adventurer by heart. I believe in kindness and making every moment count.',t:['❤️ Caring','🌿 Nature','🐾 Animals','🎭 Theatre'],c:89},
+];
+const convos=[
+  {id:1,n:'James Obi',e:'👨',on:true,t:'2m',l:'That sounds amazing! What time?',u:2},
+  {id:2,n:'Kemi Adeyemi',e:'👩',on:true,t:'18m',l:"Haha yes! I'd love that 😊",u:0},
+  {id:3,n:'David Eze',e:'🧑',on:false,t:'1h',l:'See you Saturday then!',u:1},
+  {id:4,n:'Amira Okafor',e:'👩‍🦱',on:true,t:'3h',l:"What's your favorite restaurant in VI?",u:0},
+];
+let msgs=[
+  {t:'r',tx:"Hey Sofia! I saw we matched 😊 How's your day going?",tm:'10:32 AM',rd:true},
+  {t:'s',tx:"Hi James! It's been great, just finished a big design project.",tm:'10:35 AM',rd:true},
+  {t:'r',tx:"That's awesome! What kind of projects do you work on?",tm:'10:36 AM',rd:true},
+  {t:'s',tx:"Mostly product and app design. Working on a fintech app — super exciting!",tm:'10:38 AM',rd:true},
+  {t:'r',tx:"Wow! I'm in tech too — software engineering. Maybe we could chat over coffee?",tm:'10:40 AM',rd:true},
+  {t:'s',tx:"I'd really like that! ☕ I know a great spot in Victoria Island.",tm:'10:42 AM',rd:true},
+  {t:'r',tx:"That sounds amazing! What time?",tm:'10:43 AM',rd:false},
+];
+const notifs=[
+  {i:'💜',bg:'rgba(232,66,125,.1)',t:'New Match!',d:'You matched with James Obi',tm:'2 min',u:true},
+  {i:'⭐',bg:'rgba(59,130,246,.1)',t:'Super Like',d:'Amira Okafor super liked your profile!',tm:'18 min',u:true},
+  {i:'💬',bg:'rgba(34,197,94,.1)',t:'New Message',d:'Kemi Adeyemi: "Would love to catch up!"',tm:'1 hr',u:true},
+  {i:'👁️',bg:'rgba(124,58,237,.1)',t:'Profile Views',d:'8 people viewed your profile today',tm:'3 hr',u:true},
+  {i:'💜',bg:'rgba(232,66,125,.1)',t:'New Match!',d:'You matched with Felix Oladele',tm:'5 hr',u:false},
+  {i:'🚀',bg:'rgba(245,158,11,.1)',t:'Boost Reminder',d:"You haven't boosted your profile this week!",tm:'1d',u:false},
+  {i:'✅',bg:'rgba(34,197,94,.1)',t:'Verified!',d:'Your photo has been verified',tm:'2d',u:false},
+];
+const matches=[
+  {e:'👨',n:'James Obi',age:28,loc:'Lagos',c:94,nw:true},{e:'👩',n:'Kemi Adeyemi',age:25,loc:'Abuja',c:89,nw:true},
+  {e:'🧑',n:'David Eze',age:30,loc:'PH',c:84,nw:false},{e:'👩‍🦱',n:'Amira Okafor',age:24,loc:'Lagos',c:91,nw:true},
+  {e:'👨‍🦲',n:'Felix Oladele',age:32,loc:'Lagos',c:76,nw:false},{e:'👩‍🦰',n:'Lola Bakare',age:27,loc:'Ibadan',c:82,nw:false},
+  {e:'🧑‍🦱',n:'Emeka Nwosu',age:31,loc:'Lagos',c:78,nw:false},{e:'👩',n:'Fatima Bello',age:27,loc:'Kano',c:86,nw:true},
+  {e:'👨',n:'Chidi Okonkwo',age:29,loc:'Enugu',c:73,nw:false},{e:'👩',n:'Ngozi Eze',age:26,loc:'Lagos',c:88,nw:false},
+  {e:'🧑',n:'Ibrahim Musa',age:33,loc:'Abuja',c:71,nw:false},{e:'👩‍🦱',n:'Chisom Obi',age:25,loc:'Lagos',c:90,nw:true},
+];
+const stories2=[
+  {u:'James Obi',e:'👨',s:'🌅',cap:'Beautiful morning in Lagos! Ready to take on the day ✨',tm:'2 hours ago',lk:24,vw:89},
+  {u:'Kemi Adeyemi',e:'👩',s:'☕',cap:"Coffee date with myself. Sometimes that's all you need 😊",tm:'4 hours ago',lk:41,vw:156},
+  {u:'Amira Okafor',e:'👩‍🦱',s:'🏥',cap:'Long shift but so rewarding. Every life matters 💙',tm:'6 hours ago',lk:67,vw:203},
+  {u:'Felix Oladele',e:'👨‍🦲',s:'🎸',cap:'Friday night jam session. Music is therapy.',tm:'1 day ago',lk:33,vw:121},
+];
+const allInterests=['✈️ Travel','📚 Reading','🎵 Music','☕ Coffee','🏋️ Fitness','🎬 Cinema','🍕 Foodie','🎨 Art','🌿 Nature','🐾 Pets','🎮 Gaming','🧘 Yoga','🥾 Hiking','📸 Photography','🍳 Cooking','💃 Dancing','🏄 Surfing','🎸 Guitar','🏊 Swimming','🚴 Cycling'];
+let theme='dark', swIdx=0, selI=[];
+
+// ── ROUTING ──
+function showPage(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+pg);
+  if(el){el.classList.add('active');window.scrollTo(0,0);}
+  const appPgs=['dashboard','discover','matches','chat','profile','stories','notifications','premium','settings'];
+  document.getElementById('msb').style.display=(window.innerWidth<=1024&&appPgs.includes(pg))?'flex':'none';
+  if(pg==='discover')initDisc();
+  if(pg==='matches')initMatches();
+  if(pg==='chat')initChat();
+  if(pg==='notifications')initNotifs();
+  if(pg==='admin')aTab('overview');
+  if(pg==='register')initInterests();
+  if(pg==='stories')initStories();
+}
+function s2(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'});}
+function toggleSB(){document.querySelectorAll('[id^="sb"]').forEach(s=>s.classList.toggle('open'));}
+window.addEventListener('scroll',()=>{const n=document.getElementById('ln');if(n)n.classList.toggle('sc',scrollY>60);});
+
+// ── THEME ──
+function toggleTheme(){theme=theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',theme);document.querySelectorAll('[id^="tb"],.tb').forEach(b=>b.textContent=theme==='dark'?'🌙':'☀️');}
+
+// ── TOAST ──
+function toast(msg,type='info'){
+  const ic={success:'✅',error:'❌',info:'💜',warning:'⚠️'};
+  const tc=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.innerHTML=`<span>${ic[type]}</span><span>${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(()=>t.remove(),3600);
+}
+
+// ── MODALS ──
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── AUTH ──
+function doLogin(){
+  const e=document.getElementById('le').value;
+  const p=document.getElementById('lp').value;
+  if(!e){toast('Please enter your email','error');return;}
+  if(!p){toast('Please enter your password','error');return;}
+  toast('Signing you in...','info');
+  setTimeout(()=>{toast('Welcome back to ZLove! 💜','success');showPage('dashboard');},1100);
+}
+function socialLogin(pv){toast('Connecting to '+pv+'...','info');setTimeout(()=>{toast(pv+' sign-in successful! Welcome 💜','success');showPage('dashboard');},1300);}
+function doLogout(){toast('Signed out. See you soon! 💜','success');setTimeout(()=>showPage('landing'),700);}
+function sendReset(){const e=document.getElementById('fe').value;if(!e){toast('Please enter your email','error');return;}toast('Reset link sent! Check your inbox.','success');setTimeout(()=>showPage('login'),1800);}
+function tpwd(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
+
+// ── REGISTER ──
+function rNext(s){
+  for(let i=1;i<=4;i++){
+    const el=document.getElementById('rs'+i);if(el)el.style.display=i===s?'block':'none';
+    const d=document.getElementById('d'+i);if(d){d.classList.remove('on','dn');if(i<s)d.classList.add('dn');if(i===s)d.classList.add('on');}
+  }
+}
+function initInterests(){
+  const c=document.getElementById('ipicker');if(!c||c.children.length)return;
+  allInterests.forEach(it=>{
+    const b=document.createElement('button');b.className='chip'+(selI.includes(it)?' on':'');b.textContent=it;
+    b.onclick=()=>{selI.includes(it)?selI=selI.filter(x=>x!==it):selI.push(it);b.classList.toggle('on');};
+    c.appendChild(b);
+  });
+}
+function otpN(inp,i){if(inp.value.length===1&&i<5)document.getElementById('o'+(i+1)).focus();}
+function verOTP(){toast('Verifying...','info');setTimeout(()=>{toast('Account verified! Welcome to ZLove 💜','success');showPage('dashboard');},1300);}
+
+// ── DISCOVER ──
+function initDisc(){loadSwipe();renderNearby();renderTopPicks();}
+function loadSwipe(){
+  if(swIdx>=profiles.length){
+    const c=document.getElementById('scard');
+    if(c)c.innerHTML=`<div class="sprof" style="padding:52px 32px;text-align:center"><div style="font-size:52px;margin-bottom:12px">💜</div><h3 style="font-size:19px;font-weight:700;margin-bottom:6px">You're all caught up!</h3><p style="color:var(--tm);margin-bottom:18px">Come back later or expand your filters.</p><button class="btn btn-p" onclick="swIdx=0;loadSwipe()">Start Over</button></div>`;
+    return;
+  }
+  const p=profiles[swIdx];
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  s('semi2',p.e);s('sn',p.n);s('sm',p.m);s('sb2',p.b);
+  const cs=document.getElementById('cscore');if(cs)cs.textContent=p.c+'% Compatibility';
+  const t=document.getElementById('stags');if(t)t.innerHTML=p.t.map(x=>`<div class="chip on">${x}</div>`).join('');
+}
+function renderNearby(){
+  const el=document.getElementById('nlist');if(!el)return;
+  el.innerHTML=[{e:'👩‍🦱',n:'Amira Okafor',d:'2.3km'},{e:'👨',n:'James Obi',d:'4.1km'},{e:'👩',n:'Fatima Bello',d:'5.8km'}]
+    .map(u=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer"><div class="avxs">${u.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${u.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${u.d} away</div></div><button class="btn btn-p btn-sm" style="padding:4px 9px;font-size:10px">Like</button></div>`).join('');
+}
+function renderTopPicks(){
+  const el=document.getElementById('tpicks');if(!el)return;
+  el.innerHTML=profiles.slice(0,4).map(p=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)"><div class="avxs">${p.e}</div><div style="flex:1"><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--rose);font-weight:600">🎯 ${p.c}%</div></div></div>`).join('');
+}
+function swipe(action){
+  const card=document.getElementById('scard');if(!card)return;
+  const nm=profiles[swIdx]?.n.split(',')[0];
+  if(action==='like'){card.style.animation='swR .4s ease forwards';toast('You liked '+nm+'! 💚','success');if(Math.random()>.5)setTimeout(()=>{document.getElementById('mname').textContent=nm;openM('mm');},600);}
+  else if(action==='pass'){card.style.animation='swL .4s ease forwards';toast('Passed ❌','info');}
+  else if(action==='super'){card.style.animation='swR .4s ease forwards';toast('Super Like sent to '+nm+'! ⭐','success');}
+  setTimeout(()=>{swIdx++;card.style.animation='';loadSwipe();},450);
+}
+
+// ── MATCHES ──
+function initMatches(){renderMatches(matches);}
+function renderMatches(data){
+  const el=document.getElementById('mgrid');if(!el)return;
+  el.innerHTML=data.map(m=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .3s" onclick="showPage('chat')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--borderH)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'">
+    <div style="height:148px;background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));display:flex;align-items:center;justify-content:center;font-size:48px;position:relative">
+      ${m.e}${m.nw?'<span class="badge br" style="position:absolute;top:6px;left:6px">New</span>':''}
+    </div>
+    <div style="padding:10px"><div style="font-weight:700;font-size:12px">${m.n}</div><div style="font-size:10px;color:var(--tm)">📍 ${m.loc} • 🎯 ${m.c}%</div>
+    <button class="btn btn-p btn-sm w-full mt2" style="font-size:10px;padding:6px" onclick="event.stopPropagation();showPage('chat')">💬 Chat</button></div>
+  </div>`).join('');
+}
+function matchTab(btn,tab){
+  document.querySelectorAll('#page-matches .tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  if(tab==='l'){document.getElementById('mgrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:52px 18px"><div style="font-size:42px;margin-bottom:12px">👑</div><h3 style="font-size:18px;font-weight:700;margin-bottom:6px">Premium Feature</h3><p style="color:var(--tm);margin-bottom:18px">Upgrade to see who liked your profile</p><button class="btn btn-gold" onclick="showPage('premium')">Upgrade to Gold</button></div>`;}
+  else if(tab==='y'){renderMatches([...matches].sort(()=>Math.random()-.5));}
+  else{renderMatches(matches);}
+}
+
+// ── CHAT ──
+function initChat(){renderConvos();renderMsgs();setTimeout(()=>showT(),1600);}
+function renderConvos(){
+  const el=document.getElementById('clist');if(!el)return;
+  el.innerHTML=convos.map((c,i)=>`<div class="cli ${i===0?'on':''}" onclick="pickConvo(${c.id})">
+    <div style="position:relative"><div class="avsm">${c.e}</div><div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;background:${c.on?'#22c55e':'var(--tm)'};border-radius:50%;border:2px solid var(--card)"></div></div>
+    <div class="clin"><div class="cln">${c.n}<span class="clt">${c.t}</span></div><div class="clm">${c.l}</div></div>
+    ${c.u?`<div class="clb">${c.u}</div>`:''}
+  </div>`).join('');
+}
+function renderMsgs(){
+  const el=document.getElementById('cmsgs');if(!el)return;
+  el.innerHTML=msgs.map(m=>`<div class="cmsg ${m.t==='s'?'s':'r'}"><div class="cb">${m.tx}</div><div class="cm">${m.tm}${m.t==='s'?(m.rd?' ✓✓':' ✓'):''}</div></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function sendMsg(){
+  const inp=document.getElementById('cinp');const tx=inp.value.trim();if(!tx)return;
+  msgs.push({t:'s',tx,tm:new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}),rd:false});
+  inp.value='';renderMsgs();
+  setTimeout(()=>{showT();setTimeout(()=>{hideT();autoReply();},1700);},400);
+}
+function chatK(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function showT(){const e=document.getElementById('tarea');if(e)e.style.display='block';}
+function hideT(){const e=document.getElementById('tarea');if(e)e.style.display='none';}
+function autoReply(){
+  const rs=["That sounds wonderful! I'd love to hear more 😊","Haha yes! You always know what to say 💜","I was just thinking the same thing!","Let's plan something this week ✨","You're really interesting to talk to 😊"];
+  msgs.push({t:'r',tx:rs[Math.floor(Math.random()*rs.length)],tm:new Date().toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}),rd:true});
+  renderMsgs();
+}
+function addE(){const emojis=['😊','😍','💜','😂','🥰','🎉','✨','💯','🔥'];const i=document.getElementById('cinp');if(i){i.value+=emojis[Math.floor(Math.random()*emojis.length)];i.focus();}}
+function pickConvo(id){document.querySelectorAll('.cli').forEach((el,i)=>el.classList.toggle('on',convos[i]?.id===id));toast('Opening conversation...','info');}
+
+// ── NOTIFICATIONS ──
+function initNotifs(){
+  const el=document.getElementById('nlist2');if(!el)return;
+  el.innerHTML=notifs.map(n=>`<div class="ni2 ${n.u?'u':''}">
+    <div class="nic" style="background:${n.bg}">${n.i}</div>
+    <div style="flex:1"><div style="font-size:12px;font-weight:600">${n.t}</div><div style="font-size:11px;color:var(--tm);margin-top:1px">${n.d}</div></div>
+    <div style="font-size:10px;color:var(--tm);flex-shrink:0">${n.tm}</div>
+  </div>`).join('');
+}
+
+// ── STORIES ──
+function openStory(nm){
+  const em={James:'👨',Kemi:'👩',Amira:'👩‍🦱',Felix:'👨‍🦲',Lola:'👩‍🦰',David:'🧑',you:'➕'};
+  const fallback=['🌅','☕','🎵','🌿','🍕','✈️','📚','🎨'];
+  document.getElementById('semi').textContent=em[nm]||fallback[Math.floor(Math.random()*fallback.length)];
+  const pf=document.getElementById('spf');if(pf){pf.style.animation='none';setTimeout(()=>pf.style.animation='sfill 5s linear forwards',40);}
+  document.getElementById('sv').classList.add('open');
+  setTimeout(closeStory,5300);
+}
+function closeStory(){document.getElementById('sv').classList.remove('open');}
+function initStories(){
+  const el=document.getElementById('sfeed');if(!el||el.children.length)return;
+  el.innerHTML=stories2.map(s=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div class="sring" style="width:48px;height:48px;cursor:pointer;flex-shrink:0" onclick="openStory('${s.u}')"><div class="sinn" style="font-size:19px">${s.e}</div></div>
+      <div><div style="font-weight:600;font-size:12px">${s.u}</div><div style="font-size:10px;color:var(--tm)">${s.tm}</div></div>
+      <button class="btn btn-o btn-sm" style="margin-left:auto" onclick="showPage('chat')">💬</button>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(232,66,125,.15),rgba(124,58,237,.15));border-radius:12px;padding:32px;text-align:center;font-size:48px;cursor:pointer;margin-bottom:11px" onclick="openStory('${s.u}')">${s.s}</div>
+    <p style="font-size:12px;color:var(--ts);margin-bottom:11px">${s.cap}</p>
+    <div style="display:flex;align-items:center;gap:13px">
+      <button class="btn btn-g btn-sm" onclick="toast('Liked! 💜','success')">💜 ${s.lk}</button>
+      <span style="font-size:11px;color:var(--tm)">👁️ ${s.vw} views</span>
+    </div>
+  </div>`).join('');
+}
+
+// ── PREMIUM ──
+function selPlan(el,plan,price){
+  document.querySelectorAll('.pplan').forEach(p=>p.classList.remove('s'));el.classList.add('s');
+  const btn=document.getElementById('pbtn');
+  if(btn)btn.textContent='🚀 Subscribe — '+price+(plan==='annual'?'/year':'/month');
+}
+function selPay(el){document.querySelectorAll('.pmm').forEach(p=>p.classList.remove('s'));el.classList.add('s');}
+function doPay(){
+  const gw=document.querySelector('.pmm.s div:nth-child(2)')?.textContent||'Paystack';
+  toast('Connecting to '+gw+'...','info');setTimeout(()=>toast('Payment successful! 🎉 Welcome to ZLove Premium!','success'),1700);
+}
+
+// ── ADMIN ──
+const atabs=['at0','at1','at2','at3','at4','at5','at6'];
+function aTab(tab){
+  const map={overview:'at0',users:'at1',reports:'at2',verify:'at3',subs:'at4',analytics:'at5',broadcast:'at6'};
+  atabs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const act=document.getElementById(map[tab]);if(act)act.classList.add('on');
+  const m=document.getElementById('acontent');if(!m)return;
+  if(tab==='overview'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Admin Dashboard 📊</div><div class="as">Platform Overview</div></div><div style="display:flex;gap:9px"><button class="tb" onclick="toggleTheme()">🌙</button><button class="btn btn-p btn-sm" onclick="aTab('broadcast')">📢 Broadcast</button></div></div>
+    <div class="agrid">
+      <div class="astat"><div class="asic" style="background:rgba(232,66,125,.1)">👥</div><div><div class="asv">2.4M</div><div class="asl">Total Users</div><div class="asc cup">↑ 12.4% this month</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">✅</div><div><div class="asv">1.85M</div><div class="asl">Active Users</div><div class="asc cup">↑ 8.2%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">👑</div><div><div class="asv">384K</div><div class="asl">Premium Members</div><div class="asc cup">↑ 24.1%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💰</div><div><div class="asv">₦186M</div><div class="asl">Monthly Revenue</div><div class="asc cup">↑ 31.7%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(59,130,246,.1)">💜</div><div><div class="asv">180K</div><div class="asl">Total Matches</div><div class="asc cup">↑ 18.9%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(239,68,68,.1)">🚩</div><div><div class="asv">47</div><div class="asl">Open Reports</div><div class="asc cdn">3 new today</div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Signups — Last 7 Days</h3>
+        <div class="bchart">${[{d:'Mon',v:892},{d:'Tue',v:1240},{d:'Wed',v:1087},{d:'Thu',v:1456},{d:'Fri',v:1891},{d:'Sat',v:2234},{d:'Sun',v:1678}].map(x=>`<div class="br2"><div class="bl">${x.d}</div><div class="bt"><div class="bf" style="width:${(x.v/2234*100).toFixed(0)}%"></div></div><div class="bv">${x.v}</div></div>`).join('')}</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px"><h3 style="font-size:13px;font-weight:700;margin-bottom:16px">Revenue Split</h3>
+        <div class="bchart">
+          <div class="br2"><div class="bl">Gold</div><div class="bt"><div class="bf" style="width:45%;background:linear-gradient(135deg,var(--gold),#f59e0b)"></div></div><div class="bv">45%</div></div>
+          <div class="br2"><div class="bl">Platinum</div><div class="bt"><div class="bf" style="width:38%"></div></div><div class="bv">38%</div></div>
+          <div class="br2"><div class="bl">Annual</div><div class="bt"><div class="bf" style="width:17%;background:linear-gradient(135deg,var(--violet),var(--vl))"></div></div><div class="bv">17%</div></div>
+        </div>
+        <div style="margin-top:16px"><div style="font-size:11px;color:var(--tm);margin-bottom:5px">Gateway Split</div><div style="height:7px;background:var(--elev);border-radius:4px;overflow:hidden"><div style="height:100%;width:62%;background:var(--gr);border-radius:4px"></div></div><div style="font-size:10px;color:var(--tm);margin-top:3px">62% Paystack — 38% Flutterwave</div></div>
+      </div>
+    </div>`;
+  } else if(tab==='users'){
+    const users=[
+      {e:'👩‍🦱',n:'Amira Okafor',em:'amira@email.com',j:'Nov 12',pl:'Gold',st:'active',v:true},
+      {e:'👨',n:'James Obi',em:'james@email.com',j:'Nov 8',pl:'Free',st:'active',v:true},
+      {e:'👩',n:'Kemi Adeyemi',em:'kemi@email.com',j:'Oct 30',pl:'Platinum',st:'active',v:true},
+      {e:'🧑',n:'Suspicious User',em:'spam@fake.com',j:'Jan 5',pl:'Free',st:'flagged',v:false},
+    ];
+    m.innerHTML=`<div class="ah"><div><div class="at">Users 👥</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Plan</th><th>Status</th><th class="hm">Joined</th><th>Actions</th></tr></thead><tbody>
+      ${users.map(u=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avxs">${u.e}</div><div><div style="font-weight:600">${u.n}${u.v?' ✅':''}</div><div style="font-size:10px;color:var(--tm)">${u.em}</div></div></div></td>
+      <td><span class="badge ${u.pl==='Platinum'?'bv':u.pl==='Gold'?'bg':'br'}">${u.pl}</span></td>
+      <td><span class="badge ${u.st==='active'?'bn':u.st==='flagged'?'bg':'bd'}">${u.st}</span></td>
+      <td class="hm" style="color:var(--tm)">${u.j}</td>
+      <td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-o" style="padding:4px 9px;font-size:10px" onclick="toast('User suspended','warning')">Suspend</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:4px 9px;font-size:10px;border-radius:50px" onclick="toast('User deleted','error')">Delete</button></div></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } else if(tab==='reports'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Reports 🚩</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>Reported</th><th>Reason</th><th>Reporter</th><th>Action</th></tr></thead><tbody>
+      <tr><td><div style="font-weight:600">Fake Account</div></td><td><span class="badge bd">Fake Profile</span></td><td style="color:var(--tm)">Amira Okafor</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-p" style="font-size:10px;padding:4px 9px" onclick="toast('Suspended','success')">Suspend</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
+      <tr><td><div style="font-weight:600">Spam User</div></td><td><span class="badge bg">Spam</span></td><td style="color:var(--tm)">James Obi</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-p" style="font-size:10px;padding:4px 9px" onclick="toast('Suspended','success')">Suspend</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
+      <tr><td><div style="font-weight:600">Harasser</div></td><td><span class="badge bd">Harassment</span></td><td style="color:var(--tm)">Kemi Adeyemi</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Banned','error')">Ban</button><button class="btn btn-sm btn-g" style="font-size:10px" onclick="toast('Dismissed','info')">Dismiss</button></div></td></tr>
+    </tbody></table></div>`;
+  } else if(tab==='broadcast'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Broadcast 📢</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;max-width:580px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Send Platform Notification</h3>
+      <p style="font-size:11px;color:var(--tm);margin-bottom:18px">Send a message to all users or a specific segment.</p>
+      <div class="fg"><label class="fl">Target Audience</label><select class="fs"><option>All Users (2.4M)</option><option>Premium Members Only</option><option>Free Users Only</option><option>Inactive Users (7+ days)</option><option>New Users (last 7 days)</option></select></div>
+      <div class="fg"><label class="fl">Notification Title</label><input type="text" class="fi" placeholder="e.g. Special Offer — 50% off Premium!"/></div>
+      <div class="fg"><label class="fl">Message</label><textarea class="fi" rows="4" placeholder="Your message to users..." style="resize:none"></textarea></div>
+      <div class="fg"><label class="fl">Send Via</label><div style="display:flex;gap:12px"><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked> Push</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox"> Email</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox"> In-app</label></div></div>
+      <button class="btn btn-p w-full" onclick="toast('Broadcast sent to 2.4M users! 📢','success')">Send Broadcast</button>
+    </div>`;
+  } else if(tab==='verify'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Verification ✅</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Type</th><th>Submitted</th><th>Action</th></tr></thead><tbody>
+      <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="avxs">👩‍🦱</div><div style="font-weight:600">Sofia Adeyemi</div></div></td><td><span class="badge bg">ID Verification</span></td><td style="color:var(--tm)">Jan 6</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Approved! ✅','success')">Approve</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Rejected','error')">Reject</button></div></td></tr>
+      <tr><td><div style="display:flex;align-items:center;gap:7px"><div class="avxs">👨</div><div style="font-weight:600">Chidi Okonkwo</div></div></td><td><span class="badge bv">Photo Verification</span></td><td style="color:var(--tm)">Jan 5</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Verified! ✅','success')">Approve</button><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:10px;padding:4px 9px;border-radius:50px" onclick="toast('Rejected','error')">Reject</button></div></td></tr>
+    </tbody></table></div>`;
+  } else if(tab==='analytics'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Analytics 📈</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Top Locations</h3><div class="bchart">${[{l:'Lagos',v:42},{l:'Abuja',v:18},{l:'PH',v:12},{l:'Ibadan',v:9},{l:'Kano',v:7}].map(x=>`<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v*2}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Age Distribution</h3><div class="bchart">${[{l:'18-24',v:22},{l:'25-30',v:38},{l:'31-35',v:24},{l:'36-40',v:11},{l:'40+',v:5}].map(x=>`<div class="br2"><div class="bl">${x.l}</div><div class="bt"><div class="bf" style="width:${x.v*2.5}%"></div></div><div class="bv">${x.v}%</div></div>`).join('')}</div></div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px"><h3 style="font-size:12px;font-weight:700;margin-bottom:14px">Platform Metrics</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px">${[{l:'Daily Active',v:'847K'},{l:'Avg Session',v:'18.4m'},{l:'Matches/Day',v:'24.6K'},{l:'Messages/Day',v:'189K'},{l:'Conversion',v:'15.9%'},{l:'Churn Rate',v:'3.2%'}].map(x=>`<div style="text-align:center;padding:12px;background:var(--elev);border-radius:11px"><div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--rose)">${x.v}</div><div style="font-size:10px;color:var(--tm);margin-top:2px">${x.l}</div></div>`).join('')}</div></div>`;
+  } else if(tab==='subs'){
+    m.innerHTML=`<div class="ah"><div><div class="at">Subscriptions 👑</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+    <div class="agrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+      <div class="astat"><div class="asic" style="background:rgba(245,158,11,.1)">⭐</div><div><div class="asv">186K</div><div class="asl">Gold Members</div><div class="asc cup">↑ 14%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(124,58,237,.1)">💎</div><div><div class="asv">148K</div><div class="asl">Platinum</div><div class="asc cup">↑ 22%</div></div></div>
+      <div class="astat"><div class="asic" style="background:rgba(34,197,94,.1)">📅</div><div><div class="asv">50K</div><div class="asl">Annual</div><div class="asc cup">↑ 41%</div></div></div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:auto"><table class="dtable"><thead><tr><th>User</th><th>Plan</th><th>Amount</th><th class="hm">Gateway</th><th>Date</th></tr></thead><tbody>
+      <tr><td>Amira Okafor</td><td><span class="badge bv">Platinum</span></td><td style="font-weight:600;color:var(--rose)">₦9,999</td><td class="hm" style="color:var(--tm)">Paystack</td><td style="color:var(--tm)">Jan 6</td></tr>
+      <tr><td>James Obi</td><td><span class="badge bg">Gold</span></td><td style="font-weight:600;color:var(--rose)">₦4,999</td><td class="hm" style="color:var(--tm)">Flutterwave</td><td style="color:var(--tm)">Jan 5</td></tr>
+      <tr><td>Ngozi Eze</td><td><span class="badge bv">Annual</span></td><td style="font-weight:600;color:var(--rose)">₦59,999</td><td class="hm" style="color:var(--tm)">Paystack</td><td style="color:var(--tm)">Jan 4</td></tr>
+    </tbody></table></div>`;
+  }
+}
+
+// ── OTHER ──
+function submitRep(){closeM('rm');toast('Report submitted. Our team will review within 24 hours.','success');}
+</script>
+</body>
+</html>
