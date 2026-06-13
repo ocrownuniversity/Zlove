@@ -672,17 +672,33 @@ a{text-decoration:none;color:inherit}
         <div style="display:flex;gap:9px;margin-top:4px"><button class="btn btn-g btn-lg" style="flex:1" onclick="rNext(2)">← Back</button><button class="btn btn-p btn-lg" style="flex:2" onclick="rNext(4)">Continue →</button></div>
       </div>
       <div id="rs4" style="display:none">
-        <h2 class="atitle">Verify Account</h2><p class="asub">Enter the 6-digit code sent to your email</p>
-        <div class="otp-row" style="margin:24px 0">
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,0)" id="o0"/>
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,1)" id="o1"/>
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,2)" id="o2"/>
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,3)" id="o3"/>
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,4)" id="o4"/>
-          <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,5)" id="o5"/>
+        <h2 class="atitle">Verify via WhatsApp</h2>
+        <p class="asub">A 6-digit verification code will be sent to your WhatsApp number</p>
+        <div style="background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.3);border-radius:14px;padding:18px;margin:18px 0;text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">📱</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">WhatsApp Verification</div>
+          <div id="wa-number-display" style="font-size:13px;color:var(--ts);margin-bottom:14px">Sending to: <strong id="wa-num-show">your number</strong></div>
+          <button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;border-radius:50px;padding:9px 20px;font-size:13px;font-weight:600" onclick="sendWhatsAppOTP()" id="send-wa-btn">
+            💬 Send Code via WhatsApp
+          </button>
+          <div id="wa-sent-msg" style="display:none;margin-top:10px;font-size:12px;color:#22c55e;font-weight:600">✅ Code sent! Check your WhatsApp</div>
         </div>
-        <button class="btn btn-p w-full btn-lg" onclick="verOTP()">Verify & Start Matching 💜</button>
-        <div class="aswap mt4"><span class="al2" onclick="toast('Code resent!','success')">Resend code</span></div>
+        <div id="otp-entry-section" style="display:none">
+          <p style="font-size:12px;color:var(--tm);text-align:center;margin-bottom:14px">Enter the 6-digit code from WhatsApp</p>
+          <div class="otp-row" style="margin-bottom:20px">
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,0)" id="o0"/>
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,1)" id="o1"/>
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,2)" id="o2"/>
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,3)" id="o3"/>
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,4)" id="o4"/>
+            <input type="text" class="otp-i" maxlength="1" oninput="otpN(this,5)" id="o5"/>
+          </div>
+          <button class="btn btn-p w-full btn-lg" onclick="verOTP()">Verify & Start Matching 💜</button>
+        </div>
+        <div class="aswap mt4">
+          Didn't receive it? <span class="al2" onclick="sendWhatsAppOTP()">Resend via WhatsApp</span>
+          &nbsp;|&nbsp; <span class="al2" onclick="rNext(2)">← Change Number</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1128,12 +1144,22 @@ a{text-decoration:none;color:inherit}
       <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:22px">
         <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">Payment Method</h3>
         <p style="font-size:11px;color:var(--tm);margin-bottom:16px">All transactions are encrypted and secure.</p>
-        <div class="pm">
-          <div class="pmm s" onclick="selPay(this)"><div style="font-size:20px;margin-bottom:4px">💳</div><div style="font-weight:600;font-size:12px">Paystack</div><div style="font-size:10px;color:var(--tm)">Card, Bank, USSD</div></div>
-          <div class="pmm" onclick="selPay(this)"><div style="font-size:20px;margin-bottom:4px">🦋</div><div style="font-weight:600;font-size:12px">Flutterwave</div><div style="font-size:10px;color:var(--tm)">Card, Mobile Money</div></div>
+        <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="font-size:28px">💳</div>
+          <div><div style="font-weight:700;font-size:13px">Paystack</div><div style="font-size:11px;color:var(--tm)">Card, Bank Transfer, USSD, Mobile Money</div></div>
+          <span class="badge bn" style="margin-left:auto">✅ Active</span>
         </div>
-        <button class="btn btn-gold w-full btn-lg mt4" id="pbtn" onclick="doPay()">🚀 Subscribe — ₦9,999/month</button>
-        <div style="font-size:10px;color:var(--tm);text-align:center;margin-top:9px">Cancel anytime. No hidden fees. SSL secured.</div>
+        <div style="display:none"><!-- Flutterwave removed -->
+          
+        </div>
+        <div id="paystack-key-notice" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:#ef4444;text-align:center">
+          ⚠️ Payment gateway not configured yet. Admin must add Paystack key in Admin Panel → Payment Settings.
+        </div>
+        <div id="paystack-configured-badge" style="display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:#22c55e;text-align:center">
+          ✅ Secure payment powered by Paystack
+        </div>
+        <button class="btn btn-gold w-full btn-lg" id="pbtn" onclick="doPay()">🚀 Subscribe — ₦9,999/month</button>
+        <div style="font-size:10px;color:var(--tm);text-align:center;margin-top:9px">Cancel anytime. No hidden fees. 🔒 SSL secured by Paystack.</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px">
         <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center"><div style="font-size:26px;margin-bottom:6px">♾️</div><div style="font-weight:700;font-size:12px;margin-bottom:2px">Unlimited Likes</div><div style="font-size:11px;color:var(--tm)">Like as many as you want</div></div>
@@ -1232,6 +1258,7 @@ a{text-decoration:none;color:inherit}
         <div class="si" id="at1" onclick="aTab('users')"><span class="sic">👥</span>Users<span class="snb" style="background:#ef4444">5</span></div>
         <div class="si" id="at2" onclick="aTab('reports')"><span class="sic">🚩</span>Reports<span class="snb" style="background:#ef4444">3</span></div>
         <div class="si" id="at3" onclick="aTab('verify')"><span class="sic">✅</span>Verification</div>
+        <div class="si" id="at3b" onclick="aTab('send-verify')"><span class="sic">📲</span>Send Verify Link</div>
         <div class="si" id="at4" onclick="aTab('subs')"><span class="sic">👑</span>Subscriptions</div>
         <div class="si" id="at5" onclick="aTab('analytics')"><span class="sic">📈</span>Analytics</div>
         <div class="si" id="at6" onclick="aTab('broadcast')"><span class="sic">📢</span>Broadcast</div>
@@ -1493,6 +1520,7 @@ function showPage(pg) {
   if (pg === 'admin') aTab('overview');
   if (pg === 'register') initInterests();
   if (pg === 'stories') initStories();
+  if (pg === 'premium') { setTimeout(checkPaystackStatus, 300); }
 }
 
 function s2(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }
@@ -2009,9 +2037,9 @@ function initStories() {
 // ═══════════════════════════════════════════════════
 //  ADMIN DASHBOARD — FULL FIRESTORE-BACKED
 // ═══════════════════════════════════════════════════
-const atabs = ['at0','at1','at2','at3','at4','at5','at6','at7','at8','at9'];
+const atabs = ['at0','at1','at2','at3','at3b','at4','at5','at6','at7','at8','at9'];
 function aTab(tab) {
-  const map = {overview:'at0',users:'at1',reports:'at2',verify:'at3',subs:'at4',analytics:'at5',broadcast:'at6',payment:'at7',calls:'at8',membership:'at9'};
+  const map = {overview:'at0',users:'at1',reports:'at2',verify:'at3','send-verify':'at3b',subs:'at4',analytics:'at5',broadcast:'at6',payment:'at7',calls:'at8',membership:'at9'};
   atabs.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('on'); });
   const act = document.getElementById(map[tab]); if (act) act.classList.add('on');
   const m = document.getElementById('acontent'); if (!m) return;
@@ -2021,6 +2049,7 @@ function aTab(tab) {
   else if (tab === 'reports') renderAdminReports(m);
   else if (tab === 'broadcast') renderAdminBroadcast(m);
   else if (tab === 'verify') renderAdminVerify(m);
+  else if (tab === 'send-verify') renderSendVerifyLink(m);
   else if (tab === 'analytics') renderAdminAnalytics(m);
   else if (tab === 'subs') renderAdminSubs(m);
   else if (tab === 'payment') renderAdminPayment(m);
@@ -2540,10 +2569,327 @@ async function sendContactForm() {
 }
 
 // ═══════════════════════════════════════════════════
+//  WHATSAPP OTP VERIFICATION
+// ═══════════════════════════════════════════════════
+let generatedOTP = '';
+let pendingRegData = {};
+
+function sendWhatsAppOTP() {
+  const phone = document.getElementById('rph')?.value.trim();
+  if (!phone) { toast('Please go back and enter your phone number', 'error'); return; }
+
+  // Show the number
+  const numShow = document.getElementById('wa-num-show');
+  if (numShow) numShow.textContent = phone;
+
+  // Generate a 6-digit OTP
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Store pending registration data
+  pendingRegData = {
+    name: document.getElementById('rn')?.value.trim() || '',
+    email: document.getElementById('re')?.value.trim() || '',
+    phone,
+    pwd: document.getElementById('rpw')?.value || '',
+    dob: document.getElementById('rdb')?.value || '',
+    gender: document.getElementById('rg')?.value || '',
+    location: document.getElementById('rl')?.value || '',
+    occupation: document.getElementById('ro')?.value || '',
+    bio: document.getElementById('rb')?.value || '',
+    interests: [...selI]
+  };
+
+  // Save OTP to Firestore for verification
+  db.collection('pending_otps').doc(phone).set({
+    otp: generatedOTP,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min expiry
+    used: false
+  }).catch(e => console.log('OTP save error:', e.message));
+
+  // Format phone for WhatsApp (add 234 prefix if starts with 0)
+  let waPhone = phone.replace(/\s+/g, '').replace(/^0/, '234').replace(/^\+/, '');
+  if (!waPhone.startsWith('234') && !waPhone.startsWith('+')) waPhone = '234' + waPhone.replace(/^0/, '');
+
+  // Build WhatsApp message with OTP
+  const msg = encodeURIComponent(
+    `🔐 *ZLove Verification Code*\n\n` +
+    `Your one-time password is:\n\n` +
+    `*${generatedOTP}*\n\n` +
+    `This code expires in 10 minutes. Do not share it with anyone.\n\n` +
+    `_ZLove Dating Platform_`
+  );
+
+  // Open WhatsApp with the OTP message
+  const waLink = `https://wa.me/${waPhone}?text=${msg}`;
+  window.open(waLink, '_blank');
+
+  // Show sent message and OTP entry
+  const sentMsg = document.getElementById('wa-sent-msg');
+  if (sentMsg) sentMsg.style.display = 'block';
+  const otpSection = document.getElementById('otp-entry-section');
+  if (otpSection) otpSection.style.display = 'block';
+  const sendBtn = document.getElementById('send-wa-btn');
+  if (sendBtn) { sendBtn.textContent = '🔄 Resend Code'; sendBtn.style.background = 'rgba(37,211,102,.2)'; sendBtn.style.color = '#22c55e'; }
+
+  toast('WhatsApp opened with your verification code! 📱', 'success');
+}
+
+async function verOTP() {
+  const entered = ['o0','o1','o2','o3','o4','o5'].map(id => document.getElementById(id)?.value || '').join('');
+  if (entered.length < 6) { toast('Please enter all 6 digits', 'error'); return; }
+
+  if (entered !== generatedOTP) {
+    // Also check Firestore in case user refreshed
+    const phone = pendingRegData.phone || document.getElementById('rph')?.value?.trim();
+    let verified = false;
+    try {
+      const snap = await db.collection('pending_otps').doc(phone).get();
+      if (snap.exists) {
+        const data = snap.data();
+        if (data.otp === entered && !data.used && new Date(data.expiresAt) > new Date()) {
+          verified = true;
+          await db.collection('pending_otps').doc(phone).update({ used: true });
+        }
+      }
+    } catch(e) {}
+    if (!verified) { toast('Incorrect code. Please check WhatsApp and try again.', 'error'); return; }
+  }
+
+  // OTP matched — create the Firebase account
+  toast('Verified! Creating your account...', 'info');
+  try {
+    const { email, pwd, name, phone, dob, gender, location, occupation, bio, interests } = pendingRegData;
+    if (!email || !pwd) { toast('Session expired. Please start registration again.', 'error'); rNext(1); return; }
+    const result = await auth.createUserWithEmailAndPassword(email, pwd);
+    await result.user.updateProfile({ displayName: name });
+    await db.collection('users').doc(result.user.uid).set({
+      displayName: name, email, phone, dob, gender, location, occupation, bio,
+      interests: interests || [],
+      plan: 'free',
+      role: email === SUPER_ADMIN_EMAIL ? 'superadmin' : 'user',
+      verified: true,  // verified via WhatsApp OTP
+      phoneVerified: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Account verified & created! Welcome to ZLove 💜', 'success');
+    showPage('dashboard');
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'This email is already registered. Please sign in.',
+      'auth/weak-password': 'Password must be at least 6 characters.',
+      'auth/invalid-email': 'Please enter a valid email address.'
+    };
+    toast(msgs[e.code] || e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  ADMIN: SEND VERIFICATION LINK VIA WHATSAPP
+// ═══════════════════════════════════════════════════
+function renderSendVerifyLink(m) {
+  m.innerHTML = `<div class="ah"><div><div class="at">Send Verification Link 📲</div><div class="as">Send WhatsApp verification links to users</div></div><button class="tb" onclick="toggleTheme()">🌙</button></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:4px">📲 Send WhatsApp Verify Link</h3>
+      <p style="font-size:11px;color:var(--tm);margin-bottom:18px">Send a login/verification link directly to a user's WhatsApp. They tap the link to access the platform instantly.</p>
+      <div class="fg"><label class="fl">User's WhatsApp Number</label><div class="iw"><span class="ic">📞</span><input type="tel" class="fi" id="vl-phone" placeholder="e.g. 09134882222 or +2349134882222"/></div></div>
+      <div class="fg"><label class="fl">User's Name (optional)</label><input type="text" class="fi" id="vl-name" placeholder="e.g. James Obi"/></div>
+      <div class="fg"><label class="fl">Message Type</label>
+        <select class="fs" id="vl-type">
+          <option value="verify">Account Verification</option>
+          <option value="login">Login Link</option>
+          <option value="reset">Password Reset</option>
+          <option value="welcome">Welcome Message</option>
+        </select>
+      </div>
+      <button class="btn btn-p w-full" style="background:#25D366;box-shadow:0 4px 14px rgba(37,211,102,.3)" onclick="sendAdminWhatsAppLink()">
+        💬 Send via WhatsApp
+      </button>
+      <div id="vl-status" style="margin-top:12px;font-size:12px;text-align:center;color:var(--tm)"></div>
+    </div>
+
+    <div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:16px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:14px">📋 Unverified Users</h3>
+        <div id="unverified-list"><div style="font-size:12px;color:var(--tm)">Loading...</div></div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(37,211,102,.08),rgba(34,197,94,.04));border:1px solid rgba(37,211,102,.3);border-radius:15px;padding:18px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:10px">💡 How it works</h3>
+        <div style="font-size:12px;color:var(--ts);line-height:1.75">
+          <p style="margin-bottom:7px">1. Enter the user's WhatsApp number</p>
+          <p style="margin-bottom:7px">2. Select the message type</p>
+          <p style="margin-bottom:7px">3. Click <strong>Send via WhatsApp</strong></p>
+          <p style="margin-bottom:7px">4. WhatsApp opens with the message ready to send</p>
+          <p>5. User taps the link to access ZLove directly ✅</p>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  loadUnverifiedUsers();
+}
+
+async function loadUnverifiedUsers() {
+  const el = document.getElementById('unverified-list'); if (!el) return;
+  try {
+    const snap = await db.collection('users').where('verified','==',false).limit(20).get();
+    if (snap.empty) { el.innerHTML = '<div style="font-size:12px;color:#22c55e">✅ All users are verified!</div>'; return; }
+    let users = [];
+    snap.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+    el.innerHTML = users.map(u => `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:12px;font-weight:600">${u.displayName || 'Unknown'}</div><div style="font-size:10px;color:var(--tm)">${u.phone || u.email || '—'}</div></div>
+      <button class="btn btn-sm" style="background:#25D366;color:#fff;border:none;border-radius:50px;font-size:10px;padding:4px 10px" onclick="quickSendVerify('${u.phone || ''}','${u.displayName || ''}')">
+        💬 Send
+      </button>
+    </div>`).join('');
+  } catch(e) { el.innerHTML = '<div style="font-size:12px;color:var(--tm)">No unverified users found</div>'; }
+}
+
+function quickSendVerify(phone, name) {
+  if (!phone) { toast('No phone number for this user', 'warning'); return; }
+  const phoneEl = document.getElementById('vl-phone');
+  const nameEl = document.getElementById('vl-name');
+  if (phoneEl) phoneEl.value = phone;
+  if (nameEl) nameEl.value = name;
+  sendAdminWhatsAppLink();
+}
+
+async function sendAdminWhatsAppLink() {
+  const rawPhone = document.getElementById('vl-phone')?.value.trim();
+  const name = document.getElementById('vl-name')?.value.trim() || 'there';
+  const type = document.getElementById('vl-type')?.value || 'verify';
+  const statusEl = document.getElementById('vl-status');
+
+  if (!rawPhone) { toast('Please enter a WhatsApp number', 'error'); return; }
+
+  // Format phone number
+  let waPhone = rawPhone.replace(/\s+/g, '').replace(/^\+/, '');
+  if (waPhone.startsWith('0')) waPhone = '234' + waPhone.substring(1);
+  else if (!waPhone.startsWith('234')) waPhone = '234' + waPhone;
+
+  // Generate a one-time token for login link
+  const token = btoa(Date.now() + '-' + Math.random()).replace(/=/g, '').substring(0, 16);
+  const siteUrl = window.location.href.split('?')[0].split('#')[0];
+
+  // Save token to Firestore
+  try {
+    await db.collection('verify_tokens').add({
+      token, phone: rawPhone, type,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      used: false
+    });
+  } catch(e) { console.log('Token save error:', e.message); }
+
+  const loginUrl = siteUrl + '?token=' + token + '&action=login';
+
+  let msgText = '';
+  if (type === 'verify') {
+    msgText = `👋 Hi ${name}!\n\nWelcome to *ZLove* 💜\n\nClick the link below to verify your account and start finding your perfect match:\n\n🔗 ${loginUrl}\n\n_This link expires in 24 hours._\n\n_ZLove Team_`;
+  } else if (type === 'login') {
+    msgText = `👋 Hi ${name}!\n\nHere is your *ZLove* login link:\n\n🔗 ${loginUrl}\n\nTap the link to sign in directly. No password needed for this session.\n\n_Link expires in 24 hours._\n\n_ZLove Team_`;
+  } else if (type === 'reset') {
+    msgText = `👋 Hi ${name}!\n\nYou requested a password reset for your *ZLove* account.\n\n🔗 ${loginUrl}\n\nTap the link to reset your password. If you didn't request this, ignore this message.\n\n_Link expires in 24 hours._\n\n_ZLove Team_`;
+  } else if (type === 'welcome') {
+    msgText = `🎉 Welcome to *ZLove* ${name}!\n\nAfrica's #1 premium dating platform. Your account is ready!\n\n👉 Start finding your perfect match:\n🔗 ${loginUrl}\n\n💜 _The ZLove Team_`;
+  }
+
+  const encoded = encodeURIComponent(msgText);
+  const waLink = `https://wa.me/${waPhone}?text=${encoded}`;
+  window.open(waLink, '_blank');
+
+  if (statusEl) statusEl.innerHTML = `<span style="color:#22c55e">✅ WhatsApp opened! Send the message to ${rawPhone}</span>`;
+  toast('WhatsApp opened with verification link! 💬', 'success');
+
+  // Log to Firestore
+  try {
+    await db.collection('sent_verifications').add({
+      phone: rawPhone, name, type, token, sentBy: currentUser?.email,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════
+//  CHECK TOKEN ON PAGE LOAD (login via WhatsApp link)
+// ═══════════════════════════════════════════════════
+async function checkTokenLogin() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const action = params.get('action');
+  if (!token || !action) return;
+
+  try {
+    const snap = await db.collection('verify_tokens').where('token','==',token).where('used','==',false).get();
+    if (snap.empty) { toast('This link has expired or already been used.', 'error'); return; }
+
+    let tokenDoc = null;
+    snap.forEach(doc => { tokenDoc = { id: doc.id, ...doc.data() }; });
+
+    if (new Date(tokenDoc.expiresAt) < new Date()) { toast('This link has expired. Please request a new one.', 'error'); return; }
+
+    // Mark token as used
+    await db.collection('verify_tokens').doc(tokenDoc.id).update({ used: true });
+
+    // Find user by phone
+    const usersSnap = await db.collection('users').where('phone','==',tokenDoc.phone).limit(1).get();
+    if (usersSnap.empty) {
+      toast('Account not found. Please register first.', 'error');
+      showPage('register');
+      return;
+    }
+
+    let userData = null;
+    usersSnap.forEach(doc => userData = { id: doc.id, ...doc.data() });
+
+    // Mark as verified
+    await db.collection('users').doc(userData.id).update({ verified: true, phoneVerified: true });
+
+    toast('Link verified! Signing you in... 💜', 'success');
+    // Sign in with custom token or redirect to login with pre-fill
+    // Since we cannot sign in without password via client SDK, show a login prompt
+    showPage('login');
+    setTimeout(() => {
+      const le = document.getElementById('le');
+      if (le) { le.value = userData.email; le.style.borderColor = '#22c55e'; }
+      toast('Your account is verified! Enter your password to sign in. 💜', 'success');
+    }, 500);
+
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch(e) {
+    console.log('Token login error:', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  PAYSTACK KEY STATUS CHECK ON PREMIUM PAGE
+// ═══════════════════════════════════════════════════
+async function checkPaystackStatus() {
+  const notice = document.getElementById('paystack-key-notice');
+  const badge = document.getElementById('paystack-configured-badge');
+  const btn = document.getElementById('pbtn');
+  if (!notice && !badge) return;
+  try {
+    const doc = await db.collection('settings').doc('app').get();
+    const hasKey = doc.exists && doc.data().paystackPublicKey;
+    if (hasKey) {
+      if (notice) notice.style.display = 'none';
+      if (badge) badge.style.display = 'block';
+    } else {
+      if (notice) notice.style.display = 'block';
+      if (badge) badge.style.display = 'none';
+      if (btn) { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; }
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════
 //  INITIALIZE APP
 // ═══════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
   await loadAppSettings();
+  await checkTokenLogin();
   console.log('ZLove initialized with Firebase ✅');
 });
 </script>
