@@ -182,6 +182,14 @@ async function compressImage(file, maxDim = 1600, quality = 0.82) {
 function uniqueUsernameCheck(username) {
     return db.collection('usernames').doc(username.toLowerCase()).get();
 }
+async function uploadProfileImage(uid, file, kind) {
+    const compressed = await compressImage(file, kind === 'avatars' ? 512 : 1200);
+    const ref = storage.ref(`${kind}/${uid}/photo.jpg`);
+    await ref.put(compressed, { contentType: 'image/jpeg' });
+    const url = await ref.getDownloadURL();
+    await db.collection('users').doc(uid).update({ [kind === 'avatars' ? 'photoURL' : 'coverURL']: url });
+    return url;
+}
 /* ---- messaging helpers ---- */
 function chatIdFor(a, b) { return [a, b].sort().join('_'); }
 const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '😡'];
@@ -943,6 +951,10 @@ function ProfileScreen({ uid, go }) {
     const [following, setFollowing] = useState(false);
     const [editing, setEditing] = useState(false);
     const [tab, setTab] = useState('posts');
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
+    const avatarInputRef = useRef();
+    const coverInputRef = useRef();
     useEffect(() => {
         const unsub = db.collection('users').doc(uid).onSnapshot(s => setUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null));
         return unsub;
@@ -987,36 +999,44 @@ function ProfileScreen({ uid, go }) {
             toast('Blocked ' + user.displayName, 'success');
         }
     };
+    const quickUpload = async (file, kind) => {
+        if (!file)
+            return;
+        kind === 'avatars' ? setUploadingAvatar(true) : setUploadingCover(true);
+        try {
+            await uploadProfileImage(me.id, file, kind);
+            toast('Photo updated', 'success');
+        }
+        catch (e) {
+            toast(e.message, 'error');
+        }
+        finally {
+            kind === 'avatars' ? setUploadingAvatar(false) : setUploadingCover(false);
+        }
+    };
     if (!user)
         return React.createElement(PostSkeleton, null);
     const isMe = uid === me.id;
+    const photoPosts = posts.filter(p => { var _a; return ((_a = p.images) === null || _a === void 0 ? void 0 : _a.length) > 0; });
+    const shownPosts = tab === 'photos' ? photoPosts : posts;
     return (React.createElement("div", null,
         React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 overflow-hidden mb-4" },
-            React.createElement("div", { className: "h-32 bg-gradient-to-r from-brand-500 to-brand-700 relative" }, user.coverURL && React.createElement("img", { src: user.coverURL, className: "w-full h-full object-cover" })),
+            React.createElement("div", { className: "h-44 md:h-56 bg-gradient-to-r from-brand-500 to-brand-700 relative" },
+                user.coverURL && React.createElement("img", { src: user.coverURL, className: "w-full h-full object-cover" }),
+                isMe && (React.createElement("button", { onClick: () => coverInputRef.current.click(), disabled: uploadingCover, className: "absolute bottom-3 right-3 bg-black/50 hover:bg-black/60 text-white rounded-full w-9 h-9 flex items-center justify-center backdrop-blur" },
+                    React.createElement("i", { className: "fa-solid " + (uploadingCover ? "fa-spinner fa-spin" : "fa-camera") + " text-sm" }))),
+                React.createElement("input", { ref: coverInputRef, type: "file", accept: "image/*", hidden: true, onChange: e => quickUpload(e.target.files[0], 'covers') })),
             React.createElement("div", { className: "px-5 pb-5" },
-                React.createElement("div", { className: "flex justify-between items-end -mt-10 mb-3" },
-                    React.createElement("img", { src: user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`, className: "w-20 h-20 rounded-full border-4 border-white dark:border-ink-800 object-cover" }),
-                    isMe ? (React.createElement("button", { onClick: () => setEditing(true), className: "border border-slate-200 dark:border-ink-600 rounded-full px-4 py-1.5 text-sm font-semibold" }, "Edit profile")) : (React.createElement("div", { className: "flex items-center gap-2" },
-                        !theyBlockedMe && !iBlockedThem && (React.createElement("button", { onClick: () => go({ name: 'chat', chatId: chatIdFor(me.id, uid), otherUid: uid }), className: "border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm" },
-                            React.createElement("i", { className: "fa-regular fa-paper-plane" }))),
-                        React.createElement("button", { onClick: toggleBlock, className: "border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm text-red-500" },
-                            React.createElement("i", { className: "fa-solid " + (iBlockedThem ? "fa-user-check" : "fa-ban") })),
-                        React.createElement("button", { onClick: toggleFollow, className: "rounded-full px-5 py-1.5 text-sm font-semibold " + (following ? "border border-slate-200 dark:border-ink-600" : "bg-brand-600 text-white") }, following ? 'Following' : 'Follow')))),
-                React.createElement("h2", { className: "font-display font-bold text-lg" }, user.displayName),
+                React.createElement("div", { className: "flex justify-between items-end -mt-12 mb-3" },
+                    React.createElement("div", { className: "relative" },
+                        React.createElement("img", { src: user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`, className: "w-24 h-24 rounded-full border-4 border-white dark:border-ink-800 object-cover bg-white dark:bg-ink-800" }),
+                        isMe && (React.createElement("button", { onClick: () => avatarInputRef.current.click(), disabled: uploadingAvatar, className: "absolute bottom-0 right-0 bg-brand-600 hover:bg-brand-700 text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-white dark:border-ink-800" },
+                            React.createElement("i", { className: "fa-solid " + (uploadingAvatar ? "fa-spinner fa-spin" : "fa-camera") + " text-xs" }))),
+                        React.createElement("input", { ref: avatarInputRef, type: "file", accept: "image/*", hidden: true, onChange: e => quickUpload(e.target.files[0], 'avatars') }))),
+                React.createElement("h2", { className: "font-display font-bold text-xl" }, user.displayName),
                 React.createElement("p", { className: "text-slate-400 text-sm" },
                     "@",
                     user.username),
-                user.bio && React.createElement("p", { className: "text-sm mt-2" }, user.bio),
-                React.createElement("div", { className: "flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-400" },
-                    user.location && React.createElement("span", null,
-                        React.createElement("i", { className: "fa-solid fa-location-dot mr-1" }),
-                        user.location),
-                    user.website && React.createElement("a", { href: user.website, target: "_blank", className: "text-brand-600" },
-                        React.createElement("i", { className: "fa-solid fa-link mr-1" }),
-                        user.website),
-                    user.occupation && React.createElement("span", null,
-                        React.createElement("i", { className: "fa-solid fa-briefcase mr-1" }),
-                        user.occupation)),
                 React.createElement("div", { className: "flex gap-5 mt-3 text-sm" },
                     React.createElement("span", null,
                         React.createElement("b", null, user.postsCount || 0),
@@ -1029,9 +1049,68 @@ function ProfileScreen({ uid, go }) {
                     React.createElement("span", null,
                         React.createElement("b", null, user.followingCount || 0),
                         " ",
-                        React.createElement("span", { className: "text-slate-400" }, "Following"))))),
-        posts.length === 0 ? (React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, "No posts yet.")) : posts.map(p => React.createElement(PostCard, { key: p.id, post: p, go: go })),
+                        React.createElement("span", { className: "text-slate-400" }, "Following"))),
+                user.bio && React.createElement("p", { className: "text-sm mt-3 leading-relaxed" }, user.bio),
+                React.createElement("div", { className: "flex flex-wrap gap-x-4 gap-y-1.5 mt-2 text-xs text-slate-500 dark:text-slate-400" },
+                    user.occupation && React.createElement("span", null,
+                        React.createElement("i", { className: "fa-solid fa-briefcase mr-1" }),
+                        user.occupation),
+                    user.location && React.createElement("span", null,
+                        React.createElement("i", { className: "fa-solid fa-location-dot mr-1" }),
+                        user.location),
+                    user.website && React.createElement("a", { href: user.website, target: "_blank", className: "text-brand-600" },
+                        React.createElement("i", { className: "fa-solid fa-link mr-1" }),
+                        user.website),
+                    user.relationshipStatus && React.createElement("span", null,
+                        React.createElement("i", { className: "fa-solid fa-heart mr-1" }),
+                        user.relationshipStatus)),
+                React.createElement("div", { className: "mt-4" }, isMe ? (React.createElement("button", { onClick: () => setEditing(true), className: "w-full bg-slate-100 dark:bg-ink-700 hover:bg-slate-200 dark:hover:bg-ink-600 rounded-xl py-2.5 text-sm font-semibold" },
+                    React.createElement("i", { className: "fa-solid fa-pen mr-2 text-xs" }),
+                    "Edit profile")) : (React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("button", { onClick: toggleFollow, className: "flex-1 rounded-xl py-2.5 text-sm font-semibold " + (following ? "bg-slate-100 dark:bg-ink-700" : "bg-brand-600 text-white") }, following ? 'Following' : 'Follow'),
+                    !theyBlockedMe && !iBlockedThem && (React.createElement("button", { onClick: () => go({ name: 'chat', chatId: chatIdFor(me.id, uid), otherUid: uid }), className: "bg-slate-100 dark:bg-ink-700 rounded-xl w-11 h-11 flex items-center justify-center text-sm shrink-0" },
+                        React.createElement("i", { className: "fa-regular fa-paper-plane" }))),
+                    React.createElement("button", { onClick: toggleBlock, className: "bg-slate-100 dark:bg-ink-700 rounded-xl w-11 h-11 flex items-center justify-center text-sm text-red-500 shrink-0" },
+                        React.createElement("i", { className: "fa-solid " + (iBlockedThem ? "fa-user-check" : "fa-ban") })))))),
+            React.createElement("div", { className: "flex border-t border-slate-100 dark:border-ink-700" }, [['posts', 'Posts'], ['photos', 'Photos']].map(([k, l]) => (React.createElement("button", { key: k, onClick: () => setTab(k), className: "flex-1 py-3 text-sm font-semibold border-b-2 " + (tab === k ? "border-brand-600 text-brand-600" : "border-transparent text-slate-400") }, l))))),
+        shownPosts.length === 0 ? (React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, tab === 'photos' ? 'No photos yet.' : 'No posts yet.')) : shownPosts.map(p => React.createElement(PostCard, { key: p.id, post: p, go: go })),
         editing && React.createElement(EditProfileModal, { user: user, onClose: () => setEditing(false) })));
+}
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function DobPicker({ value, onChange }) {
+    const parts = value ? value.split('-') : ['', '', ''];
+    const [year, month, day] = [parts[0] || '', parts[1] || '', parts[2] || ''];
+    const thisYear = new Date().getFullYear();
+    const years = [];
+    for (let y = thisYear; y >= thisYear - 100; y--)
+        years.push(y);
+    const daysInMonth = (month && year) ? new Date(Number(year), Number(month), 0).getDate() : 31;
+    const days = [];
+    for (let d = 1; d <= daysInMonth; d++)
+        days.push(d);
+    const update = (part, v) => {
+        const d = { year, month, day, [part]: v };
+        if (!d.year || !d.month || !d.day) {
+            onChange('');
+            return;
+        }
+        const dd = String(d.day).padStart(2, '0');
+        const mm = String(d.month).padStart(2, '0');
+        onChange(`${d.year}-${mm}-${dd}`);
+    };
+    const selectClass = "flex-1 mt-1 px-2 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm";
+    return (React.createElement("div", null,
+        React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Date of birth"),
+        React.createElement("div", { className: "flex gap-2" },
+            React.createElement("select", { value: day, onChange: e => update('day', e.target.value), className: selectClass },
+                React.createElement("option", { value: "" }, "Day"),
+                days.map(d => React.createElement("option", { key: d, value: d }, d))),
+            React.createElement("select", { value: month, onChange: e => update('month', e.target.value), className: selectClass },
+                React.createElement("option", { value: "" }, "Month"),
+                MONTH_NAMES.map((m, i) => React.createElement("option", { key: m, value: i + 1 }, m))),
+            React.createElement("select", { value: year, onChange: e => update('year', e.target.value), className: selectClass },
+                React.createElement("option", { value: "" }, "Year"),
+                years.map(y => React.createElement("option", { key: y, value: y }, y))))));
 }
 function EditProfileModal({ user, onClose }) {
     const toast = useToast();
@@ -1086,10 +1165,11 @@ function EditProfileModal({ user, onClose }) {
                     React.createElement("input", { type: "file", accept: "image/*", onChange: e => setCoverFile(e.target.files[0]), className: "text-sm mt-1 block" })),
                 [
                     ['displayName', 'Display name', 'text'], ['bio', 'Bio', 'textarea'], ['location', 'Location', 'text'],
-                    ['website', 'Website', 'text'], ['occupation', 'Occupation', 'text'], ['dob', 'Date of birth', 'date'],
+                    ['website', 'Website', 'text'], ['occupation', 'Occupation', 'text'],
                 ].map(([key, label, type]) => (React.createElement("div", { key: key },
                     React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, label),
                     type === 'textarea' ? (React.createElement("textarea", { value: form[key], onChange: e => set(key, e.target.value), rows: 3, className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" })) : (React.createElement("input", { type: type, value: form[key], onChange: e => set(key, e.target.value), className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" }))))),
+                React.createElement(DobPicker, { value: form.dob, onChange: v => set('dob', v) }),
                 React.createElement("div", null,
                     React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Gender"),
                     React.createElement("select", { value: form.gender, onChange: e => set('gender', e.target.value), className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" },
