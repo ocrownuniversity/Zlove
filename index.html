@@ -9,21 +9,23 @@
 <!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = {
-    darkMode: 'class',
-    theme: {
-      extend: {
-        fontFamily: {
-          display: ['"Sora"', 'sans-serif'],
-          body: ['"Inter"', 'sans-serif'],
-        },
-        colors: {
-          brand: {
-            50: '#eef4ff', 100: '#dbe6ff', 200: '#b8ceff', 300: '#8aacff',
-            400: '#5c86ff', 500: '#2f5dff', 600: '#1a3fe0', 700: '#152fb0',
-            800: '#132789', 900: '#111f6b'
+  if (typeof tailwind !== 'undefined') {
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Sora"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
           },
-          ink: { 900: '#0a0e1a', 800: '#121729', 700: '#1b2138' }
+          colors: {
+            brand: {
+              50: '#eef4ff', 100: '#dbe6ff', 200: '#b8ceff', 300: '#8aacff',
+              400: '#5c86ff', 500: '#2f5dff', 600: '#1a3fe0', 700: '#152fb0',
+              800: '#132789', 900: '#111f6b'
+            },
+            ink: { 900: '#0a0e1a', 800: '#121729', 700: '#1b2138' }
+          }
         }
       }
     }
@@ -64,7 +66,22 @@
 </style>
 </head>
 <body class="bg-slate-50 dark:bg-ink-900 text-slate-900 dark:text-slate-100 transition-colors">
-<div id="root"></div>
+<div id="root">
+  <div style="font-family: sans-serif; max-width: 480px; margin: 15vh auto; padding: 24px; text-align: center; color:#334155;">
+    <div style="font-size:15px; line-height:1.5;">Loading Zlove…<br/>If this message doesn't disappear in a few seconds, this browser/preview can't reach the internet to load React, Tailwind and Firebase from their CDNs. Open this file in a normal browser with an internet connection (or via your published GitHub Pages URL) instead of an in-app preview.</div>
+  </div>
+</div>
+<script>
+  window.addEventListener('error', function (e) {
+    var msg = (e && e.message) || 'Unknown error';
+    if (/tailwind|React|ReactDOM|firebase|Babel/i.test(msg)) {
+      var root = document.getElementById('root');
+      if (root && !root.dataset.mounted) {
+        root.innerHTML = '<div style="font-family: sans-serif; max-width: 480px; margin: 15vh auto; padding: 24px; text-align: center; color:#b91c1c;"><b>Couldn\'t load required scripts (' + msg + ').</b><br/><br/>This usually means the browser has no internet access, or is an in-app preview that blocks external CDN requests (React, Tailwind, Firebase, and Font Awesome all load from CDNs). Try opening this file in a normal browser with internet access, or via your published GitHub Pages URL.</div>';
+      }
+    }
+  }, true);
+</script>
 
 <script type="text/babel" data-presets="react,stage-3">
 const { useState, useEffect, useRef, useContext, createContext, useCallback, useMemo } = React;
@@ -129,6 +146,90 @@ async function compressImage(file, maxDim = 1600, quality = 0.82) {
 
 function uniqueUsernameCheck(username) {
   return db.collection('usernames').doc(username.toLowerCase()).get();
+}
+
+/* ---- messaging helpers ---- */
+function chatIdFor(a, b) { return [a, b].sort().join('_'); }
+
+const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '😡'];
+const EMOJI_PICKER_SET = ['😀','😂','😍','🥰','😊','😉','😎','🤔','😢','😭','😡','👍','👎','👏','🙏','🔥','🎉','❤️','💯','✨','😴','🤗','😅','🙌'];
+
+function isUserOnline(user) {
+  if (!user || !user.lastSeen) return false;
+  const last = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
+  return !!user.online && (Date.now() - last.getTime()) < 60000;
+}
+
+function lastSeenLabel(user) {
+  if (isUserOnline(user)) return 'Active now';
+  if (!user?.lastSeen) return '';
+  return 'Last seen ' + timeAgo(user.lastSeen);
+}
+
+function setPresence(uid, online) {
+  if (!uid) return;
+  db.collection('users').doc(uid).update({ online, lastSeen: FieldValue.serverTimestamp() }).catch(() => {});
+}
+
+function useUnreadMessages(uid) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = db.collection('chatMembers').where('uid', '==', uid).onSnapshot(snap => {
+      let total = 0;
+      snap.docs.forEach(d => {
+        const m = d.data();
+        if (!m.archived && !m.deletedAt && m.status === 'accepted') total += (m.unreadCount || 0);
+      });
+      setCount(total);
+    });
+    return unsub;
+  }, [uid]);
+  return count;
+}
+
+async function ensureChat(meId, otherId) {
+  const id = chatIdFor(meId, otherId);
+  const chatRef = db.collection('chats').doc(id);
+  const snap = await chatRef.get();
+  if (!snap.exists) {
+    const followedByOther = await db.collection('follows').doc(otherId + '_' + meId).get();
+    const recipientStatus = followedByOther.exists ? 'accepted' : 'pending';
+    await chatRef.set({
+      members: [meId, otherId], isGroup: false, lastMessage: null,
+      lastMessageAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp(), typing: {}
+    });
+    await db.collection('chatMembers').doc(id + '_' + meId).set({
+      chatId: id, uid: meId, otherUid: otherId, pinned: false, archived: false, unreadCount: 0,
+      status: 'accepted', lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+    });
+    await db.collection('chatMembers').doc(id + '_' + otherId).set({
+      chatId: id, uid: otherId, otherUid: meId, pinned: false, archived: false, unreadCount: 0,
+      status: recipientStatus, lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+    });
+  }
+  return id;
+}
+
+async function sendChatMessage(meId, chatId, otherUid, payload) {
+  await ensureChat(meId, otherUid);
+  const previewText = payload.type === 'text' ? payload.text : ('[' + payload.type + ']');
+  await db.collection('chats').doc(chatId).collection('messages').add({
+    senderId: meId, createdAt: FieldValue.serverTimestamp(), readBy: [], deliveredTo: [], deletedFor: [], reactions: {}, ...payload
+  });
+  await db.collection('chats').doc(chatId).set({
+    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+  await db.collection('chatMembers').doc(chatId + '_' + meId).set({
+    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+  }, { merge: true });
+  await db.collection('chatMembers').doc(chatId + '_' + otherUid).set({
+    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(),
+    unreadCount: FieldValue.increment(1), deletedAt: null, archived: false
+  }, { merge: true });
+  db.collection('notifications').doc(otherUid).collection('items').add({
+    type: 'message', fromUserId: meId, chatId, read: false, createdAt: FieldValue.serverTimestamp()
+  });
 }
 
 /* ============================== CONTEXTS ============================== */
@@ -409,9 +510,25 @@ function MainApp({ route, setRoute }) {
   const { theme, setTheme } = useContext(ThemeContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const unreadMessages = useUnreadMessages(profile.id);
+
+  useEffect(() => {
+    setPresence(profile.id, true);
+    const heartbeat = setInterval(() => setPresence(profile.id, true), 25000);
+    const onVis = () => setPresence(profile.id, document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('beforeunload', () => setPresence(profile.id, false));
+    return () => {
+      clearInterval(heartbeat);
+      document.removeEventListener('visibilitychange', onVis);
+      setPresence(profile.id, false);
+    };
+  }, [profile.id]);
+
   const nav = [
     { name: 'home', icon: 'fa-house', label: 'Home' },
     { name: 'search', icon: 'fa-magnifying-glass', label: 'Search' },
+    { name: 'messages', icon: 'fa-comment-dots', label: 'Messages', badge: unreadMessages },
     { name: 'notifications', icon: 'fa-bell', label: 'Notifications' },
     { name: 'bookmarks', icon: 'fa-bookmark', label: 'Saved' },
     { name: 'profile', icon: 'fa-user', label: 'Profile', params: { uid: profile.id } },
@@ -434,6 +551,7 @@ function MainApp({ route, setRoute }) {
               className={"w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition " +
                 (route.name === n.name ? "bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "hover:bg-slate-50 dark:hover:bg-ink-800 text-slate-600 dark:text-slate-300")}>
               <i className={"fa-solid " + n.icon + " w-5"}></i>{n.label}
+              {!!n.badge && <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">{n.badge > 99 ? '99+' : n.badge}</span>}
             </button>
           ))}
         </nav>
@@ -459,9 +577,11 @@ function MainApp({ route, setRoute }) {
             className="w-8 h-8 rounded-full object-cover cursor-pointer" />
         </header>
 
-        <main className="flex-1 max-w-2xl w-full mx-auto px-3 md:px-6 py-4 pb-20 md:pb-8">
+        <main className={route.name === 'chat' ? "flex-1 max-w-2xl w-full mx-auto md:px-6 md:py-4" : "flex-1 max-w-2xl w-full mx-auto px-3 md:px-6 py-4 pb-20 md:pb-8"}>
           {route.name === 'home' && <HomeFeed go={go} />}
           {route.name === 'search' && <SearchScreen go={go} />}
+          {route.name === 'messages' && <ChatListScreen go={go} />}
+          {route.name === 'chat' && <ChatWindow chatId={route.chatId} otherUid={route.otherUid} go={go} />}
           {route.name === 'notifications' && <NotificationsScreen go={go} />}
           {route.name === 'bookmarks' && <BookmarksScreen go={go} />}
           {route.name === 'profile' && <ProfileScreen uid={route.uid} go={go} />}
@@ -471,10 +591,11 @@ function MainApp({ route, setRoute }) {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-t border-slate-100 dark:border-ink-800 flex justify-around py-2">
-        {nav.slice(0, 5).map(n => (
+        {nav.filter(n => n.name !== 'admin').map(n => (
           <button key={n.name} onClick={() => go({ name: n.name, ...(n.params || {}) })}
-            className={"flex flex-col items-center gap-0.5 px-3 py-1 text-xs " + (route.name === n.name ? "text-brand-600" : "text-slate-400")}>
+            className={"relative flex flex-col items-center gap-0.5 px-2.5 py-1 text-xs " + (route.name === n.name ? "text-brand-600" : "text-slate-400")}>
             <i className={"fa-solid " + n.icon + " text-lg"}></i>
+            {!!n.badge && <span className="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-red-500"></span>}
           </button>
         ))}
       </nav>
@@ -864,7 +985,7 @@ function SearchScreen({ go }) {
 }
 
 /* ============================== NOTIFICATIONS ============================== */
-const NOTIF_TEXT = { like: 'liked your post', comment: 'commented on your post', follow: 'started following you', share: 'shared your post' };
+const NOTIF_TEXT = { like: 'liked your post', comment: 'commented on your post', follow: 'started following you', share: 'shared your post', message: 'sent you a message' };
 
 function NotificationsScreen({ go }) {
   const { profile } = useAuth();
@@ -889,14 +1010,19 @@ function NotificationsScreen({ go }) {
 }
 
 function NotifRow({ n, go }) {
+  const { profile } = useAuth();
   const [from, setFrom] = useState(null);
   useEffect(() => {
     const unsub = db.collection('users').doc(n.fromUserId).onSnapshot(s => setFrom(s.exists ? s.data() : null));
     return unsub;
   }, [n.fromUserId]);
   if (!from) return null;
+  const openNotif = () => {
+    if (n.type === 'message') go({ name: 'chat', chatId: chatIdFor(profile.id, n.fromUserId), otherUid: n.fromUserId });
+    else go({ name: 'profile', uid: n.fromUserId });
+  };
   return (
-    <div onClick={() => go({ name: 'profile', uid: n.fromUserId })}
+    <div onClick={openNotif}
       className="flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700 cursor-pointer">
       <Avatar user={from} size={9} />
       <p className="text-sm"><span className="font-semibold">{from.displayName}</span> {NOTIF_TEXT[n.type] || 'interacted with you'} <span className="text-slate-400">· {timeAgo(n.createdAt)}</span></p>
@@ -975,6 +1101,19 @@ function ProfileScreen({ uid, go }) {
     }
   };
 
+  const iBlockedThem = (me.blockedUsers || []).includes(uid);
+  const theyBlockedMe = (user?.blockedUsers || []).includes(me.id);
+
+  const toggleBlock = async () => {
+    const ref = db.collection('users').doc(me.id);
+    if (iBlockedThem) { await ref.update({ blockedUsers: FieldValue.arrayRemove(uid) }); toast('Unblocked ' + user.displayName, 'success'); }
+    else {
+      if (!confirm('Block ' + user.displayName + '? They will no longer be able to message you.')) return;
+      await ref.update({ blockedUsers: FieldValue.arrayUnion(uid) });
+      toast('Blocked ' + user.displayName, 'success');
+    }
+  };
+
   if (!user) return <PostSkeleton />;
   const isMe = uid === me.id;
 
@@ -991,9 +1130,20 @@ function ProfileScreen({ uid, go }) {
             {isMe ? (
               <button onClick={() => setEditing(true)} className="border border-slate-200 dark:border-ink-600 rounded-full px-4 py-1.5 text-sm font-semibold">Edit profile</button>
             ) : (
-              <button onClick={toggleFollow} className={"rounded-full px-5 py-1.5 text-sm font-semibold " + (following ? "border border-slate-200 dark:border-ink-600" : "bg-brand-600 text-white")}>
-                {following ? 'Following' : 'Follow'}
-              </button>
+              <div className="flex items-center gap-2">
+                {!theyBlockedMe && !iBlockedThem && (
+                  <button onClick={() => go({ name: 'chat', chatId: chatIdFor(me.id, uid), otherUid: uid })}
+                    className="border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm">
+                    <i className="fa-regular fa-paper-plane"></i>
+                  </button>
+                )}
+                <button onClick={toggleBlock} className="border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm text-red-500">
+                  <i className={"fa-solid " + (iBlockedThem ? "fa-user-check" : "fa-ban")}></i>
+                </button>
+                <button onClick={toggleFollow} className={"rounded-full px-5 py-1.5 text-sm font-semibold " + (following ? "border border-slate-200 dark:border-ink-600" : "bg-brand-600 text-white")}>
+                  {following ? 'Following' : 'Follow'}
+                </button>
+              </div>
             )}
           </div>
           <h2 className="font-display font-bold text-lg">{user.displayName}</h2>
@@ -1188,8 +1338,476 @@ function AdminScreen() {
   );
 }
 
+/* ============================== MESSAGING: CHAT LIST ============================== */
+function ChatListScreen({ go }) {
+  const { profile } = useAuth();
+  const [rows, setRows] = useState(null);
+  const [tab, setTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [menuFor, setMenuFor] = useState(null);
+
+  useEffect(() => {
+    const unsub = db.collection('chatMembers').where('uid', '==', profile.id)
+      .onSnapshot(snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    return unsub;
+  }, [profile.id]);
+
+  const visible = (rows || []).filter(r => {
+    if (r.deletedAt) return false;
+    if (tab === 'requests') return r.status === 'pending';
+    if (tab === 'archived') return r.archived && r.status === 'accepted';
+    return r.status === 'accepted' && !r.archived;
+  }).sort((a, b) => {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+    const at = a.lastMessageAt?.toMillis ? a.lastMessageAt.toMillis() : 0;
+    const bt = b.lastMessageAt?.toMillis ? b.lastMessageAt.toMillis() : 0;
+    return bt - at;
+  });
+
+  const requestCount = (rows || []).filter(r => r.status === 'pending' && !r.deletedAt).length;
+
+  const togglePin = (r) => db.collection('chatMembers').doc(r.id).update({ pinned: !r.pinned });
+  const toggleArchive = (r) => db.collection('chatMembers').doc(r.id).update({ archived: !r.archived });
+  const deleteConvo = (r) => { if (confirm('Delete this conversation for you?')) db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() }); };
+  const acceptRequest = (r) => db.collection('chatMembers').doc(r.id).update({ status: 'accepted' });
+  const declineRequest = (r) => db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() });
+
+  return (
+    <div>
+      <h2 className="font-display text-lg font-bold mb-3">Messages</h2>
+      <div className="relative mb-3">
+        <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search conversations…"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 text-sm" />
+      </div>
+      <div className="flex gap-2 mb-4">
+        {[['all', 'All'], ['requests', 'Requests'], ['archived', 'Archived']].map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-semibold " + (tab === k ? "bg-brand-600 text-white" : "bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-500")}>
+            {l}{k === 'requests' && requestCount > 0 && <span className="ml-1">({requestCount})</span>}
+          </button>
+        ))}
+      </div>
+      {rows === null && <p className="text-sm text-slate-400">Loading…</p>}
+      {rows !== null && visible.length === 0 && <p className="text-sm text-slate-400 text-center py-16">No conversations here.</p>}
+      <div className="space-y-2">
+        {visible.map(r => (
+          <ChatRow key={r.id} row={r} go={go} search={search}
+            onPin={() => togglePin(r)} onArchive={() => toggleArchive(r)} onDelete={() => deleteConvo(r)}
+            onAccept={() => acceptRequest(r)} onDecline={() => declineRequest(r)}
+            menuOpen={menuFor === r.id} setMenuOpen={(v) => setMenuFor(v ? r.id : null)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChatRow({ row, go, search, onPin, onArchive, onDelete, onAccept, onDecline, menuOpen, setMenuOpen }) {
+  const [user, setUser] = useState(null);
+  useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [row.otherUid]);
+  if (!user) return null;
+  if (search && !(user.displayName?.toLowerCase().includes(search.toLowerCase()) || user.username?.toLowerCase().includes(search.toLowerCase()))) return null;
+  const previewMap = { image: '📷 Photo', video: '🎥 Video', audio: '🎤 Voice note', document: '📄 Document' };
+  const preview = row.lastMessage ? (row.lastMessage.type === 'text' ? row.lastMessage.text : (previewMap[row.lastMessage.type] || 'Message')) : 'Say hello 👋';
+  const openChat = () => go({ name: 'chat', chatId: row.chatId, otherUid: row.otherUid });
+
+  return (
+    <div className="flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700">
+      <div className="relative cursor-pointer shrink-0" onClick={openChat}>
+        <Avatar user={user} size={11} />
+        {isUserOnline(user) && <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800"></span>}
+      </div>
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={openChat}>
+        <div className="flex items-center justify-between gap-2">
+          <p className="font-semibold text-sm truncate flex items-center gap-1">
+            {row.pinned && <i className="fa-solid fa-thumbtack text-[10px] text-slate-400"></i>}{user.displayName}
+          </p>
+          <span className="text-xs text-slate-400 shrink-0">{timeAgo(row.lastMessageAt)}</span>
+        </div>
+        <p className="text-xs text-slate-400 truncate">{row.lastMessage?.senderId && row.lastMessage.senderId !== user.id ? 'You: ' : ''}{preview}</p>
+      </div>
+      {row.status === 'pending' ? (
+        <div className="flex flex-col gap-1 shrink-0">
+          <button onClick={onAccept} className="text-xs bg-brand-600 text-white rounded-full px-3 py-1">Accept</button>
+          <button onClick={onDecline} className="text-xs border border-slate-200 dark:border-ink-600 rounded-full px-3 py-1">Decline</button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 shrink-0">
+          {row.unreadCount > 0 && <span className="bg-brand-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">{row.unreadCount}</span>}
+          <div className="relative">
+            <button onClick={() => setMenuOpen(!menuOpen)} className="text-slate-400 px-1"><i className="fa-solid fa-ellipsis-vertical"></i></button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl overflow-hidden border border-slate-100 dark:border-ink-600 z-10 w-36">
+                <button onClick={() => { onPin(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">{row.pinned ? 'Unpin' : 'Pin'}</button>
+                <button onClick={() => { onArchive(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">{row.archived ? 'Unarchive' : 'Archive'}</button>
+                <button onClick={() => { onDelete(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600">Delete</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================== MESSAGING: CHAT WINDOW ============================== */
+function DateSeparator({ prev, curr }) {
+  if (!curr?.createdAt?.toDate) return null;
+  const currDate = curr.createdAt.toDate().toDateString();
+  const prevDate = prev?.createdAt?.toDate ? prev.createdAt.toDate().toDateString() : null;
+  if (currDate === prevDate) return null;
+  const label = currDate === new Date().toDateString() ? 'Today' : curr.createdAt.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return <div className="text-center text-xs text-slate-400 my-2">{label}</div>;
+}
+
+function MessageBubble({ message, isMe, otherUid, menuOpen, setMenuOpen, onReply, onForward, onCopy, onEdit, onDelete, onReact }) {
+  const status = () => {
+    if ((message.readBy || []).includes(otherUid)) return <i className="fa-solid fa-check-double text-brand-200"></i>;
+    if ((message.deliveredTo || []).includes(otherUid)) return <i className="fa-solid fa-check-double text-white/60"></i>;
+    return <i className="fa-solid fa-check text-white/60"></i>;
+  };
+  const reactions = message.reactions ? Object.entries(message.reactions) : [];
+
+  return (
+    <div className={"flex " + (isMe ? "justify-end" : "justify-start")}>
+      <div className="max-w-[75%] group relative">
+        {message.forwardedFrom && <p className="text-[10px] text-slate-400 mb-0.5 flex items-center gap-1"><i className="fa-solid fa-share"></i>Forwarded</p>}
+        {message.replyTo && (
+          <div className="text-xs px-2.5 py-1 rounded-t-lg border-l-2 border-brand-400 bg-black/5 dark:bg-white/5">
+            <p className="truncate opacity-70 max-w-[220px]">{message.replyTo.text}</p>
+          </div>
+        )}
+        <div className={"relative px-3.5 py-2 rounded-2xl text-sm " + (isMe ? "bg-brand-600 text-white rounded-br-sm" : "bg-slate-100 dark:bg-ink-700 rounded-bl-sm")}>
+          {message.type === 'text' && <p className="whitespace-pre-wrap break-words">{message.text}</p>}
+          {message.type === 'image' && <img src={message.mediaURL} onClick={() => window.open(message.mediaURL, '_blank')} loading="lazy" className="rounded-lg max-w-[240px] cursor-pointer" />}
+          {message.type === 'video' && <video src={message.mediaURL} controls className="rounded-lg max-w-[240px]" />}
+          {message.type === 'audio' && <audio src={message.mediaURL} controls className="w-56" />}
+          {message.type === 'document' && (
+            <a href={message.mediaURL} target="_blank" className={"flex items-center gap-2 " + (isMe ? "text-white" : "text-brand-600")}>
+              <i className="fa-solid fa-file-lines text-lg"></i>
+              <span className="truncate max-w-[160px] underline">{message.mediaName || 'Document'}</span>
+            </a>
+          )}
+          <div className={"flex items-center gap-1 mt-1 justify-end text-[10px] " + (isMe ? "text-white/70" : "text-slate-400")}>
+            {message.editedAt && <span>edited</span>}
+            <span>{message.createdAt?.toDate ? message.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+            {isMe && status()}
+          </div>
+          <button onClick={() => setMenuOpen(!menuOpen)}
+            className={"absolute top-1 " + (isMe ? "-left-7" : "-right-7") + " opacity-0 group-hover:opacity-100 text-slate-400 text-xs px-1.5 py-1"}>
+            <i className="fa-solid fa-chevron-down"></i>
+          </button>
+        </div>
+        {reactions.length > 0 && (
+          <div className="flex gap-0.5 mt-0.5">
+            {reactions.map(([uid, emoji]) => <span key={uid} className="text-xs bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-600 rounded-full px-1.5">{emoji}</span>)}
+          </div>
+        )}
+        {menuOpen && (
+          <div className={"absolute z-20 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl border border-slate-100 dark:border-ink-600 overflow-hidden w-40 " + (isMe ? "right-0" : "left-0")}>
+            <div className="flex justify-around px-2 py-1.5 border-b border-slate-100 dark:border-ink-600">
+              {REACTION_EMOJIS.map(e => <button key={e} onClick={() => { onReact(e); setMenuOpen(false); }} className="text-sm hover:scale-125 transition">{e}</button>)}
+            </div>
+            <button onClick={() => { onReply(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Reply</button>
+            <button onClick={() => { onForward(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Forward</button>
+            {message.type === 'text' && <button onClick={() => { onCopy(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Copy</button>}
+            {isMe && message.type === 'text' && <button onClick={() => { onEdit(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Edit</button>}
+            <button onClick={() => { onDelete(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600">Delete for me</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChatWindow({ chatId, otherUid, go }) {
+  const { profile } = useAuth();
+  const toast = useToast();
+  const [otherUser, setOtherUser] = useState(null);
+  const [chatDoc, setChatDoc] = useState(null);
+  const [messages, setMessages] = useState(null);
+  const [text, setText] = useState('');
+  const [replyTo, setReplyTo] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [forwardMsg, setForwardMsg] = useState(null);
+  const bottomRef = useRef();
+  const typingTimeout = useRef();
+  const recorderRef = useRef(); const chunksRef = useRef([]); const recordTimerRef = useRef();
+  const imageInputRef = useRef(); const videoInputRef = useRef(); const docInputRef = useRef();
+
+  useEffect(() => { const unsub = db.collection('users').doc(otherUid).onSnapshot(s => setOtherUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [otherUid]);
+  useEffect(() => { const unsub = db.collection('chats').doc(chatId).onSnapshot(s => setChatDoc(s.exists ? s.data() : null)); return unsub; }, [chatId]);
+  useEffect(() => {
+    const unsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt', 'asc').limit(200)
+      .onSnapshot(snap => setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    return unsub;
+  }, [chatId]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages?.length]);
+
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+    const unread = messages.filter(m => m.senderId !== profile.id && !(m.readBy || []).includes(profile.id));
+    if (unread.length === 0) return;
+    const batch = db.batch();
+    unread.forEach(m => batch.update(db.collection('chats').doc(chatId).collection('messages').doc(m.id),
+      { readBy: FieldValue.arrayUnion(profile.id), deliveredTo: FieldValue.arrayUnion(profile.id) }));
+    batch.commit().catch(() => {});
+    db.collection('chatMembers').doc(chatId + '_' + profile.id).set({ unreadCount: 0 }, { merge: true }).catch(() => {});
+  }, [messages, chatId, profile.id]);
+
+  useEffect(() => () => { db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {}); }, [chatId]);
+
+  const iBlockedThem = (profile.blockedUsers || []).includes(otherUid);
+  const theyBlockedMe = (otherUser?.blockedUsers || []).includes(profile.id);
+  const blocked = iBlockedThem || theyBlockedMe;
+
+  const onTextChange = (v) => {
+    setText(v);
+    db.collection('chats').doc(chatId).set({ typing: { [profile.id]: true } }, { merge: true }).catch(() => {});
+    clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {});
+    }, 2500);
+  };
+
+  const sendText = async () => {
+    if (blocked) { toast("You can't message this user", 'error'); return; }
+    if (editingMessage) {
+      await db.collection('chats').doc(chatId).collection('messages').doc(editingMessage.id).update({ text: text.trim(), editedAt: FieldValue.serverTimestamp() });
+      setEditingMessage(null); setText(''); return;
+    }
+    if (!text.trim()) return;
+    const payload = { type: 'text', text: text.trim() };
+    if (replyTo) payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
+    setText(''); setReplyTo(null);
+    db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {});
+    try { await sendChatMessage(profile.id, chatId, otherUid, payload); } catch (e) { toast(e.message, 'error'); }
+  };
+
+  const uploadAndSend = async (file, type) => {
+    if (blocked) { toast("You can't message this user", 'error'); return; }
+    const maxSizes = { image: 15 * 1024 * 1024, video: 100 * 1024 * 1024, document: 25 * 1024 * 1024, audio: 20 * 1024 * 1024 };
+    if (file.size > maxSizes[type]) { toast('File exceeds the size limit for ' + type, 'error'); return; }
+    setUploading(true); setProgress(0);
+    try {
+      let blob = file;
+      if (type === 'image') blob = await compressImage(file, 1600, 0.85);
+      const ext = type === 'image' ? 'jpg' : (file.name ? file.name.split('.').pop() : 'webm');
+      const path = `chat-media/${chatId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const ref = storage.ref(path);
+      await new Promise((resolve, reject) => {
+        const task = ref.put(blob, { contentType: type === 'image' ? 'image/jpeg' : (file.type || 'application/octet-stream') });
+        task.on('state_changed', s => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)), reject, resolve);
+      });
+      const url = await ref.getDownloadURL();
+      const payload = { type, mediaURL: url, mediaName: file.name || 'voice-note.webm', mediaSize: file.size };
+      if (replyTo) payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
+      setReplyTo(null);
+      await sendChatMessage(profile.id, chatId, otherUid, payload);
+    } catch (e) { toast(e.message, 'error'); } finally { setUploading(false); setProgress(0); }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      recorderRef.current = rec; chunksRef.current = [];
+      rec.ondataavailable = e => chunksRef.current.push(e.data);
+      rec.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        if (rec.__cancelled || chunksRef.current.length === 0) return;
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+        await uploadAndSend(file, 'audio');
+      };
+      rec.start();
+      setRecording(true); setRecordSeconds(0);
+      recordTimerRef.current = setInterval(() => setRecordSeconds(s => s + 1), 1000);
+    } catch (e) { toast('Microphone access denied', 'error'); }
+  };
+  const stopRecording = (cancel) => {
+    clearInterval(recordTimerRef.current);
+    setRecording(false);
+    if (recorderRef.current) { recorderRef.current.__cancelled = !!cancel; recorderRef.current.stop(); }
+  };
+
+  const deleteForMe = (m) => db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ deletedFor: FieldValue.arrayUnion(profile.id) });
+  const copyText = (m) => { navigator.clipboard?.writeText(m.text || ''); toast('Copied', 'success'); };
+  const react = async (m, emoji) => {
+    const key = 'reactions.' + profile.id;
+    if (m.reactions?.[profile.id] === emoji) await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: FieldValue.delete() });
+    else await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: emoji });
+  };
+
+  if (!otherUser) return <div className="p-6"><PostSkeleton /></div>;
+  const visibleMessages = (messages || []).filter(m => !(m.deletedFor || []).includes(profile.id));
+
+  return (
+    <div className="flex flex-col bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 md:rounded-2xl overflow-hidden" style={{ height: 'calc(100vh - 1px)' }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-ink-700 shrink-0">
+        <button onClick={() => go({ name: 'messages' })} className="text-slate-400 md:hidden"><i className="fa-solid fa-arrow-left"></i></button>
+        <div className="relative cursor-pointer" onClick={() => go({ name: 'profile', uid: otherUid })}>
+          <Avatar user={otherUser} size={9} />
+          {isUserOnline(otherUser) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800"></span>}
+        </div>
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => go({ name: 'profile', uid: otherUid })}>
+          <p className="font-semibold text-sm truncate">{otherUser.displayName}</p>
+          <p className="text-xs text-slate-400 truncate">
+            {chatDoc?.typing?.[otherUid] ? <span className="text-brand-500">typing…</span> : lastSeenLabel(otherUser)}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages === null && <p className="text-sm text-slate-400 text-center">Loading…</p>}
+        {messages?.length === 0 && (
+          <div className="text-center text-slate-400 py-10">
+            <div className="flex justify-center"><Avatar user={otherUser} size={16} /></div>
+            <p className="mt-3 font-semibold text-sm text-slate-600 dark:text-slate-300">{otherUser.displayName}</p>
+            <p className="text-xs mt-1">Say hello to start the conversation 👋</p>
+          </div>
+        )}
+        {visibleMessages.map((m, i) => (
+          <React.Fragment key={m.id}>
+            <DateSeparator prev={visibleMessages[i - 1]} curr={m} />
+            <MessageBubble message={m} isMe={m.senderId === profile.id} otherUid={otherUid}
+              menuOpen={activeMenuId === m.id} setMenuOpen={(v) => setActiveMenuId(v ? m.id : null)}
+              onReply={() => setReplyTo(m)} onForward={() => setForwardMsg(m)} onCopy={() => copyText(m)}
+              onEdit={() => { setEditingMessage(m); setText(m.text || ''); }} onDelete={() => deleteForMe(m)}
+              onReact={(e) => react(m, e)} />
+          </React.Fragment>
+        ))}
+        <div ref={bottomRef}></div>
+      </div>
+
+      {blocked && (
+        <div className="px-4 py-2 text-xs text-center text-red-500 bg-red-50 dark:bg-red-900/20 shrink-0">
+          {iBlockedThem ? "You've blocked this user." : "You can't reply to this conversation."}
+        </div>
+      )}
+
+      {(replyTo || editingMessage) && (
+        <div className="flex items-center justify-between px-4 py-2 border-t border-slate-100 dark:border-ink-700 bg-slate-50 dark:bg-ink-700 shrink-0">
+          <p className="text-xs text-slate-500 truncate">{editingMessage ? 'Editing message' : 'Replying to: ' + (replyTo.text || '[' + replyTo.type + ']')}</p>
+          <button onClick={() => { setReplyTo(null); setEditingMessage(null); setText(''); }} className="text-slate-400 text-xs px-2">✕</button>
+        </div>
+      )}
+
+      {uploading && (
+        <div className="px-4 pt-2 shrink-0">
+          <div className="w-full h-1.5 bg-slate-100 dark:bg-ink-700 rounded-full overflow-hidden">
+            <div className="h-full bg-brand-600 transition-all" style={{ width: progress + '%' }}></div>
+          </div>
+        </div>
+      )}
+
+      <div className="p-3 border-t border-slate-100 dark:border-ink-700 shrink-0 relative">
+        {emojiOpen && (
+          <div className="absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 grid grid-cols-6 gap-1 z-20">
+            {EMOJI_PICKER_SET.map(e => <button key={e} onClick={() => { setText(t => t + e); setEmojiOpen(false); }} className="text-lg hover:bg-slate-100 dark:hover:bg-ink-600 rounded-lg p-1">{e}</button>)}
+          </div>
+        )}
+        {attachOpen && (
+          <div className="absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 flex gap-2 z-20">
+            <button onClick={() => { imageInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-image text-brand-500"></i>Photo</button>
+            <button onClick={() => { videoInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-video text-purple-500"></i>Video</button>
+            <button onClick={() => { docInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-file text-amber-500"></i>Document</button>
+          </div>
+        )}
+        <input ref={imageInputRef} type="file" accept="image/*" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'image'); e.target.value = ''; }} />
+        <input ref={videoInputRef} type="file" accept="video/*" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'video'); e.target.value = ''; }} />
+        <input ref={docInputRef} type="file" accept=".pdf,.doc,.docx,.zip,.txt,.xlsx,.pptx" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'document'); e.target.value = ''; }} />
+
+        {recording ? (
+          <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+            <span className="text-sm text-red-500 flex-1">Recording… {Math.floor(recordSeconds / 60)}:{String(recordSeconds % 60).padStart(2, '0')}</span>
+            <button onClick={() => stopRecording(true)} className="text-slate-400 text-sm">Cancel</button>
+            <button onClick={() => stopRecording(false)} className="bg-brand-600 text-white rounded-full w-8 h-8 flex items-center justify-center"><i className="fa-solid fa-paper-plane text-xs"></i></button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <button onClick={() => { setAttachOpen(a => !a); setEmojiOpen(false); }} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-solid fa-paperclip"></i></button>
+            <button onClick={() => { setEmojiOpen(a => !a); setAttachOpen(false); }} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-regular fa-face-smile"></i></button>
+            <input value={text} onChange={e => onTextChange(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); } }}
+              disabled={blocked} placeholder={blocked ? "You can't message this user" : "Message…"} className="flex-1 bg-slate-50 dark:bg-ink-700 rounded-full px-4 py-2 text-sm disabled:opacity-50" />
+            {text.trim() ? (
+              <button onClick={sendText} className="bg-brand-600 text-white rounded-full w-9 h-9 flex items-center justify-center shrink-0"><i className="fa-solid fa-paper-plane text-sm"></i></button>
+            ) : (
+              <button onClick={startRecording} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-solid fa-microphone"></i></button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {forwardMsg && <ForwardModal message={forwardMsg} onClose={() => setForwardMsg(null)} />}
+    </div>
+  );
+}
+
+function ForwardModal({ message, onClose }) {
+  const { profile } = useAuth();
+  const toast = useToast();
+  const [rows, setRows] = useState([]);
+  const [sending, setSending] = useState(null);
+
+  useEffect(() => {
+    const unsub = db.collection('chatMembers').where('uid', '==', profile.id).where('status', '==', 'accepted')
+      .onSnapshot(snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => !r.deletedAt)));
+    return unsub;
+  }, [profile.id]);
+
+  const forwardTo = async (row) => {
+    setSending(row.id);
+    try {
+      const payload = { type: message.type };
+      if (message.text) payload.text = message.text;
+      if (message.mediaURL) { payload.mediaURL = message.mediaURL; payload.mediaName = message.mediaName || ''; payload.mediaSize = message.mediaSize || 0; }
+      payload.forwardedFrom = { chatId: message.id, originalSenderId: message.senderId };
+      await sendChatMessage(profile.id, row.chatId, row.otherUid, payload);
+      toast('Forwarded', 'success');
+      onClose();
+    } catch (e) { toast(e.message, 'error'); } finally { setSending(null); }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
+      <div className="bg-white dark:bg-ink-800 rounded-t-2xl md:rounded-2xl w-full max-w-sm max-h-[70vh] overflow-y-auto p-4">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-display font-bold text-base">Forward message</h3>
+          <button onClick={onClose} className="text-slate-400"><i className="fa-solid fa-xmark"></i></button>
+        </div>
+        <div className="space-y-3">
+          {rows.map(r => <ForwardRow key={r.id} row={r} onSend={() => forwardTo(r)} sending={sending === r.id} />)}
+          {rows.length === 0 && <p className="text-sm text-slate-400 text-center py-6">No conversations to forward to yet.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ForwardRow({ row, onSend, sending }) {
+  const [user, setUser] = useState(null);
+  useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [row.otherUid]);
+  if (!user) return null;
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2"><Avatar user={user} size={8} /><span className="text-sm font-medium">{user.displayName}</span></div>
+      <button onClick={onSend} disabled={sending} className="text-xs font-semibold text-brand-600 disabled:opacity-50">{sending ? 'Sending…' : 'Send'}</button>
+    </div>
+  );
+}
+
 /* ============================== RENDER ============================== */
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+document.getElementById('root').dataset.mounted = 'true';
 </script>
 </body>
 </html>
