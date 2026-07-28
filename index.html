@@ -1825,12 +1825,17 @@ function ChatWindow({ chatId, otherUid, go }) {
         batch.commit().catch(() => { });
         db.collection('chatMembers').doc(chatId + '_' + profile.id).set({ unreadCount: 0 }, { merge: true }).catch(() => { });
     }, [messages, chatId, profile.id]);
-    useEffect(() => () => { db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { }); }, [chatId]);
+    const chatReadyRef = useRef(false);
+    useEffect(() => { chatReadyRef.current = chatReady; }, [chatReady]);
+    useEffect(() => () => { if (chatReadyRef.current)
+        db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { }); }, [chatId]);
     const iBlockedThem = (profile.blockedUsers || []).includes(otherUid);
     const theyBlockedMe = ((otherUser === null || otherUser === void 0 ? void 0 : otherUser.blockedUsers) || []).includes(profile.id);
     const blocked = iBlockedThem || theyBlockedMe;
     const onTextChange = (v) => {
         setText(v);
+        if (!chatReady)
+            return;
         db.collection('chats').doc(chatId).set({ typing: { [profile.id]: true } }, { merge: true }).catch(() => { });
         clearTimeout(typingTimeout.current);
         typingTimeout.current = setTimeout(() => {
@@ -1855,7 +1860,8 @@ function ChatWindow({ chatId, otherUid, go }) {
             payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
         setText('');
         setReplyTo(null);
-        db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { });
+        if (chatReady)
+            db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { });
         try {
             await sendChatMessage(profile.id, chatId, otherUid, payload);
         }
