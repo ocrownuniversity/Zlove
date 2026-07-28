@@ -6,8 +6,17 @@
 <title>Zlove</title>
 <link rel="icon" href="data:," />
 
+<!-- Load diagnostics: tracks each external resource so we can pinpoint exactly what fails to load -->
+<script>
+  window.__zloveStatus = {
+    tailwind: 'pending', fonts: 'pending', fontawesome: 'pending',
+    react: 'pending', reactdom: 'pending', babel: 'pending',
+    firebaseApp: 'pending', firebaseAuth: 'pending', firebaseFirestore: 'pending', firebaseStorage: 'pending'
+  };
+</script>
+
 <!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com" onload="window.__zloveStatus.tailwind='ok'" onerror="window.__zloveStatus.tailwind='failed'"></script>
 <script>
   if (typeof tailwind !== 'undefined') {
     tailwind.config = {
@@ -32,19 +41,19 @@
   }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" onload="window.__zloveStatus.fonts='ok'" onerror="window.__zloveStatus.fonts='failed'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" onload="window.__zloveStatus.fontawesome='ok'" onerror="window.__zloveStatus.fontawesome='failed'">
 
 <!-- React -->
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" onload="window.__zloveStatus.react='ok'" onerror="window.__zloveStatus.react='failed'"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" onload="window.__zloveStatus.reactdom='ok'" onerror="window.__zloveStatus.reactdom='failed'"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" onload="window.__zloveStatus.babel='ok'" onerror="window.__zloveStatus.babel='failed'"></script>
 
 <!-- Firebase (compat, so it works from a single script tag with no bundler) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" onload="window.__zloveStatus.firebaseApp='ok'" onerror="window.__zloveStatus.firebaseApp='failed'"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" onload="window.__zloveStatus.firebaseAuth='ok'" onerror="window.__zloveStatus.firebaseAuth='failed'"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" onload="window.__zloveStatus.firebaseFirestore='ok'" onerror="window.__zloveStatus.firebaseFirestore='failed'"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js" onload="window.__zloveStatus.firebaseStorage='ok'" onerror="window.__zloveStatus.firebaseStorage='failed'"></script>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -67,20 +76,38 @@
 </head>
 <body class="bg-slate-50 dark:bg-ink-900 text-slate-900 dark:text-slate-100 transition-colors">
 <div id="root">
-  <div style="font-family: sans-serif; max-width: 480px; margin: 15vh auto; padding: 24px; text-align: center; color:#334155;">
-    <div style="font-size:15px; line-height:1.5;">Loading Zlove…<br/>If this message doesn't disappear in a few seconds, this browser/preview can't reach the internet to load React, Tailwind and Firebase from their CDNs. Open this file in a normal browser with an internet connection (or via your published GitHub Pages URL) instead of an in-app preview.</div>
+  <div style="font-family: sans-serif; max-width: 480px; margin: 10vh auto; padding: 24px; text-align: center; color:#334155;">
+    <div style="font-size:15px; line-height:1.5;">Loading Zlove…</div>
   </div>
 </div>
 <script>
-  window.addEventListener('error', function (e) {
-    var msg = (e && e.message) || 'Unknown error';
-    if (/tailwind|React|ReactDOM|firebase|Babel/i.test(msg)) {
-      var root = document.getElementById('root');
-      if (root && !root.dataset.mounted) {
-        root.innerHTML = '<div style="font-family: sans-serif; max-width: 480px; margin: 15vh auto; padding: 24px; text-align: center; color:#b91c1c;"><b>Couldn\'t load required scripts (' + msg + ').</b><br/><br/>This usually means the browser has no internet access, or is an in-app preview that blocks external CDN requests (React, Tailwind, Firebase, and Font Awesome all load from CDNs). Try opening this file in a normal browser with internet access, or via your published GitHub Pages URL.</div>';
-      }
-    }
-  }, true);
+  var LABELS = {
+    tailwind: 'Tailwind CSS (cdn.tailwindcss.com)', fonts: 'Google Fonts — cosmetic only (fonts.googleapis.com)',
+    fontawesome: 'Font Awesome — cosmetic only (cdnjs.cloudflare.com)', react: 'React (cdnjs.cloudflare.com)', reactdom: 'ReactDOM (cdnjs.cloudflare.com)',
+    babel: 'Babel (cdnjs.cloudflare.com)', firebaseApp: 'Firebase App — needs Google (gstatic.com)', firebaseAuth: 'Firebase Auth — needs Google (gstatic.com)',
+    firebaseFirestore: 'Firebase Firestore — needs Google (gstatic.com)', firebaseStorage: 'Firebase Storage — needs Google (gstatic.com)'
+  };
+  function renderDiagnostics() {
+    var root = document.getElementById('root');
+    if (!root || root.dataset.mounted) return;
+    var rows = Object.keys(LABELS).map(function (key) {
+      var status = window.__zloveStatus[key];
+      var color = status === 'ok' ? '#059669' : status === 'failed' ? '#dc2626' : '#d97706';
+      var icon = status === 'ok' ? '✓' : status === 'failed' ? '✕' : '…';
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:13px;gap:8px;">' +
+        '<span>' + LABELS[key] + '</span><span style="color:' + color + ';font-weight:600;white-space:nowrap;">' + icon + ' ' + status + '</span></div>';
+    }).join('');
+    var googleBlocked = ['firebaseApp', 'firebaseAuth', 'firebaseFirestore', 'firebaseStorage'].some(function (k) { return window.__zloveStatus[k] !== 'ok'; });
+    root.innerHTML = '<div style="font-family: sans-serif; max-width: 480px; margin: 6vh auto; padding: 24px; text-align: left; color:#334155;">' +
+      '<div style="text-align:center; font-size:15px; font-weight:600; margin-bottom:12px;">The app couldn\'t finish loading. Here\'s exactly what happened:</div>' +
+      rows +
+      (googleBlocked ? '<div style="font-size:13px; margin-top:16px; line-height:1.5; color:#b91c1c; background:#fef2f2; padding:10px; border-radius:8px;"><b>Firebase (gstatic.com) is unreachable on this network.</b> Firebase is Google infrastructure — login, posts and messaging cannot work here regardless of anything else. This needs a network/VPN that can reach Google\'s servers, not a code fix.</div>' : '') +
+      '<div style="font-size:13px; margin-top:12px; line-height:1.5; color:#64748b;">Anything marked <b style="color:#dc2626;">failed</b> or stuck on <b style="color:#d97706;">pending</b> is being blocked — by a VPN, private DNS (AdGuard/NextDNS), ad-blocker, firewall, or region-level restriction. Try turning those off, switching networks, or opening this page in a different browser, then retry.</div>' +
+      '<button onclick="location.reload()" style="margin-top:16px;width:100%;padding:10px;border-radius:10px;background:#2f5dff;color:#fff;border:none;font-weight:600;font-size:14px;">Retry</button>' +
+      '</div>';
+  }
+  window.addEventListener('error', function () { setTimeout(renderDiagnostics, 300); }, true);
+  setTimeout(renderDiagnostics, 7000);
 </script>
 
 <script type="text/babel" data-presets="react,stage-3">
