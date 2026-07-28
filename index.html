@@ -1050,13 +1050,13 @@ function EditProfileModal({ user, onClose }) {
             const update = Object.assign({}, form);
             if (photoFile) {
                 const compressed = await compressImage(photoFile, 512);
-                const ref = storage.ref(`avatars/${user.id}.jpg`);
+                const ref = storage.ref(`avatars/${user.id}/photo.jpg`);
                 await ref.put(compressed, { contentType: 'image/jpeg' });
                 update.photoURL = await ref.getDownloadURL();
             }
             if (coverFile) {
                 const compressed = await compressImage(coverFile, 1200);
-                const ref = storage.ref(`covers/${user.id}.jpg`);
+                const ref = storage.ref(`covers/${user.id}/photo.jpg`);
                 await ref.put(compressed, { contentType: 'image/jpeg' });
                 update.coverURL = await ref.getDownloadURL();
             }
