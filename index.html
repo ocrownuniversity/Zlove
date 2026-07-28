@@ -10,7 +10,7 @@
 <script>
   window.__zloveStatus = {
     tailwind: 'pending', fonts: 'pending', fontawesome: 'pending',
-    react: 'pending', reactdom: 'pending', babel: 'pending',
+    react: 'pending', reactdom: 'pending',
     firebaseApp: 'pending', firebaseAuth: 'pending', firebaseFirestore: 'pending', firebaseStorage: 'pending'
   };
 </script>
@@ -47,7 +47,6 @@
 <!-- React -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" onload="window.__zloveStatus.react='ok'" onerror="window.__zloveStatus.react='failed'"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" onload="window.__zloveStatus.reactdom='ok'" onerror="window.__zloveStatus.reactdom='failed'"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" onload="window.__zloveStatus.babel='ok'" onerror="window.__zloveStatus.babel='failed'"></script>
 
 <!-- Firebase (compat, so it works from a single script tag with no bundler) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" onload="window.__zloveStatus.firebaseApp='ok'" onerror="window.__zloveStatus.firebaseApp='failed'"></script>
@@ -84,7 +83,7 @@
   var LABELS = {
     tailwind: 'Tailwind CSS (cdn.tailwindcss.com)', fonts: 'Google Fonts — cosmetic only (fonts.googleapis.com)',
     fontawesome: 'Font Awesome — cosmetic only (cdnjs.cloudflare.com)', react: 'React (cdnjs.cloudflare.com)', reactdom: 'ReactDOM (cdnjs.cloudflare.com)',
-    babel: 'Babel (cdnjs.cloudflare.com)', firebaseApp: 'Firebase App — needs Google (gstatic.com)', firebaseAuth: 'Firebase Auth — needs Google (gstatic.com)',
+    firebaseApp: 'Firebase App — needs Google (gstatic.com)', firebaseAuth: 'Firebase Auth — needs Google (gstatic.com)',
     firebaseFirestore: 'Firebase Firestore — needs Google (gstatic.com)', firebaseStorage: 'Firebase Storage — needs Google (gstatic.com)'
   };
   function renderDiagnostics() {
@@ -110,17 +109,17 @@
   setTimeout(renderDiagnostics, 7000);
 </script>
 
-<script type="text/babel" data-presets="react,stage-3">
+<script>
+"use strict";
 const { useState, useEffect, useRef, useContext, createContext, useCallback, useMemo } = React;
-
 /* ============================== FIREBASE ============================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyC518YM7I5SJBpOSMsZptvN_qaO5M3ulNM",
-  authDomain: "zlove-8078a.firebaseapp.com",
-  projectId: "zlove-8078a",
-  storageBucket: "zlove-8078a.firebasestorage.app",
-  messagingSenderId: "1049200851049",
-  appId: "1:1049200851049:web:1d1e8a63812f83f9828af8"
+    apiKey: "AIzaSyC518YM7I5SJBpOSMsZptvN_qaO5M3ulNM",
+    authDomain: "zlove-8078a.firebaseapp.com",
+    projectId: "zlove-8078a",
+    storageBucket: "zlove-8078a.firebasestorage.app",
+    messagingSenderId: "1049200851049",
+    appId: "1:1049200851049:web:1d1e8a63812f83f9828af8"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -128,1713 +127,1468 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 const FieldValue = firebase.firestore.FieldValue;
 const Timestamp = firebase.firestore.Timestamp;
-
 /* ============================== HELPERS ============================== */
 function timeAgo(ts) {
-  if (!ts) return '';
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (secs < 60) return 'now';
-  const mins = Math.floor(secs / 60);
-  if (mins < 60) return mins + 'm';
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + 'h';
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return days + 'd';
-  return date.toLocaleDateString();
+    if (!ts)
+        return '';
+    const date = ts.toDate ? ts.toDate() : new Date(ts);
+    const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (secs < 60)
+        return 'now';
+    const mins = Math.floor(secs / 60);
+    if (mins < 60)
+        return mins + 'm';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)
+        return hrs + 'h';
+    const days = Math.floor(hrs / 24);
+    if (days < 7)
+        return days + 'd';
+    return date.toLocaleDateString();
 }
-
 function initials(name) {
-  if (!name) return '?';
-  return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    if (!name)
+        return '?';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 }
-
 async function compressImage(file, maxDim = 1600, quality = 0.82) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = e => { img.src = e.target.result; };
-    reader.onerror = reject;
-    img.onload = () => {
-      let { width, height } = img;
-      if (width > maxDim || height > maxDim) {
-        if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
-        else { width = Math.round(width * maxDim / height); height = maxDim; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width; canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
-    };
-    img.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.onerror = reject;
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                    height = Math.round(height * maxDim / width);
+                    width = maxDim;
+                }
+                else {
+                    width = Math.round(width * maxDim / height);
+                    height = maxDim;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+        };
+        img.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
-
 function uniqueUsernameCheck(username) {
-  return db.collection('usernames').doc(username.toLowerCase()).get();
+    return db.collection('usernames').doc(username.toLowerCase()).get();
 }
-
 /* ---- messaging helpers ---- */
 function chatIdFor(a, b) { return [a, b].sort().join('_'); }
-
 const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '😡'];
-const EMOJI_PICKER_SET = ['😀','😂','😍','🥰','😊','😉','😎','🤔','😢','😭','😡','👍','👎','👏','🙏','🔥','🎉','❤️','💯','✨','😴','🤗','😅','🙌'];
-
+const EMOJI_PICKER_SET = ['😀', '😂', '😍', '🥰', '😊', '😉', '😎', '🤔', '😢', '😭', '😡', '👍', '👎', '👏', '🙏', '🔥', '🎉', '❤️', '💯', '✨', '😴', '🤗', '😅', '🙌'];
 function isUserOnline(user) {
-  if (!user || !user.lastSeen) return false;
-  const last = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
-  return !!user.online && (Date.now() - last.getTime()) < 60000;
+    if (!user || !user.lastSeen)
+        return false;
+    const last = user.lastSeen.toDate ? user.lastSeen.toDate() : new Date(user.lastSeen);
+    return !!user.online && (Date.now() - last.getTime()) < 60000;
 }
-
 function lastSeenLabel(user) {
-  if (isUserOnline(user)) return 'Active now';
-  if (!user?.lastSeen) return '';
-  return 'Last seen ' + timeAgo(user.lastSeen);
+    if (isUserOnline(user))
+        return 'Active now';
+    if (!(user === null || user === void 0 ? void 0 : user.lastSeen))
+        return '';
+    return 'Last seen ' + timeAgo(user.lastSeen);
 }
-
 function setPresence(uid, online) {
-  if (!uid) return;
-  db.collection('users').doc(uid).update({ online, lastSeen: FieldValue.serverTimestamp() }).catch(() => {});
+    if (!uid)
+        return;
+    db.collection('users').doc(uid).update({ online, lastSeen: FieldValue.serverTimestamp() }).catch(() => { });
 }
-
 function useUnreadMessages(uid) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!uid) return;
-    const unsub = db.collection('chatMembers').where('uid', '==', uid).onSnapshot(snap => {
-      let total = 0;
-      snap.docs.forEach(d => {
-        const m = d.data();
-        if (!m.archived && !m.deletedAt && m.status === 'accepted') total += (m.unreadCount || 0);
-      });
-      setCount(total);
-    });
-    return unsub;
-  }, [uid]);
-  return count;
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        if (!uid)
+            return;
+        const unsub = db.collection('chatMembers').where('uid', '==', uid).onSnapshot(snap => {
+            let total = 0;
+            snap.docs.forEach(d => {
+                const m = d.data();
+                if (!m.archived && !m.deletedAt && m.status === 'accepted')
+                    total += (m.unreadCount || 0);
+            });
+            setCount(total);
+        });
+        return unsub;
+    }, [uid]);
+    return count;
 }
-
 async function ensureChat(meId, otherId) {
-  const id = chatIdFor(meId, otherId);
-  const chatRef = db.collection('chats').doc(id);
-  const snap = await chatRef.get();
-  if (!snap.exists) {
-    const followedByOther = await db.collection('follows').doc(otherId + '_' + meId).get();
-    const recipientStatus = followedByOther.exists ? 'accepted' : 'pending';
-    await chatRef.set({
-      members: [meId, otherId], isGroup: false, lastMessage: null,
-      lastMessageAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp(), typing: {}
-    });
-    await db.collection('chatMembers').doc(id + '_' + meId).set({
-      chatId: id, uid: meId, otherUid: otherId, pinned: false, archived: false, unreadCount: 0,
-      status: 'accepted', lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
-    });
-    await db.collection('chatMembers').doc(id + '_' + otherId).set({
-      chatId: id, uid: otherId, otherUid: meId, pinned: false, archived: false, unreadCount: 0,
-      status: recipientStatus, lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
-    });
-  }
-  return id;
+    const id = chatIdFor(meId, otherId);
+    const chatRef = db.collection('chats').doc(id);
+    const snap = await chatRef.get();
+    if (!snap.exists) {
+        const followedByOther = await db.collection('follows').doc(otherId + '_' + meId).get();
+        const recipientStatus = followedByOther.exists ? 'accepted' : 'pending';
+        await chatRef.set({
+            members: [meId, otherId], isGroup: false, lastMessage: null,
+            lastMessageAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp(), typing: {}
+        });
+        await db.collection('chatMembers').doc(id + '_' + meId).set({
+            chatId: id, uid: meId, otherUid: otherId, pinned: false, archived: false, unreadCount: 0,
+            status: 'accepted', lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+        });
+        await db.collection('chatMembers').doc(id + '_' + otherId).set({
+            chatId: id, uid: otherId, otherUid: meId, pinned: false, archived: false, unreadCount: 0,
+            status: recipientStatus, lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+        });
+    }
+    return id;
 }
-
 async function sendChatMessage(meId, chatId, otherUid, payload) {
-  await ensureChat(meId, otherUid);
-  const previewText = payload.type === 'text' ? payload.text : ('[' + payload.type + ']');
-  await db.collection('chats').doc(chatId).collection('messages').add({
-    senderId: meId, createdAt: FieldValue.serverTimestamp(), readBy: [], deliveredTo: [], deletedFor: [], reactions: {}, ...payload
-  });
-  await db.collection('chats').doc(chatId).set({
-    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp()
-  }, { merge: true });
-  await db.collection('chatMembers').doc(chatId + '_' + meId).set({
-    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
-  }, { merge: true });
-  await db.collection('chatMembers').doc(chatId + '_' + otherUid).set({
-    lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(),
-    unreadCount: FieldValue.increment(1), deletedAt: null, archived: false
-  }, { merge: true });
-  db.collection('notifications').doc(otherUid).collection('items').add({
-    type: 'message', fromUserId: meId, chatId, read: false, createdAt: FieldValue.serverTimestamp()
-  });
+    await ensureChat(meId, otherUid);
+    const previewText = payload.type === 'text' ? payload.text : ('[' + payload.type + ']');
+    await db.collection('chats').doc(chatId).collection('messages').add(Object.assign({ senderId: meId, createdAt: FieldValue.serverTimestamp(), readBy: [], deliveredTo: [], deletedFor: [], reactions: {} }, payload));
+    await db.collection('chats').doc(chatId).set({
+        lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    await db.collection('chatMembers').doc(chatId + '_' + meId).set({
+        lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+    }, { merge: true });
+    await db.collection('chatMembers').doc(chatId + '_' + otherUid).set({
+        lastMessage: { type: payload.type, text: previewText, senderId: meId }, lastMessageAt: FieldValue.serverTimestamp(),
+        unreadCount: FieldValue.increment(1), deletedAt: null, archived: false
+    }, { merge: true });
+    db.collection('notifications').doc(otherUid).collection('items').add({
+        type: 'message', fromUserId: meId, chatId, read: false, createdAt: FieldValue.serverTimestamp()
+    });
 }
-
 /* ============================== CONTEXTS ============================== */
 const AuthContext = createContext(null);
 const ThemeContext = createContext(null);
 const ToastContext = createContext(null);
-
 function useAuth() { return useContext(AuthContext); }
 function useToast() { return useContext(ToastContext); }
-
 /* ============================== TOASTS ============================== */
 function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-  const push = useCallback((message, type = 'info') => {
-    const id = Math.random().toString(36).slice(2);
-    setToasts(t => [...t, { id, message, type }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3200);
-  }, []);
-  return (
-    <ToastContext.Provider value={push}>
-      {children}
-      <div className="fixed bottom-4 right-4 z-[100] space-y-2 w-[90vw] max-w-sm">
-        {toasts.map(t => (
-          <div key={t.id} className={
-            "fade-in rounded-xl px-4 py-3 shadow-lg text-sm font-medium text-white " +
-            (t.type === 'error' ? 'bg-red-500' : t.type === 'success' ? 'bg-emerald-500' : 'bg-ink-800')
-          }>{t.message}</div>
-        ))}
-      </div>
-    </ToastContext.Provider>
-  );
+    const [toasts, setToasts] = useState([]);
+    const push = useCallback((message, type = 'info') => {
+        const id = Math.random().toString(36).slice(2);
+        setToasts(t => [...t, { id, message, type }]);
+        setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3200);
+    }, []);
+    return (React.createElement(ToastContext.Provider, { value: push },
+        children,
+        React.createElement("div", { className: "fixed bottom-4 right-4 z-[100] space-y-2 w-[90vw] max-w-sm" }, toasts.map(t => (React.createElement("div", { key: t.id, className: "fade-in rounded-xl px-4 py-3 shadow-lg text-sm font-medium text-white " +
+                (t.type === 'error' ? 'bg-red-500' : t.type === 'success' ? 'bg-emerald-500' : 'bg-ink-800') }, t.message))))));
 }
-
 /* ============================== APP ROOT ============================== */
 function App() {
-  const [firebaseUser, setFirebaseUser] = useState(undefined); // undefined = loading
-  const [profile, setProfile] = useState(null);
-  const [theme, setTheme] = useState(localStorage.getItem('zlove-theme') || 'light');
-  const [route, setRoute] = useState({ name: 'home' });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('zlove-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged(u => setFirebaseUser(u || null));
-    return unsub;
-  }, []);
-
-  useEffect(() => {
-    if (!firebaseUser) { setProfile(null); return; }
-    const unsub = db.collection('users').doc(firebaseUser.uid).onSnapshot(snap => {
-      setProfile(snap.exists ? { id: snap.id, ...snap.data() } : null);
-    });
-    return unsub;
-  }, [firebaseUser]);
-
-  const authValue = useMemo(() => ({ firebaseUser, profile }), [firebaseUser, profile]);
-
-  if (firebaseUser === undefined) {
-    return <SplashScreen />;
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      <ToastProvider>
-        <AuthContext.Provider value={authValue}>
-          {!firebaseUser ? (
-            <AuthScreen />
-          ) : !profile ? (
-            <SplashScreen />
-          ) : !profile.username ? (
-            <OnboardingScreen />
-          ) : profile.suspended ? (
-            <SuspendedScreen />
-          ) : (
-            <MainApp route={route} setRoute={setRoute} />
-          )}
-        </AuthContext.Provider>
-      </ToastProvider>
-    </ThemeContext.Provider>
-  );
+    const [firebaseUser, setFirebaseUser] = useState(undefined); // undefined = loading
+    const [profile, setProfile] = useState(null);
+    const [theme, setTheme] = useState(localStorage.getItem('zlove-theme') || 'light');
+    const [route, setRoute] = useState({ name: 'home' });
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        localStorage.setItem('zlove-theme', theme);
+    }, [theme]);
+    useEffect(() => {
+        const unsub = auth.onAuthStateChanged(u => setFirebaseUser(u || null));
+        return unsub;
+    }, []);
+    useEffect(() => {
+        if (!firebaseUser) {
+            setProfile(null);
+            return;
+        }
+        const unsub = db.collection('users').doc(firebaseUser.uid).onSnapshot(snap => {
+            setProfile(snap.exists ? Object.assign({ id: snap.id }, snap.data()) : null);
+        });
+        return unsub;
+    }, [firebaseUser]);
+    const authValue = useMemo(() => ({ firebaseUser, profile }), [firebaseUser, profile]);
+    if (firebaseUser === undefined) {
+        return React.createElement(SplashScreen, null);
+    }
+    return (React.createElement(ThemeContext.Provider, { value: { theme, setTheme } },
+        React.createElement(ToastProvider, null,
+            React.createElement(AuthContext.Provider, { value: authValue }, !firebaseUser ? (React.createElement(AuthScreen, null)) : !profile ? (React.createElement(SplashScreen, null)) : !profile.username ? (React.createElement(OnboardingScreen, null)) : profile.suspended ? (React.createElement(SuspendedScreen, null)) : (React.createElement(MainApp, { route: route, setRoute: setRoute }))))));
 }
-
 function SplashScreen() {
-  return (
-    <div className="h-screen flex items-center justify-center bg-white dark:bg-ink-900">
-      <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400">
-        <i className="fa-solid fa-heart-circle-bolt text-3xl animate-pulse"></i>
-        <span className="font-display font-extrabold text-2xl">Zlove</span>
-      </div>
-    </div>
-  );
+    return (React.createElement("div", { className: "h-screen flex items-center justify-center bg-white dark:bg-ink-900" },
+        React.createElement("div", { className: "flex items-center gap-2 text-brand-600 dark:text-brand-400" },
+            React.createElement("i", { className: "fa-solid fa-heart-circle-bolt text-3xl animate-pulse" }),
+            React.createElement("span", { className: "font-display font-extrabold text-2xl" }, "Zlove"))));
 }
-
 function SuspendedScreen() {
-  return (
-    <div className="h-screen flex flex-col items-center justify-center gap-4 text-center px-6 bg-white dark:bg-ink-900">
-      <i className="fa-solid fa-ban text-4xl text-red-500"></i>
-      <h1 className="font-display text-xl font-bold">Your account is suspended</h1>
-      <p className="text-slate-500 max-w-sm">Contact support if you think this is a mistake.</p>
-      <button onClick={() => auth.signOut()} className="mt-2 px-4 py-2 rounded-lg bg-ink-900 dark:bg-white dark:text-ink-900 text-white text-sm font-semibold">Sign out</button>
-    </div>
-  );
+    return (React.createElement("div", { className: "h-screen flex flex-col items-center justify-center gap-4 text-center px-6 bg-white dark:bg-ink-900" },
+        React.createElement("i", { className: "fa-solid fa-ban text-4xl text-red-500" }),
+        React.createElement("h1", { className: "font-display text-xl font-bold" }, "Your account is suspended"),
+        React.createElement("p", { className: "text-slate-500 max-w-sm" }, "Contact support if you think this is a mistake."),
+        React.createElement("button", { onClick: () => auth.signOut(), className: "mt-2 px-4 py-2 rounded-lg bg-ink-900 dark:bg-white dark:text-ink-900 text-white text-sm font-semibold" }, "Sign out")));
 }
-
 /* ============================== AUTH SCREEN ============================== */
 function AuthScreen() {
-  const [mode, setMode] = useState('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState(false);
-  const toast = useToast();
-
-  const handleEmailAuth = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      if (mode === 'login') {
-        await auth.signInWithEmailAndPassword(email, password);
-      } else {
-        if (password.length < 6) throw new Error('Password must be at least 6 characters.');
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection('users').doc(cred.user.uid).set({
-          uid: cred.user.uid, email, createdAt: FieldValue.serverTimestamp(),
-          followersCount: 0, followingCount: 0, postsCount: 0, isAdmin: false, suspended: false
-        }, { merge: true });
-      }
-    } catch (err) {
-      toast(err.message.replace('Firebase: ', ''), 'error');
-    } finally { setBusy(false); }
-  };
-
-  const handleGoogle = async () => {
-    setBusy(true);
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const cred = await auth.signInWithPopup(provider);
-      const ref = db.collection('users').doc(cred.user.uid);
-      const snap = await ref.get();
-      if (!snap.exists) {
-        await ref.set({
-          uid: cred.user.uid, email: cred.user.email, displayName: cred.user.displayName || '',
-          photoURL: cred.user.photoURL || '', createdAt: FieldValue.serverTimestamp(),
-          followersCount: 0, followingCount: 0, postsCount: 0, isAdmin: false, suspended: false
-        }, { merge: true });
-      }
-    } catch (err) {
-      toast(err.message.replace('Firebase: ', ''), 'error');
-    } finally { setBusy(false); }
-  };
-
-  return (
-    <div className="min-h-screen flex bg-white dark:bg-ink-900">
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-brand-600 via-brand-700 to-ink-900 items-center justify-center relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-brand-400/30 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
-        <div className="relative text-white px-12 max-w-md">
-          <div className="flex items-center gap-2 mb-8">
-            <i className="fa-solid fa-heart-circle-bolt text-3xl"></i>
-            <span className="font-display font-extrabold text-3xl">Zlove</span>
-          </div>
-          <h1 className="font-display text-4xl font-bold leading-tight mb-4">Where your circle actually shows up.</h1>
-          <p className="text-brand-100 text-lg">Share moments, follow people you care about, and keep the feed real-time.</p>
-        </div>
-      </div>
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
-          <div className="flex lg:hidden items-center gap-2 mb-8 justify-center text-brand-600">
-            <i className="fa-solid fa-heart-circle-bolt text-2xl"></i>
-            <span className="font-display font-extrabold text-2xl">Zlove</span>
-          </div>
-          <h2 className="font-display text-2xl font-bold mb-1">{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
-          <p className="text-slate-500 text-sm mb-6">{mode === 'login' ? 'Sign in to continue' : 'Join Zlove in seconds'}</p>
-
-          <button onClick={handleGoogle} disabled={busy} className="w-full flex items-center justify-center gap-2 border border-slate-200 dark:border-ink-700 rounded-xl py-2.5 font-medium text-sm mb-4 hover:bg-slate-50 dark:hover:bg-ink-800 transition disabled:opacity-50">
-            <i className="fa-brands fa-google text-red-500"></i> Continue with Google
-          </button>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px bg-slate-200 dark:bg-ink-700 flex-1"></div>
-            <span className="text-xs text-slate-400">or</span>
-            <div className="h-px bg-slate-200 dark:bg-ink-700 flex-1"></div>
-          </div>
-
-          <form onSubmit={handleEmailAuth} className="space-y-3">
-            <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" />
-            <input required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" />
-            <button disabled={busy} type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white rounded-xl py-2.5 font-semibold text-sm transition disabled:opacity-50">
-              {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Sign up'}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-slate-500 mt-6">
-            {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-            <button className="text-brand-600 font-semibold" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-              {mode === 'login' ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+    const [mode, setMode] = useState('login');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [busy, setBusy] = useState(false);
+    const toast = useToast();
+    const handleEmailAuth = async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        try {
+            if (mode === 'login') {
+                await auth.signInWithEmailAndPassword(email, password);
+            }
+            else {
+                if (password.length < 6)
+                    throw new Error('Password must be at least 6 characters.');
+                const cred = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(cred.user.uid).set({
+                    uid: cred.user.uid, email, createdAt: FieldValue.serverTimestamp(),
+                    followersCount: 0, followingCount: 0, postsCount: 0, isAdmin: false, suspended: false
+                }, { merge: true });
+            }
+        }
+        catch (err) {
+            toast(err.message.replace('Firebase: ', ''), 'error');
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    const handleGoogle = async () => {
+        setBusy(true);
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const cred = await auth.signInWithPopup(provider);
+            const ref = db.collection('users').doc(cred.user.uid);
+            const snap = await ref.get();
+            if (!snap.exists) {
+                await ref.set({
+                    uid: cred.user.uid, email: cred.user.email, displayName: cred.user.displayName || '',
+                    photoURL: cred.user.photoURL || '', createdAt: FieldValue.serverTimestamp(),
+                    followersCount: 0, followingCount: 0, postsCount: 0, isAdmin: false, suspended: false
+                }, { merge: true });
+            }
+        }
+        catch (err) {
+            toast(err.message.replace('Firebase: ', ''), 'error');
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    return (React.createElement("div", { className: "min-h-screen flex bg-white dark:bg-ink-900" },
+        React.createElement("div", { className: "hidden lg:flex flex-1 bg-gradient-to-br from-brand-600 via-brand-700 to-ink-900 items-center justify-center relative overflow-hidden" },
+            React.createElement("div", { className: "absolute -top-24 -left-24 w-96 h-96 rounded-full bg-brand-400/30 blur-3xl" }),
+            React.createElement("div", { className: "absolute bottom-0 right-0 w-80 h-80 rounded-full bg-white/10 blur-3xl" }),
+            React.createElement("div", { className: "relative text-white px-12 max-w-md" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-8" },
+                    React.createElement("i", { className: "fa-solid fa-heart-circle-bolt text-3xl" }),
+                    React.createElement("span", { className: "font-display font-extrabold text-3xl" }, "Zlove")),
+                React.createElement("h1", { className: "font-display text-4xl font-bold leading-tight mb-4" }, "Where your circle actually shows up."),
+                React.createElement("p", { className: "text-brand-100 text-lg" }, "Share moments, follow people you care about, and keep the feed real-time."))),
+        React.createElement("div", { className: "flex-1 flex items-center justify-center px-6 py-12" },
+            React.createElement("div", { className: "w-full max-w-sm" },
+                React.createElement("div", { className: "flex lg:hidden items-center gap-2 mb-8 justify-center text-brand-600" },
+                    React.createElement("i", { className: "fa-solid fa-heart-circle-bolt text-2xl" }),
+                    React.createElement("span", { className: "font-display font-extrabold text-2xl" }, "Zlove")),
+                React.createElement("h2", { className: "font-display text-2xl font-bold mb-1" }, mode === 'login' ? 'Welcome back' : 'Create your account'),
+                React.createElement("p", { className: "text-slate-500 text-sm mb-6" }, mode === 'login' ? 'Sign in to continue' : 'Join Zlove in seconds'),
+                React.createElement("button", { onClick: handleGoogle, disabled: busy, className: "w-full flex items-center justify-center gap-2 border border-slate-200 dark:border-ink-700 rounded-xl py-2.5 font-medium text-sm mb-4 hover:bg-slate-50 dark:hover:bg-ink-800 transition disabled:opacity-50" },
+                    React.createElement("i", { className: "fa-brands fa-google text-red-500" }),
+                    " Continue with Google"),
+                React.createElement("div", { className: "flex items-center gap-3 mb-4" },
+                    React.createElement("div", { className: "h-px bg-slate-200 dark:bg-ink-700 flex-1" }),
+                    React.createElement("span", { className: "text-xs text-slate-400" }, "or"),
+                    React.createElement("div", { className: "h-px bg-slate-200 dark:bg-ink-700 flex-1" })),
+                React.createElement("form", { onSubmit: handleEmailAuth, className: "space-y-3" },
+                    React.createElement("input", { required: true, type: "email", placeholder: "Email", value: email, onChange: e => setEmail(e.target.value), className: "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" }),
+                    React.createElement("input", { required: true, type: "password", placeholder: "Password", value: password, onChange: e => setPassword(e.target.value), className: "w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" }),
+                    React.createElement("button", { disabled: busy, type: "submit", className: "w-full bg-brand-600 hover:bg-brand-700 text-white rounded-xl py-2.5 font-semibold text-sm transition disabled:opacity-50" }, busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Sign up')),
+                React.createElement("p", { className: "text-center text-sm text-slate-500 mt-6" },
+                    mode === 'login' ? "Don't have an account? " : "Already have an account? ",
+                    React.createElement("button", { className: "text-brand-600 font-semibold", onClick: () => setMode(mode === 'login' ? 'signup' : 'login') }, mode === 'login' ? 'Sign up' : 'Sign in'))))));
 }
-
 /* ============================== ONBOARDING ============================== */
 function OnboardingScreen() {
-  const { firebaseUser } = useAuth();
-  const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState(firebaseUser.displayName || '');
-  const [status, setStatus] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const toast = useToast();
-
-  useEffect(() => {
-    if (!username || username.length < 3) { setStatus(null); return; }
-    const handle = setTimeout(async () => {
-      setStatus('checking');
-      const snap = await uniqueUsernameCheck(username);
-      setStatus(snap.exists ? 'taken' : 'available');
-    }, 400);
-    return () => clearTimeout(handle);
-  }, [username]);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (status !== 'available' || !displayName.trim()) return;
-    setBusy(true);
-    try {
-      const uname = username.toLowerCase();
-      await db.runTransaction(async (tx) => {
-        const unameRef = db.collection('usernames').doc(uname);
-        const unameSnap = await tx.get(unameRef);
-        if (unameSnap.exists) throw new Error('Username was just taken, try another.');
-        tx.set(unameRef, { uid: firebaseUser.uid });
-        tx.set(db.collection('users').doc(firebaseUser.uid), {
-          username: uname, displayName: displayName.trim(), joinDate: FieldValue.serverTimestamp()
-        }, { merge: true });
-      });
-    } catch (err) {
-      toast(err.message, 'error');
-    } finally { setBusy(false); }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-ink-900">
-      <form onSubmit={submit} className="w-full max-w-sm">
-        <h2 className="font-display text-2xl font-bold mb-1">Set up your profile</h2>
-        <p className="text-slate-500 text-sm mb-6">Pick a unique username to get started.</p>
-        <label className="text-xs font-semibold text-slate-500">Display name</label>
-        <input value={displayName} onChange={e => setDisplayName(e.target.value)} required
-          className="w-full mb-4 mt-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" placeholder="Jane Doe" />
-        <label className="text-xs font-semibold text-slate-500">Username</label>
-        <div className="relative mt-1 mb-1">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">@</span>
-          <input value={username} onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))} required
-            className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm" placeholder="janedoe" />
-        </div>
-        <div className="h-5 text-xs mb-4">
-          {status === 'checking' && <span className="text-slate-400">Checking availability…</span>}
-          {status === 'available' && <span className="text-emerald-500"><i className="fa-solid fa-check mr-1"></i>Available</span>}
-          {status === 'taken' && <span className="text-red-500"><i className="fa-solid fa-xmark mr-1"></i>Already taken</span>}
-        </div>
-        <button disabled={status !== 'available' || busy} type="submit"
-          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white rounded-xl py-2.5 font-semibold text-sm transition">
-          {busy ? 'Creating…' : 'Continue'}
-        </button>
-      </form>
-    </div>
-  );
+    const { firebaseUser } = useAuth();
+    const [username, setUsername] = useState('');
+    const [displayName, setDisplayName] = useState(firebaseUser.displayName || '');
+    const [status, setStatus] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const toast = useToast();
+    useEffect(() => {
+        if (!username || username.length < 3) {
+            setStatus(null);
+            return;
+        }
+        const handle = setTimeout(async () => {
+            setStatus('checking');
+            const snap = await uniqueUsernameCheck(username);
+            setStatus(snap.exists ? 'taken' : 'available');
+        }, 400);
+        return () => clearTimeout(handle);
+    }, [username]);
+    const submit = async (e) => {
+        e.preventDefault();
+        if (status !== 'available' || !displayName.trim())
+            return;
+        setBusy(true);
+        try {
+            const uname = username.toLowerCase();
+            await db.runTransaction(async (tx) => {
+                const unameRef = db.collection('usernames').doc(uname);
+                const unameSnap = await tx.get(unameRef);
+                if (unameSnap.exists)
+                    throw new Error('Username was just taken, try another.');
+                tx.set(unameRef, { uid: firebaseUser.uid });
+                tx.set(db.collection('users').doc(firebaseUser.uid), {
+                    username: uname, displayName: displayName.trim(), joinDate: FieldValue.serverTimestamp()
+                }, { merge: true });
+            });
+        }
+        catch (err) {
+            toast(err.message, 'error');
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    return (React.createElement("div", { className: "min-h-screen flex items-center justify-center px-6 bg-white dark:bg-ink-900" },
+        React.createElement("form", { onSubmit: submit, className: "w-full max-w-sm" },
+            React.createElement("h2", { className: "font-display text-2xl font-bold mb-1" }, "Set up your profile"),
+            React.createElement("p", { className: "text-slate-500 text-sm mb-6" }, "Pick a unique username to get started."),
+            React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Display name"),
+            React.createElement("input", { value: displayName, onChange: e => setDisplayName(e.target.value), required: true, className: "w-full mb-4 mt-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm", placeholder: "Jane Doe" }),
+            React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Username"),
+            React.createElement("div", { className: "relative mt-1 mb-1" },
+                React.createElement("span", { className: "absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" }, "@"),
+                React.createElement("input", { value: username, onChange: e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '')), required: true, className: "w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-ink-700 bg-transparent text-sm", placeholder: "janedoe" })),
+            React.createElement("div", { className: "h-5 text-xs mb-4" },
+                status === 'checking' && React.createElement("span", { className: "text-slate-400" }, "Checking availability\u2026"),
+                status === 'available' && React.createElement("span", { className: "text-emerald-500" },
+                    React.createElement("i", { className: "fa-solid fa-check mr-1" }),
+                    "Available"),
+                status === 'taken' && React.createElement("span", { className: "text-red-500" },
+                    React.createElement("i", { className: "fa-solid fa-xmark mr-1" }),
+                    "Already taken")),
+            React.createElement("button", { disabled: status !== 'available' || busy, type: "submit", className: "w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white rounded-xl py-2.5 font-semibold text-sm transition" }, busy ? 'Creating…' : 'Continue'))));
 }
-
 /* ============================== MAIN APP SHELL ============================== */
 function MainApp({ route, setRoute }) {
-  const { profile } = useAuth();
-  const { theme, setTheme } = useContext(ThemeContext);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const unreadMessages = useUnreadMessages(profile.id);
-
-  useEffect(() => {
-    setPresence(profile.id, true);
-    const heartbeat = setInterval(() => setPresence(profile.id, true), 25000);
-    const onVis = () => setPresence(profile.id, document.visibilityState === 'visible');
-    document.addEventListener('visibilitychange', onVis);
-    window.addEventListener('beforeunload', () => setPresence(profile.id, false));
-    return () => {
-      clearInterval(heartbeat);
-      document.removeEventListener('visibilitychange', onVis);
-      setPresence(profile.id, false);
-    };
-  }, [profile.id]);
-
-  const nav = [
-    { name: 'home', icon: 'fa-house', label: 'Home' },
-    { name: 'search', icon: 'fa-magnifying-glass', label: 'Search' },
-    { name: 'messages', icon: 'fa-comment-dots', label: 'Messages', badge: unreadMessages },
-    { name: 'notifications', icon: 'fa-bell', label: 'Notifications' },
-    { name: 'bookmarks', icon: 'fa-bookmark', label: 'Saved' },
-    { name: 'profile', icon: 'fa-user', label: 'Profile', params: { uid: profile.id } },
-  ];
-  if (profile.isAdmin) nav.push({ name: 'admin', icon: 'fa-shield-halved', label: 'Admin' });
-
-  const go = (r) => { setRoute(r); setSidebarOpen(false); };
-
-  return (
-    <div className="min-h-screen flex">
-      {/* Sidebar - desktop */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-slate-100 dark:border-ink-800 px-4 py-6 sticky top-0 h-screen">
-        <div className="flex items-center gap-2 px-2 mb-8 text-brand-600 dark:text-brand-400">
-          <i className="fa-solid fa-heart-circle-bolt text-2xl"></i>
-          <span className="font-display font-extrabold text-xl">Zlove</span>
-        </div>
-        <nav className="space-y-1 flex-1">
-          {nav.map(n => (
-            <button key={n.name} onClick={() => go({ name: n.name, ...(n.params || {}) })}
-              className={"w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition " +
-                (route.name === n.name ? "bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "hover:bg-slate-50 dark:hover:bg-ink-800 text-slate-600 dark:text-slate-300")}>
-              <i className={"fa-solid " + n.icon + " w-5"}></i>{n.label}
-              {!!n.badge && <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">{n.badge > 99 ? '99+' : n.badge}</span>}
-            </button>
-          ))}
-        </nav>
-        <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-ink-800 text-slate-600 dark:text-slate-300">
-          <i className={"fa-solid " + (theme === 'dark' ? 'fa-sun' : 'fa-moon') + " w-5"}></i>
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
-        <button onClick={() => auth.signOut()} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 mt-1">
-          <i className="fa-solid fa-arrow-right-from-bracket w-5"></i>Sign out
-        </button>
-      </aside>
-
-      {/* Main content */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 backdrop-blur bg-white/80 dark:bg-ink-900/80 border-b border-slate-100 dark:border-ink-800 px-4 py-3 flex items-center justify-between md:hidden">
-          <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400">
-            <i className="fa-solid fa-heart-circle-bolt text-xl"></i>
-            <span className="font-display font-extrabold text-lg">Zlove</span>
-          </div>
-          <img src={profile.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.displayName}`}
-            onClick={() => go({ name: 'profile', uid: profile.id })}
-            className="w-8 h-8 rounded-full object-cover cursor-pointer" />
-        </header>
-
-        <main className={route.name === 'chat' ? "flex-1 max-w-2xl w-full mx-auto md:px-6 md:py-4" : "flex-1 max-w-2xl w-full mx-auto px-3 md:px-6 py-4 pb-20 md:pb-8"}>
-          {route.name === 'home' && <HomeFeed go={go} />}
-          {route.name === 'search' && <SearchScreen go={go} />}
-          {route.name === 'messages' && <ChatListScreen go={go} />}
-          {route.name === 'chat' && <ChatWindow chatId={route.chatId} otherUid={route.otherUid} go={go} />}
-          {route.name === 'notifications' && <NotificationsScreen go={go} />}
-          {route.name === 'bookmarks' && <BookmarksScreen go={go} />}
-          {route.name === 'profile' && <ProfileScreen uid={route.uid} go={go} />}
-          {route.name === 'admin' && profile.isAdmin && <AdminScreen />}
-        </main>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-t border-slate-100 dark:border-ink-800 flex justify-around py-2">
-        {nav.filter(n => n.name !== 'admin').map(n => (
-          <button key={n.name} onClick={() => go({ name: n.name, ...(n.params || {}) })}
-            className={"relative flex flex-col items-center gap-0.5 px-2.5 py-1 text-xs " + (route.name === n.name ? "text-brand-600" : "text-slate-400")}>
-            <i className={"fa-solid " + n.icon + " text-lg"}></i>
-            {!!n.badge && <span className="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-red-500"></span>}
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
+    const { profile } = useAuth();
+    const { theme, setTheme } = useContext(ThemeContext);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const unreadMessages = useUnreadMessages(profile.id);
+    useEffect(() => {
+        setPresence(profile.id, true);
+        const heartbeat = setInterval(() => setPresence(profile.id, true), 25000);
+        const onVis = () => setPresence(profile.id, document.visibilityState === 'visible');
+        document.addEventListener('visibilitychange', onVis);
+        window.addEventListener('beforeunload', () => setPresence(profile.id, false));
+        return () => {
+            clearInterval(heartbeat);
+            document.removeEventListener('visibilitychange', onVis);
+            setPresence(profile.id, false);
+        };
+    }, [profile.id]);
+    const nav = [
+        { name: 'home', icon: 'fa-house', label: 'Home' },
+        { name: 'search', icon: 'fa-magnifying-glass', label: 'Search' },
+        { name: 'messages', icon: 'fa-comment-dots', label: 'Messages', badge: unreadMessages },
+        { name: 'notifications', icon: 'fa-bell', label: 'Notifications' },
+        { name: 'bookmarks', icon: 'fa-bookmark', label: 'Saved' },
+        { name: 'profile', icon: 'fa-user', label: 'Profile', params: { uid: profile.id } },
+    ];
+    if (profile.isAdmin)
+        nav.push({ name: 'admin', icon: 'fa-shield-halved', label: 'Admin' });
+    const go = (r) => { setRoute(r); setSidebarOpen(false); };
+    return (React.createElement("div", { className: "min-h-screen flex" },
+        React.createElement("aside", { className: "hidden md:flex flex-col w-64 shrink-0 border-r border-slate-100 dark:border-ink-800 px-4 py-6 sticky top-0 h-screen" },
+            React.createElement("div", { className: "flex items-center gap-2 px-2 mb-8 text-brand-600 dark:text-brand-400" },
+                React.createElement("i", { className: "fa-solid fa-heart-circle-bolt text-2xl" }),
+                React.createElement("span", { className: "font-display font-extrabold text-xl" }, "Zlove")),
+            React.createElement("nav", { className: "space-y-1 flex-1" }, nav.map(n => (React.createElement("button", { key: n.name, onClick: () => go(Object.assign({ name: n.name }, (n.params || {}))), className: "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition " +
+                    (route.name === n.name ? "bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "hover:bg-slate-50 dark:hover:bg-ink-800 text-slate-600 dark:text-slate-300") },
+                React.createElement("i", { className: "fa-solid " + n.icon + " w-5" }),
+                n.label,
+                !!n.badge && React.createElement("span", { className: "ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" }, n.badge > 99 ? '99+' : n.badge))))),
+            React.createElement("button", { onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'), className: "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-ink-800 text-slate-600 dark:text-slate-300" },
+                React.createElement("i", { className: "fa-solid " + (theme === 'dark' ? 'fa-sun' : 'fa-moon') + " w-5" }),
+                theme === 'dark' ? 'Light mode' : 'Dark mode'),
+            React.createElement("button", { onClick: () => auth.signOut(), className: "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 mt-1" },
+                React.createElement("i", { className: "fa-solid fa-arrow-right-from-bracket w-5" }),
+                "Sign out")),
+        React.createElement("div", { className: "flex-1 min-w-0 flex flex-col" },
+            React.createElement("header", { className: "sticky top-0 z-30 backdrop-blur bg-white/80 dark:bg-ink-900/80 border-b border-slate-100 dark:border-ink-800 px-4 py-3 flex items-center justify-between md:hidden" },
+                React.createElement("div", { className: "flex items-center gap-2 text-brand-600 dark:text-brand-400" },
+                    React.createElement("i", { className: "fa-solid fa-heart-circle-bolt text-xl" }),
+                    React.createElement("span", { className: "font-display font-extrabold text-lg" }, "Zlove")),
+                React.createElement("img", { src: profile.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.displayName}`, onClick: () => go({ name: 'profile', uid: profile.id }), className: "w-8 h-8 rounded-full object-cover cursor-pointer" })),
+            React.createElement("main", { className: route.name === 'chat' ? "flex-1 max-w-2xl w-full mx-auto md:px-6 md:py-4" : "flex-1 max-w-2xl w-full mx-auto px-3 md:px-6 py-4 pb-20 md:pb-8" },
+                route.name === 'home' && React.createElement(HomeFeed, { go: go }),
+                route.name === 'search' && React.createElement(SearchScreen, { go: go }),
+                route.name === 'messages' && React.createElement(ChatListScreen, { go: go }),
+                route.name === 'chat' && React.createElement(ChatWindow, { chatId: route.chatId, otherUid: route.otherUid, go: go }),
+                route.name === 'notifications' && React.createElement(NotificationsScreen, { go: go }),
+                route.name === 'bookmarks' && React.createElement(BookmarksScreen, { go: go }),
+                route.name === 'profile' && React.createElement(ProfileScreen, { uid: route.uid, go: go }),
+                route.name === 'admin' && profile.isAdmin && React.createElement(AdminScreen, null))),
+        React.createElement("nav", { className: "md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-t border-slate-100 dark:border-ink-800 flex justify-around py-2" }, nav.filter(n => n.name !== 'admin').map(n => (React.createElement("button", { key: n.name, onClick: () => go(Object.assign({ name: n.name }, (n.params || {}))), className: "relative flex flex-col items-center gap-0.5 px-2.5 py-1 text-xs " + (route.name === n.name ? "text-brand-600" : "text-slate-400") },
+            React.createElement("i", { className: "fa-solid " + n.icon + " text-lg" }),
+            !!n.badge && React.createElement("span", { className: "absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-red-500" })))))));
 }
-
 /* ============================== AVATAR ============================== */
 function Avatar({ user, size = 10, onClick }) {
-  const src = user?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.displayName || user?.username || '?')}`;
-  return <img onClick={onClick} src={src} className={`w-${size} h-${size} rounded-full object-cover shrink-0 ${onClick ? 'cursor-pointer' : ''}`} style={{ width: size*4, height: size*4 }} />;
+    const src = (user === null || user === void 0 ? void 0 : user.photoURL) || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent((user === null || user === void 0 ? void 0 : user.displayName) || (user === null || user === void 0 ? void 0 : user.username) || '?')}`;
+    return React.createElement("img", { onClick: onClick, src: src, className: `w-${size} h-${size} rounded-full object-cover shrink-0 ${onClick ? 'cursor-pointer' : ''}`, style: { width: size * 4, height: size * 4 } });
 }
-
 /* ============================== COMPOSER ============================== */
 function Composer({ onPosted }) {
-  const { profile } = useAuth();
-  const toast = useToast();
-  const [text, setText] = useState('');
-  const [files, setFiles] = useState([]);
-  const [previews, setPreviews] = useState([]);
-  const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const fileRef = useRef();
-
-  const onFiles = (e) => {
-    const chosen = Array.from(e.target.files).slice(0, 10 - files.length);
-    const valid = chosen.filter(f => {
-      if (!f.type.startsWith('image/')) { toast(f.name + ' is not an image', 'error'); return false; }
-      if (f.size > 15 * 1024 * 1024) { toast(f.name + ' exceeds 15MB', 'error'); return false; }
-      return true;
-    });
-    setFiles(f => [...f, ...valid]);
-    setPreviews(p => [...p, ...valid.map(f => URL.createObjectURL(f))]);
-  };
-
-  const removeFile = (idx) => {
-    setFiles(f => f.filter((_, i) => i !== idx));
-    setPreviews(p => p.filter((_, i) => i !== idx));
-  };
-
-  const submit = async () => {
-    if (!text.trim() && files.length === 0) return;
-    setBusy(true); setProgress(0);
-    try {
-      const imageUrls = [];
-      for (let i = 0; i < files.length; i++) {
-        const compressed = await compressImage(files[i]);
-        const path = `posts/${profile.id}/${Date.now()}_${i}.jpg`;
-        const ref = storage.ref(path);
-        await new Promise((resolve, reject) => {
-          const task = ref.put(compressed, { contentType: 'image/jpeg' });
-          task.on('state_changed', snap => {
-            const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
-            setProgress(Math.round(((i + pct / 100) / files.length) * 100));
-          }, reject, resolve);
+    var _a;
+    const { profile } = useAuth();
+    const toast = useToast();
+    const [text, setText] = useState('');
+    const [files, setFiles] = useState([]);
+    const [previews, setPreviews] = useState([]);
+    const [busy, setBusy] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const fileRef = useRef();
+    const onFiles = (e) => {
+        const chosen = Array.from(e.target.files).slice(0, 10 - files.length);
+        const valid = chosen.filter(f => {
+            if (!f.type.startsWith('image/')) {
+                toast(f.name + ' is not an image', 'error');
+                return false;
+            }
+            if (f.size > 15 * 1024 * 1024) {
+                toast(f.name + ' exceeds 15MB', 'error');
+                return false;
+            }
+            return true;
         });
-        imageUrls.push(await ref.getDownloadURL());
-      }
-      await db.collection('posts').add({
-        authorId: profile.id, text: text.trim(), images: imageUrls,
-        createdAt: FieldValue.serverTimestamp(), likesCount: 0, commentsCount: 0, sharesCount: 0
-      });
-      await db.collection('users').doc(profile.id).update({ postsCount: FieldValue.increment(1) });
-      setText(''); setFiles([]); setPreviews([]);
-      toast('Posted!', 'success');
-      onPosted && onPosted();
-    } catch (err) {
-      toast(err.message, 'error');
-    } finally { setBusy(false); setProgress(0); }
-  };
-
-  return (
-    <div className="bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4">
-      <div className="flex gap-3">
-        <Avatar user={profile} size={10} />
-        <div className="flex-1 min-w-0">
-          <textarea value={text} onChange={e => setText(e.target.value)} placeholder={`What's on your mind, ${profile.displayName?.split(' ')[0]}?`}
-            className="w-full resize-none bg-transparent text-sm py-2 focus:outline-none min-h-[44px]" rows={2} />
-          {previews.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              {previews.map((p, i) => (
-                <div key={i} className="relative rounded-lg overflow-hidden aspect-square group">
-                  <img src={p} className="w-full h-full object-cover" />
-                  <button onClick={() => removeFile(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 text-xs">✕</button>
-                </div>
-              ))}
-            </div>
-          )}
-          {busy && progress > 0 && (
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-ink-700 rounded-full overflow-hidden mb-2">
-              <div className="h-full bg-brand-600 transition-all" style={{ width: progress + '%' }}></div>
-            </div>
-          )}
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-ink-700 mt-1">
-            <button onClick={() => fileRef.current.click()} disabled={files.length >= 10}
-              className="text-brand-600 dark:text-brand-400 text-sm font-semibold flex items-center gap-1.5 disabled:opacity-40">
-              <i className="fa-regular fa-image"></i> Photo ({files.length}/10)
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
-            <button onClick={submit} disabled={busy || (!text.trim() && files.length === 0)}
-              className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-1.5 rounded-full transition">
-              {busy ? 'Posting…' : 'Post'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+        setFiles(f => [...f, ...valid]);
+        setPreviews(p => [...p, ...valid.map(f => URL.createObjectURL(f))]);
+    };
+    const removeFile = (idx) => {
+        setFiles(f => f.filter((_, i) => i !== idx));
+        setPreviews(p => p.filter((_, i) => i !== idx));
+    };
+    const submit = async () => {
+        if (!text.trim() && files.length === 0)
+            return;
+        setBusy(true);
+        setProgress(0);
+        try {
+            const imageUrls = [];
+            for (let i = 0; i < files.length; i++) {
+                const compressed = await compressImage(files[i]);
+                const path = `posts/${profile.id}/${Date.now()}_${i}.jpg`;
+                const ref = storage.ref(path);
+                await new Promise((resolve, reject) => {
+                    const task = ref.put(compressed, { contentType: 'image/jpeg' });
+                    task.on('state_changed', snap => {
+                        const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+                        setProgress(Math.round(((i + pct / 100) / files.length) * 100));
+                    }, reject, resolve);
+                });
+                imageUrls.push(await ref.getDownloadURL());
+            }
+            await db.collection('posts').add({
+                authorId: profile.id, text: text.trim(), images: imageUrls,
+                createdAt: FieldValue.serverTimestamp(), likesCount: 0, commentsCount: 0, sharesCount: 0
+            });
+            await db.collection('users').doc(profile.id).update({ postsCount: FieldValue.increment(1) });
+            setText('');
+            setFiles([]);
+            setPreviews([]);
+            toast('Posted!', 'success');
+            onPosted && onPosted();
+        }
+        catch (err) {
+            toast(err.message, 'error');
+        }
+        finally {
+            setBusy(false);
+            setProgress(0);
+        }
+    };
+    return (React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4" },
+        React.createElement("div", { className: "flex gap-3" },
+            React.createElement(Avatar, { user: profile, size: 10 }),
+            React.createElement("div", { className: "flex-1 min-w-0" },
+                React.createElement("textarea", { value: text, onChange: e => setText(e.target.value), placeholder: `What's on your mind, ${(_a = profile.displayName) === null || _a === void 0 ? void 0 : _a.split(' ')[0]}?`, className: "w-full resize-none bg-transparent text-sm py-2 focus:outline-none min-h-[44px]", rows: 2 }),
+                previews.length > 0 && (React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" }, previews.map((p, i) => (React.createElement("div", { key: i, className: "relative rounded-lg overflow-hidden aspect-square group" },
+                    React.createElement("img", { src: p, className: "w-full h-full object-cover" }),
+                    React.createElement("button", { onClick: () => removeFile(i), className: "absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 text-xs" }, "\u2715")))))),
+                busy && progress > 0 && (React.createElement("div", { className: "w-full h-1.5 bg-slate-100 dark:bg-ink-700 rounded-full overflow-hidden mb-2" },
+                    React.createElement("div", { className: "h-full bg-brand-600 transition-all", style: { width: progress + '%' } }))),
+                React.createElement("div", { className: "flex items-center justify-between pt-2 border-t border-slate-100 dark:border-ink-700 mt-1" },
+                    React.createElement("button", { onClick: () => fileRef.current.click(), disabled: files.length >= 10, className: "text-brand-600 dark:text-brand-400 text-sm font-semibold flex items-center gap-1.5 disabled:opacity-40" },
+                        React.createElement("i", { className: "fa-regular fa-image" }),
+                        " Photo (",
+                        files.length,
+                        "/10)"),
+                    React.createElement("input", { ref: fileRef, type: "file", accept: "image/*", multiple: true, hidden: true, onChange: onFiles }),
+                    React.createElement("button", { onClick: submit, disabled: busy || (!text.trim() && files.length === 0), className: "bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-1.5 rounded-full transition" }, busy ? 'Posting…' : 'Post'))))));
 }
-
 /* ============================== POST CARD ============================== */
 function PostCard({ post, go }) {
-  const { profile } = useAuth();
-  const toast = useToast();
-  const [author, setAuthor] = useState(null);
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likesCount || 0);
-  const [showComments, setShowComments] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editText, setEditText] = useState(post.text);
-
-  useEffect(() => {
-    const unsub = db.collection('users').doc(post.authorId).onSnapshot(s => setAuthor(s.exists ? s.data() : null));
-    return unsub;
-  }, [post.authorId]);
-
-  useEffect(() => {
-    const unsub = db.collection('posts').doc(post.id).collection('likes').doc(profile.id).onSnapshot(s => setLiked(s.exists));
-    return unsub;
-  }, [post.id, profile.id]);
-
-  useEffect(() => {
-    const unsub = db.collection('bookmarks').doc(profile.id).collection('items').doc(post.id).onSnapshot(s => setBookmarked(s.exists));
-    return unsub;
-  }, [post.id, profile.id]);
-
-  const toggleLike = async () => {
-    const likeRef = db.collection('posts').doc(post.id).collection('likes').doc(profile.id);
-    const postRef = db.collection('posts').doc(post.id);
-    try {
-      if (liked) {
-        await likeRef.delete();
-        await postRef.update({ likesCount: FieldValue.increment(-1) });
-        setLikesCount(c => c - 1);
-      } else {
-        await likeRef.set({ uid: profile.id, createdAt: FieldValue.serverTimestamp() });
-        await postRef.update({ likesCount: FieldValue.increment(1) });
-        setLikesCount(c => c + 1);
-        if (post.authorId !== profile.id) {
-          db.collection('notifications').doc(post.authorId).collection('items').add({
-            type: 'like', fromUserId: profile.id, postId: post.id, read: false, createdAt: FieldValue.serverTimestamp()
-          });
+    var _a;
+    const { profile } = useAuth();
+    const toast = useToast();
+    const [author, setAuthor] = useState(null);
+    const [liked, setLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+    const [showComments, setShowComments] = useState(false);
+    const [bookmarked, setBookmarked] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [editText, setEditText] = useState(post.text);
+    useEffect(() => {
+        const unsub = db.collection('users').doc(post.authorId).onSnapshot(s => setAuthor(s.exists ? s.data() : null));
+        return unsub;
+    }, [post.authorId]);
+    useEffect(() => {
+        const unsub = db.collection('posts').doc(post.id).collection('likes').doc(profile.id).onSnapshot(s => setLiked(s.exists));
+        return unsub;
+    }, [post.id, profile.id]);
+    useEffect(() => {
+        const unsub = db.collection('bookmarks').doc(profile.id).collection('items').doc(post.id).onSnapshot(s => setBookmarked(s.exists));
+        return unsub;
+    }, [post.id, profile.id]);
+    const toggleLike = async () => {
+        const likeRef = db.collection('posts').doc(post.id).collection('likes').doc(profile.id);
+        const postRef = db.collection('posts').doc(post.id);
+        try {
+            if (liked) {
+                await likeRef.delete();
+                await postRef.update({ likesCount: FieldValue.increment(-1) });
+                setLikesCount(c => c - 1);
+            }
+            else {
+                await likeRef.set({ uid: profile.id, createdAt: FieldValue.serverTimestamp() });
+                await postRef.update({ likesCount: FieldValue.increment(1) });
+                setLikesCount(c => c + 1);
+                if (post.authorId !== profile.id) {
+                    db.collection('notifications').doc(post.authorId).collection('items').add({
+                        type: 'like', fromUserId: profile.id, postId: post.id, read: false, createdAt: FieldValue.serverTimestamp()
+                    });
+                }
+            }
         }
-      }
-    } catch (e) { toast('Could not update like', 'error'); }
-  };
-
-  const toggleBookmark = async () => {
-    const ref = db.collection('bookmarks').doc(profile.id).collection('items').doc(post.id);
-    if (bookmarked) { await ref.delete(); toast('Removed from saved'); }
-    else { await ref.set({ postId: post.id, createdAt: FieldValue.serverTimestamp() }); toast('Saved', 'success'); }
-  };
-
-  const share = async () => {
-    await db.collection('posts').doc(post.id).update({ sharesCount: FieldValue.increment(1) });
-    navigator.clipboard?.writeText(window.location.href.split('#')[0] + '#post-' + post.id);
-    toast('Link copied to clipboard', 'success');
-  };
-
-  const deletePost = async () => {
-    if (!confirm('Delete this post?')) return;
-    await db.collection('posts').doc(post.id).delete();
-    await db.collection('users').doc(profile.id).update({ postsCount: FieldValue.increment(-1) });
-    toast('Post deleted', 'success');
-  };
-
-  const saveEdit = async () => {
-    await db.collection('posts').doc(post.id).update({ text: editText.trim(), edited: true });
-    setEditing(false);
-  };
-
-  if (!author) return <PostSkeleton />;
-
-  return (
-    <div id={'post-' + post.id} className="bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4 fade-in">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => go({ name: 'profile', uid: post.authorId })}>
-          <Avatar user={author} size={10} />
-          <div>
-            <p className="font-semibold text-sm">{author.displayName}</p>
-            <p className="text-xs text-slate-400">@{author.username} · {timeAgo(post.createdAt)}{post.edited ? ' · edited' : ''}</p>
-          </div>
-        </div>
-        {post.authorId === profile.id && (
-          <div className="relative">
-            <button onClick={() => setMenuOpen(m => !m)} className="text-slate-400 px-2"><i className="fa-solid fa-ellipsis"></i></button>
-            {menuOpen && (
-              <div className="absolute right-0 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl overflow-hidden border border-slate-100 dark:border-ink-600 z-10 w-32">
-                <button onClick={() => { setEditing(true); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Edit</button>
-                <button onClick={deletePost} className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600">Delete</button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {editing ? (
-        <div className="mb-2">
-          <textarea value={editText} onChange={e => setEditText(e.target.value)} className="w-full bg-transparent border border-slate-200 dark:border-ink-600 rounded-lg p-2 text-sm" rows={3} />
-          <div className="flex gap-2 mt-1">
-            <button onClick={saveEdit} className="text-xs font-semibold text-brand-600">Save</button>
-            <button onClick={() => setEditing(false)} className="text-xs font-semibold text-slate-400">Cancel</button>
-          </div>
-        </div>
-      ) : post.text && <p className="text-sm whitespace-pre-wrap mb-2 leading-relaxed">{post.text}</p>}
-
-      {post.images?.length > 0 && (
-        <div className={`grid gap-1 rounded-xl overflow-hidden mb-2 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {post.images.map((img, i) => <img key={i} src={img} loading="lazy" className="w-full object-cover max-h-[420px]" />)}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between text-slate-500 text-sm pt-2 border-t border-slate-100 dark:border-ink-700">
-        <button onClick={toggleLike} className={"flex items-center gap-1.5 " + (liked ? "text-red-500" : "hover:text-red-500")}>
-          <i className={(liked ? "fa-solid" : "fa-regular") + " fa-heart"}></i> {likesCount}
-        </button>
-        <button onClick={() => setShowComments(s => !s)} className="flex items-center gap-1.5 hover:text-brand-600">
-          <i className="fa-regular fa-comment"></i> {post.commentsCount || 0}
-        </button>
-        <button onClick={share} className="flex items-center gap-1.5 hover:text-emerald-500">
-          <i className="fa-regular fa-share-from-square"></i> {post.sharesCount || 0}
-        </button>
-        <button onClick={toggleBookmark} className={bookmarked ? "text-brand-600" : "hover:text-brand-600"}>
-          <i className={(bookmarked ? "fa-solid" : "fa-regular") + " fa-bookmark"}></i>
-        </button>
-      </div>
-
-      {showComments && <Comments postId={post.id} go={go} />}
-    </div>
-  );
+        catch (e) {
+            toast('Could not update like', 'error');
+        }
+    };
+    const toggleBookmark = async () => {
+        const ref = db.collection('bookmarks').doc(profile.id).collection('items').doc(post.id);
+        if (bookmarked) {
+            await ref.delete();
+            toast('Removed from saved');
+        }
+        else {
+            await ref.set({ postId: post.id, createdAt: FieldValue.serverTimestamp() });
+            toast('Saved', 'success');
+        }
+    };
+    const share = async () => {
+        var _a;
+        await db.collection('posts').doc(post.id).update({ sharesCount: FieldValue.increment(1) });
+        (_a = navigator.clipboard) === null || _a === void 0 ? void 0 : _a.writeText(window.location.href.split('#')[0] + '#post-' + post.id);
+        toast('Link copied to clipboard', 'success');
+    };
+    const deletePost = async () => {
+        if (!confirm('Delete this post?'))
+            return;
+        await db.collection('posts').doc(post.id).delete();
+        await db.collection('users').doc(profile.id).update({ postsCount: FieldValue.increment(-1) });
+        toast('Post deleted', 'success');
+    };
+    const saveEdit = async () => {
+        await db.collection('posts').doc(post.id).update({ text: editText.trim(), edited: true });
+        setEditing(false);
+    };
+    if (!author)
+        return React.createElement(PostSkeleton, null);
+    return (React.createElement("div", { id: 'post-' + post.id, className: "bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4 fade-in" },
+        React.createElement("div", { className: "flex items-start justify-between mb-2" },
+            React.createElement("div", { className: "flex items-center gap-3 cursor-pointer", onClick: () => go({ name: 'profile', uid: post.authorId }) },
+                React.createElement(Avatar, { user: author, size: 10 }),
+                React.createElement("div", null,
+                    React.createElement("p", { className: "font-semibold text-sm" }, author.displayName),
+                    React.createElement("p", { className: "text-xs text-slate-400" },
+                        "@",
+                        author.username,
+                        " \u00B7 ",
+                        timeAgo(post.createdAt),
+                        post.edited ? ' · edited' : ''))),
+            post.authorId === profile.id && (React.createElement("div", { className: "relative" },
+                React.createElement("button", { onClick: () => setMenuOpen(m => !m), className: "text-slate-400 px-2" },
+                    React.createElement("i", { className: "fa-solid fa-ellipsis" })),
+                menuOpen && (React.createElement("div", { className: "absolute right-0 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl overflow-hidden border border-slate-100 dark:border-ink-600 z-10 w-32" },
+                    React.createElement("button", { onClick: () => { setEditing(true); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, "Edit"),
+                    React.createElement("button", { onClick: deletePost, className: "w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600" }, "Delete")))))),
+        editing ? (React.createElement("div", { className: "mb-2" },
+            React.createElement("textarea", { value: editText, onChange: e => setEditText(e.target.value), className: "w-full bg-transparent border border-slate-200 dark:border-ink-600 rounded-lg p-2 text-sm", rows: 3 }),
+            React.createElement("div", { className: "flex gap-2 mt-1" },
+                React.createElement("button", { onClick: saveEdit, className: "text-xs font-semibold text-brand-600" }, "Save"),
+                React.createElement("button", { onClick: () => setEditing(false), className: "text-xs font-semibold text-slate-400" }, "Cancel")))) : post.text && React.createElement("p", { className: "text-sm whitespace-pre-wrap mb-2 leading-relaxed" }, post.text),
+        ((_a = post.images) === null || _a === void 0 ? void 0 : _a.length) > 0 && (React.createElement("div", { className: `grid gap-1 rounded-xl overflow-hidden mb-2 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}` }, post.images.map((img, i) => React.createElement("img", { key: i, src: img, loading: "lazy", className: "w-full object-cover max-h-[420px]" })))),
+        React.createElement("div", { className: "flex items-center justify-between text-slate-500 text-sm pt-2 border-t border-slate-100 dark:border-ink-700" },
+            React.createElement("button", { onClick: toggleLike, className: "flex items-center gap-1.5 " + (liked ? "text-red-500" : "hover:text-red-500") },
+                React.createElement("i", { className: (liked ? "fa-solid" : "fa-regular") + " fa-heart" }),
+                " ",
+                likesCount),
+            React.createElement("button", { onClick: () => setShowComments(s => !s), className: "flex items-center gap-1.5 hover:text-brand-600" },
+                React.createElement("i", { className: "fa-regular fa-comment" }),
+                " ",
+                post.commentsCount || 0),
+            React.createElement("button", { onClick: share, className: "flex items-center gap-1.5 hover:text-emerald-500" },
+                React.createElement("i", { className: "fa-regular fa-share-from-square" }),
+                " ",
+                post.sharesCount || 0),
+            React.createElement("button", { onClick: toggleBookmark, className: bookmarked ? "text-brand-600" : "hover:text-brand-600" },
+                React.createElement("i", { className: (bookmarked ? "fa-solid" : "fa-regular") + " fa-bookmark" }))),
+        showComments && React.createElement(Comments, { postId: post.id, go: go })));
 }
-
 function PostSkeleton() {
-  return (
-    <div className="bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full skeleton"></div>
-        <div className="space-y-1.5">
-          <div className="w-32 h-3 rounded skeleton"></div>
-          <div className="w-20 h-2.5 rounded skeleton"></div>
-        </div>
-      </div>
-      <div className="w-full h-3 rounded skeleton mb-2"></div>
-      <div className="w-2/3 h-3 rounded skeleton"></div>
-    </div>
-  );
+    return (React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 p-4 mb-4" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "w-10 h-10 rounded-full skeleton" }),
+            React.createElement("div", { className: "space-y-1.5" },
+                React.createElement("div", { className: "w-32 h-3 rounded skeleton" }),
+                React.createElement("div", { className: "w-20 h-2.5 rounded skeleton" }))),
+        React.createElement("div", { className: "w-full h-3 rounded skeleton mb-2" }),
+        React.createElement("div", { className: "w-2/3 h-3 rounded skeleton" })));
 }
-
 /* ============================== COMMENTS ============================== */
 function Comments({ postId, go }) {
-  const { profile } = useAuth();
-  const [comments, setComments] = useState([]);
-  const [text, setText] = useState('');
-
-  useEffect(() => {
-    const unsub = db.collection('posts').doc(postId).collection('comments').orderBy('createdAt', 'asc').limit(100)
-      .onSnapshot(snap => setComments(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [postId]);
-
-  const submit = async () => {
-    if (!text.trim()) return;
-    const postSnap = await db.collection('posts').doc(postId).get();
-    const post = postSnap.data();
-    await db.collection('posts').doc(postId).collection('comments').add({
-      authorId: profile.id, text: text.trim(), createdAt: FieldValue.serverTimestamp()
-    });
-    await db.collection('posts').doc(postId).update({ commentsCount: FieldValue.increment(1) });
-    if (post.authorId !== profile.id) {
-      db.collection('notifications').doc(post.authorId).collection('items').add({
-        type: 'comment', fromUserId: profile.id, postId, read: false, createdAt: FieldValue.serverTimestamp()
-      });
-    }
-    setText('');
-  };
-
-  return (
-    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-ink-700 space-y-3">
-      {comments.map(c => <CommentRow key={c.id} comment={c} go={go} />)}
-      <div className="flex items-center gap-2">
-        <Avatar user={profile} size={7} />
-        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()}
-          placeholder="Write a comment…" className="flex-1 bg-slate-50 dark:bg-ink-700 rounded-full px-4 py-1.5 text-sm" />
-        <button onClick={submit} className="text-brand-600 text-sm font-semibold">Send</button>
-      </div>
-    </div>
-  );
+    const { profile } = useAuth();
+    const [comments, setComments] = useState([]);
+    const [text, setText] = useState('');
+    useEffect(() => {
+        const unsub = db.collection('posts').doc(postId).collection('comments').orderBy('createdAt', 'asc').limit(100)
+            .onSnapshot(snap => setComments(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [postId]);
+    const submit = async () => {
+        if (!text.trim())
+            return;
+        const postSnap = await db.collection('posts').doc(postId).get();
+        const post = postSnap.data();
+        await db.collection('posts').doc(postId).collection('comments').add({
+            authorId: profile.id, text: text.trim(), createdAt: FieldValue.serverTimestamp()
+        });
+        await db.collection('posts').doc(postId).update({ commentsCount: FieldValue.increment(1) });
+        if (post.authorId !== profile.id) {
+            db.collection('notifications').doc(post.authorId).collection('items').add({
+                type: 'comment', fromUserId: profile.id, postId, read: false, createdAt: FieldValue.serverTimestamp()
+            });
+        }
+        setText('');
+    };
+    return (React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-100 dark:border-ink-700 space-y-3" },
+        comments.map(c => React.createElement(CommentRow, { key: c.id, comment: c, go: go })),
+        React.createElement("div", { className: "flex items-center gap-2" },
+            React.createElement(Avatar, { user: profile, size: 7 }),
+            React.createElement("input", { value: text, onChange: e => setText(e.target.value), onKeyDown: e => e.key === 'Enter' && submit(), placeholder: "Write a comment\u2026", className: "flex-1 bg-slate-50 dark:bg-ink-700 rounded-full px-4 py-1.5 text-sm" }),
+            React.createElement("button", { onClick: submit, className: "text-brand-600 text-sm font-semibold" }, "Send"))));
 }
-
 function CommentRow({ comment, go }) {
-  const [author, setAuthor] = useState(null);
-  useEffect(() => {
-    const unsub = db.collection('users').doc(comment.authorId).onSnapshot(s => setAuthor(s.exists ? s.data() : null));
-    return unsub;
-  }, [comment.authorId]);
-  if (!author) return null;
-  return (
-    <div className="flex items-start gap-2">
-      <Avatar user={author} size={7} onClick={() => go({ name: 'profile', uid: comment.authorId })} />
-      <div className="bg-slate-50 dark:bg-ink-700 rounded-2xl px-3 py-2 flex-1">
-        <p className="text-xs font-semibold">{author.displayName} <span className="text-slate-400 font-normal ml-1">{timeAgo(comment.createdAt)}</span></p>
-        <p className="text-sm">{comment.text}</p>
-      </div>
-    </div>
-  );
+    const [author, setAuthor] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('users').doc(comment.authorId).onSnapshot(s => setAuthor(s.exists ? s.data() : null));
+        return unsub;
+    }, [comment.authorId]);
+    if (!author)
+        return null;
+    return (React.createElement("div", { className: "flex items-start gap-2" },
+        React.createElement(Avatar, { user: author, size: 7, onClick: () => go({ name: 'profile', uid: comment.authorId }) }),
+        React.createElement("div", { className: "bg-slate-50 dark:bg-ink-700 rounded-2xl px-3 py-2 flex-1" },
+            React.createElement("p", { className: "text-xs font-semibold" },
+                author.displayName,
+                " ",
+                React.createElement("span", { className: "text-slate-400 font-normal ml-1" }, timeAgo(comment.createdAt))),
+            React.createElement("p", { className: "text-sm" }, comment.text))));
 }
-
 /* ============================== HOME FEED ============================== */
 function HomeFeed({ go }) {
-  const [posts, setPosts] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    const unsub = db.collection('posts').orderBy('createdAt', 'desc').limit(30)
-      .onSnapshot(snap => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, []);
-
-  return (
-    <div>
-      <Composer onPosted={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
-      {posts === null && <>{[1,2,3].map(i => <PostSkeleton key={i} />)}</>}
-      {posts?.length === 0 && (
-        <div className="text-center py-16 text-slate-400">
-          <i className="fa-regular fa-face-smile text-4xl mb-3"></i>
-          <p>No posts yet. Be the first to share something.</p>
-        </div>
-      )}
-      {posts?.map(p => <PostCard key={p.id} post={p} go={go} />)}
-    </div>
-  );
+    const [posts, setPosts] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    useEffect(() => {
+        const unsub = db.collection('posts').orderBy('createdAt', 'desc').limit(30)
+            .onSnapshot(snap => setPosts(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, []);
+    return (React.createElement("div", null,
+        React.createElement(Composer, { onPosted: () => window.scrollTo({ top: 0, behavior: 'smooth' }) }),
+        posts === null && React.createElement(React.Fragment, null, [1, 2, 3].map(i => React.createElement(PostSkeleton, { key: i }))),
+        (posts === null || posts === void 0 ? void 0 : posts.length) === 0 && (React.createElement("div", { className: "text-center py-16 text-slate-400" },
+            React.createElement("i", { className: "fa-regular fa-face-smile text-4xl mb-3" }),
+            React.createElement("p", null, "No posts yet. Be the first to share something."))), posts === null || posts === void 0 ? void 0 :
+        posts.map(p => React.createElement(PostCard, { key: p.id, post: p, go: go }))));
 }
-
 /* ============================== SEARCH ============================== */
 function SearchScreen({ go }) {
-  const [q, setQ] = useState('');
-  const [results, setResults] = useState([]);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!q.trim()) { setResults([]); return; }
-    setBusy(true);
-    const handle = setTimeout(async () => {
-      const lower = q.toLowerCase();
-      const snap = await db.collection('users')
-        .orderBy('username').startAt(lower).endAt(lower + '\uf8ff').limit(20).get();
-      setResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setBusy(false);
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [q]);
-
-  return (
-    <div>
-      <div className="relative mb-4">
-        <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search by username…"
-          className="w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 text-sm" />
-      </div>
-      {busy && <p className="text-sm text-slate-400">Searching…</p>}
-      <div className="space-y-2">
-        {results.map(u => (
-          <div key={u.id} onClick={() => go({ name: 'profile', uid: u.id })}
-            className="flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700 cursor-pointer hover:border-brand-300">
-            <Avatar user={u} size={10} />
-            <div>
-              <p className="font-semibold text-sm">{u.displayName}</p>
-              <p className="text-xs text-slate-400">@{u.username}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    const [q, setQ] = useState('');
+    const [results, setResults] = useState([]);
+    const [busy, setBusy] = useState(false);
+    useEffect(() => {
+        if (!q.trim()) {
+            setResults([]);
+            return;
+        }
+        setBusy(true);
+        const handle = setTimeout(async () => {
+            const lower = q.toLowerCase();
+            const snap = await db.collection('users')
+                .orderBy('username').startAt(lower).endAt(lower + '\uf8ff').limit(20).get();
+            setResults(snap.docs.map(d => (Object.assign({ id: d.id }, d.data()))));
+            setBusy(false);
+        }, 300);
+        return () => clearTimeout(handle);
+    }, [q]);
+    return (React.createElement("div", null,
+        React.createElement("div", { className: "relative mb-4" },
+            React.createElement("i", { className: "fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" }),
+            React.createElement("input", { value: q, onChange: e => setQ(e.target.value), placeholder: "Search by username\u2026", className: "w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 text-sm" })),
+        busy && React.createElement("p", { className: "text-sm text-slate-400" }, "Searching\u2026"),
+        React.createElement("div", { className: "space-y-2" }, results.map(u => (React.createElement("div", { key: u.id, onClick: () => go({ name: 'profile', uid: u.id }), className: "flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700 cursor-pointer hover:border-brand-300" },
+            React.createElement(Avatar, { user: u, size: 10 }),
+            React.createElement("div", null,
+                React.createElement("p", { className: "font-semibold text-sm" }, u.displayName),
+                React.createElement("p", { className: "text-xs text-slate-400" },
+                    "@",
+                    u.username))))))));
 }
-
 /* ============================== NOTIFICATIONS ============================== */
 const NOTIF_TEXT = { like: 'liked your post', comment: 'commented on your post', follow: 'started following you', share: 'shared your post', message: 'sent you a message' };
-
 function NotificationsScreen({ go }) {
-  const { profile } = useAuth();
-  const [items, setItems] = useState(null);
-
-  useEffect(() => {
-    const unsub = db.collection('notifications').doc(profile.id).collection('items').orderBy('createdAt', 'desc').limit(50)
-      .onSnapshot(snap => setItems(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [profile.id]);
-
-  return (
-    <div>
-      <h2 className="font-display text-lg font-bold mb-4">Notifications</h2>
-      {items === null && <p className="text-sm text-slate-400">Loading…</p>}
-      {items?.length === 0 && <p className="text-sm text-slate-400 text-center py-16">Nothing yet.</p>}
-      <div className="space-y-2">
-        {items?.map(n => <NotifRow key={n.id} n={n} go={go} />)}
-      </div>
-    </div>
-  );
+    const { profile } = useAuth();
+    const [items, setItems] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('notifications').doc(profile.id).collection('items').orderBy('createdAt', 'desc').limit(50)
+            .onSnapshot(snap => setItems(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [profile.id]);
+    return (React.createElement("div", null,
+        React.createElement("h2", { className: "font-display text-lg font-bold mb-4" }, "Notifications"),
+        items === null && React.createElement("p", { className: "text-sm text-slate-400" }, "Loading\u2026"),
+        (items === null || items === void 0 ? void 0 : items.length) === 0 && React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, "Nothing yet."),
+        React.createElement("div", { className: "space-y-2" }, items === null || items === void 0 ? void 0 : items.map(n => React.createElement(NotifRow, { key: n.id, n: n, go: go })))));
 }
-
 function NotifRow({ n, go }) {
-  const { profile } = useAuth();
-  const [from, setFrom] = useState(null);
-  useEffect(() => {
-    const unsub = db.collection('users').doc(n.fromUserId).onSnapshot(s => setFrom(s.exists ? s.data() : null));
-    return unsub;
-  }, [n.fromUserId]);
-  if (!from) return null;
-  const openNotif = () => {
-    if (n.type === 'message') go({ name: 'chat', chatId: chatIdFor(profile.id, n.fromUserId), otherUid: n.fromUserId });
-    else go({ name: 'profile', uid: n.fromUserId });
-  };
-  return (
-    <div onClick={openNotif}
-      className="flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700 cursor-pointer">
-      <Avatar user={from} size={9} />
-      <p className="text-sm"><span className="font-semibold">{from.displayName}</span> {NOTIF_TEXT[n.type] || 'interacted with you'} <span className="text-slate-400">· {timeAgo(n.createdAt)}</span></p>
-    </div>
-  );
+    const { profile } = useAuth();
+    const [from, setFrom] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('users').doc(n.fromUserId).onSnapshot(s => setFrom(s.exists ? s.data() : null));
+        return unsub;
+    }, [n.fromUserId]);
+    if (!from)
+        return null;
+    const openNotif = () => {
+        if (n.type === 'message')
+            go({ name: 'chat', chatId: chatIdFor(profile.id, n.fromUserId), otherUid: n.fromUserId });
+        else
+            go({ name: 'profile', uid: n.fromUserId });
+    };
+    return (React.createElement("div", { onClick: openNotif, className: "flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700 cursor-pointer" },
+        React.createElement(Avatar, { user: from, size: 9 }),
+        React.createElement("p", { className: "text-sm" },
+            React.createElement("span", { className: "font-semibold" }, from.displayName),
+            " ",
+            NOTIF_TEXT[n.type] || 'interacted with you',
+            " ",
+            React.createElement("span", { className: "text-slate-400" },
+                "\u00B7 ",
+                timeAgo(n.createdAt)))));
 }
-
 /* ============================== BOOKMARKS ============================== */
 function BookmarksScreen({ go }) {
-  const { profile } = useAuth();
-  const [posts, setPosts] = useState(null);
-
-  useEffect(() => {
-    const unsub = db.collection('bookmarks').doc(profile.id).collection('items').orderBy('createdAt', 'desc').limit(50)
-      .onSnapshot(async snap => {
-        const ids = snap.docs.map(d => d.id);
-        if (ids.length === 0) { setPosts([]); return; }
-        const chunks = [];
-        for (const id of ids) {
-          const s = await db.collection('posts').doc(id).get();
-          if (s.exists) chunks.push({ id: s.id, ...s.data() });
-        }
-        setPosts(chunks);
-      });
-    return unsub;
-  }, [profile.id]);
-
-  return (
-    <div>
-      <h2 className="font-display text-lg font-bold mb-4">Saved posts</h2>
-      {posts === null && <PostSkeleton />}
-      {posts?.length === 0 && <p className="text-sm text-slate-400 text-center py-16">Nothing saved yet.</p>}
-      {posts?.map(p => <PostCard key={p.id} post={p} go={go} />)}
-    </div>
-  );
+    const { profile } = useAuth();
+    const [posts, setPosts] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('bookmarks').doc(profile.id).collection('items').orderBy('createdAt', 'desc').limit(50)
+            .onSnapshot(async (snap) => {
+            const ids = snap.docs.map(d => d.id);
+            if (ids.length === 0) {
+                setPosts([]);
+                return;
+            }
+            const chunks = [];
+            for (const id of ids) {
+                const s = await db.collection('posts').doc(id).get();
+                if (s.exists)
+                    chunks.push(Object.assign({ id: s.id }, s.data()));
+            }
+            setPosts(chunks);
+        });
+        return unsub;
+    }, [profile.id]);
+    return (React.createElement("div", null,
+        React.createElement("h2", { className: "font-display text-lg font-bold mb-4" }, "Saved posts"),
+        posts === null && React.createElement(PostSkeleton, null),
+        (posts === null || posts === void 0 ? void 0 : posts.length) === 0 && React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, "Nothing saved yet."), posts === null || posts === void 0 ? void 0 :
+        posts.map(p => React.createElement(PostCard, { key: p.id, post: p, go: go }))));
 }
-
 /* ============================== PROFILE ============================== */
 function ProfileScreen({ uid, go }) {
-  const { profile: me } = useAuth();
-  const toast = useToast();
-  const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [following, setFollowing] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [tab, setTab] = useState('posts');
-
-  useEffect(() => {
-    const unsub = db.collection('users').doc(uid).onSnapshot(s => setUser(s.exists ? { id: s.id, ...s.data() } : null));
-    return unsub;
-  }, [uid]);
-
-  useEffect(() => {
-    const unsub = db.collection('posts').where('authorId', '==', uid).orderBy('createdAt', 'desc').limit(30)
-      .onSnapshot(snap => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [uid]);
-
-  useEffect(() => {
-    if (uid === me.id) return;
-    const unsub = db.collection('follows').doc(me.id + '_' + uid).onSnapshot(s => setFollowing(s.exists));
-    return unsub;
-  }, [uid, me.id]);
-
-  const toggleFollow = async () => {
-    const relId = me.id + '_' + uid;
-    if (following) {
-      await db.collection('follows').doc(relId).delete();
-      await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(-1) });
-      await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(-1) });
-    } else {
-      await db.collection('follows').doc(relId).set({ followerId: me.id, followingId: uid, createdAt: FieldValue.serverTimestamp() });
-      await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(1) });
-      await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(1) });
-      db.collection('notifications').doc(uid).collection('items').add({ type: 'follow', fromUserId: me.id, read: false, createdAt: FieldValue.serverTimestamp() });
-    }
-  };
-
-  const iBlockedThem = (me.blockedUsers || []).includes(uid);
-  const theyBlockedMe = (user?.blockedUsers || []).includes(me.id);
-
-  const toggleBlock = async () => {
-    const ref = db.collection('users').doc(me.id);
-    if (iBlockedThem) { await ref.update({ blockedUsers: FieldValue.arrayRemove(uid) }); toast('Unblocked ' + user.displayName, 'success'); }
-    else {
-      if (!confirm('Block ' + user.displayName + '? They will no longer be able to message you.')) return;
-      await ref.update({ blockedUsers: FieldValue.arrayUnion(uid) });
-      toast('Blocked ' + user.displayName, 'success');
-    }
-  };
-
-  if (!user) return <PostSkeleton />;
-  const isMe = uid === me.id;
-
-  return (
-    <div>
-      <div className="bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 overflow-hidden mb-4">
-        <div className="h-32 bg-gradient-to-r from-brand-500 to-brand-700 relative">
-          {user.coverURL && <img src={user.coverURL} className="w-full h-full object-cover" />}
-        </div>
-        <div className="px-5 pb-5">
-          <div className="flex justify-between items-end -mt-10 mb-3">
-            <img src={user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`}
-              className="w-20 h-20 rounded-full border-4 border-white dark:border-ink-800 object-cover" />
-            {isMe ? (
-              <button onClick={() => setEditing(true)} className="border border-slate-200 dark:border-ink-600 rounded-full px-4 py-1.5 text-sm font-semibold">Edit profile</button>
-            ) : (
-              <div className="flex items-center gap-2">
-                {!theyBlockedMe && !iBlockedThem && (
-                  <button onClick={() => go({ name: 'chat', chatId: chatIdFor(me.id, uid), otherUid: uid })}
-                    className="border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm">
-                    <i className="fa-regular fa-paper-plane"></i>
-                  </button>
-                )}
-                <button onClick={toggleBlock} className="border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm text-red-500">
-                  <i className={"fa-solid " + (iBlockedThem ? "fa-user-check" : "fa-ban")}></i>
-                </button>
-                <button onClick={toggleFollow} className={"rounded-full px-5 py-1.5 text-sm font-semibold " + (following ? "border border-slate-200 dark:border-ink-600" : "bg-brand-600 text-white")}>
-                  {following ? 'Following' : 'Follow'}
-                </button>
-              </div>
-            )}
-          </div>
-          <h2 className="font-display font-bold text-lg">{user.displayName}</h2>
-          <p className="text-slate-400 text-sm">@{user.username}</p>
-          {user.bio && <p className="text-sm mt-2">{user.bio}</p>}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-400">
-            {user.location && <span><i className="fa-solid fa-location-dot mr-1"></i>{user.location}</span>}
-            {user.website && <a href={user.website} target="_blank" className="text-brand-600"><i className="fa-solid fa-link mr-1"></i>{user.website}</a>}
-            {user.occupation && <span><i className="fa-solid fa-briefcase mr-1"></i>{user.occupation}</span>}
-          </div>
-          <div className="flex gap-5 mt-3 text-sm">
-            <span><b>{user.postsCount || 0}</b> <span className="text-slate-400">Posts</span></span>
-            <span><b>{user.followersCount || 0}</b> <span className="text-slate-400">Followers</span></span>
-            <span><b>{user.followingCount || 0}</b> <span className="text-slate-400">Following</span></span>
-          </div>
-        </div>
-      </div>
-
-      {posts.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center py-16">No posts yet.</p>
-      ) : posts.map(p => <PostCard key={p.id} post={p} go={go} />)}
-
-      {editing && <EditProfileModal user={user} onClose={() => setEditing(false)} />}
-    </div>
-  );
+    const { profile: me } = useAuth();
+    const toast = useToast();
+    const [user, setUser] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [following, setFollowing] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [tab, setTab] = useState('posts');
+    useEffect(() => {
+        const unsub = db.collection('users').doc(uid).onSnapshot(s => setUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null));
+        return unsub;
+    }, [uid]);
+    useEffect(() => {
+        const unsub = db.collection('posts').where('authorId', '==', uid).orderBy('createdAt', 'desc').limit(30)
+            .onSnapshot(snap => setPosts(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [uid]);
+    useEffect(() => {
+        if (uid === me.id)
+            return;
+        const unsub = db.collection('follows').doc(me.id + '_' + uid).onSnapshot(s => setFollowing(s.exists));
+        return unsub;
+    }, [uid, me.id]);
+    const toggleFollow = async () => {
+        const relId = me.id + '_' + uid;
+        if (following) {
+            await db.collection('follows').doc(relId).delete();
+            await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(-1) });
+            await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(-1) });
+        }
+        else {
+            await db.collection('follows').doc(relId).set({ followerId: me.id, followingId: uid, createdAt: FieldValue.serverTimestamp() });
+            await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(1) });
+            await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(1) });
+            db.collection('notifications').doc(uid).collection('items').add({ type: 'follow', fromUserId: me.id, read: false, createdAt: FieldValue.serverTimestamp() });
+        }
+    };
+    const iBlockedThem = (me.blockedUsers || []).includes(uid);
+    const theyBlockedMe = ((user === null || user === void 0 ? void 0 : user.blockedUsers) || []).includes(me.id);
+    const toggleBlock = async () => {
+        const ref = db.collection('users').doc(me.id);
+        if (iBlockedThem) {
+            await ref.update({ blockedUsers: FieldValue.arrayRemove(uid) });
+            toast('Unblocked ' + user.displayName, 'success');
+        }
+        else {
+            if (!confirm('Block ' + user.displayName + '? They will no longer be able to message you.'))
+                return;
+            await ref.update({ blockedUsers: FieldValue.arrayUnion(uid) });
+            toast('Blocked ' + user.displayName, 'success');
+        }
+    };
+    if (!user)
+        return React.createElement(PostSkeleton, null);
+    const isMe = uid === me.id;
+    return (React.createElement("div", null,
+        React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-2xl border border-slate-100 dark:border-ink-700 overflow-hidden mb-4" },
+            React.createElement("div", { className: "h-32 bg-gradient-to-r from-brand-500 to-brand-700 relative" }, user.coverURL && React.createElement("img", { src: user.coverURL, className: "w-full h-full object-cover" })),
+            React.createElement("div", { className: "px-5 pb-5" },
+                React.createElement("div", { className: "flex justify-between items-end -mt-10 mb-3" },
+                    React.createElement("img", { src: user.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.displayName}`, className: "w-20 h-20 rounded-full border-4 border-white dark:border-ink-800 object-cover" }),
+                    isMe ? (React.createElement("button", { onClick: () => setEditing(true), className: "border border-slate-200 dark:border-ink-600 rounded-full px-4 py-1.5 text-sm font-semibold" }, "Edit profile")) : (React.createElement("div", { className: "flex items-center gap-2" },
+                        !theyBlockedMe && !iBlockedThem && (React.createElement("button", { onClick: () => go({ name: 'chat', chatId: chatIdFor(me.id, uid), otherUid: uid }), className: "border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm" },
+                            React.createElement("i", { className: "fa-regular fa-paper-plane" }))),
+                        React.createElement("button", { onClick: toggleBlock, className: "border border-slate-200 dark:border-ink-600 rounded-full w-9 h-9 flex items-center justify-center text-sm text-red-500" },
+                            React.createElement("i", { className: "fa-solid " + (iBlockedThem ? "fa-user-check" : "fa-ban") })),
+                        React.createElement("button", { onClick: toggleFollow, className: "rounded-full px-5 py-1.5 text-sm font-semibold " + (following ? "border border-slate-200 dark:border-ink-600" : "bg-brand-600 text-white") }, following ? 'Following' : 'Follow')))),
+                React.createElement("h2", { className: "font-display font-bold text-lg" }, user.displayName),
+                React.createElement("p", { className: "text-slate-400 text-sm" },
+                    "@",
+                    user.username),
+                user.bio && React.createElement("p", { className: "text-sm mt-2" }, user.bio),
+                React.createElement("div", { className: "flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-400" },
+                    user.location && React.createElement("span", null,
+                        React.createElement("i", { className: "fa-solid fa-location-dot mr-1" }),
+                        user.location),
+                    user.website && React.createElement("a", { href: user.website, target: "_blank", className: "text-brand-600" },
+                        React.createElement("i", { className: "fa-solid fa-link mr-1" }),
+                        user.website),
+                    user.occupation && React.createElement("span", null,
+                        React.createElement("i", { className: "fa-solid fa-briefcase mr-1" }),
+                        user.occupation)),
+                React.createElement("div", { className: "flex gap-5 mt-3 text-sm" },
+                    React.createElement("span", null,
+                        React.createElement("b", null, user.postsCount || 0),
+                        " ",
+                        React.createElement("span", { className: "text-slate-400" }, "Posts")),
+                    React.createElement("span", null,
+                        React.createElement("b", null, user.followersCount || 0),
+                        " ",
+                        React.createElement("span", { className: "text-slate-400" }, "Followers")),
+                    React.createElement("span", null,
+                        React.createElement("b", null, user.followingCount || 0),
+                        " ",
+                        React.createElement("span", { className: "text-slate-400" }, "Following"))))),
+        posts.length === 0 ? (React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, "No posts yet.")) : posts.map(p => React.createElement(PostCard, { key: p.id, post: p, go: go })),
+        editing && React.createElement(EditProfileModal, { user: user, onClose: () => setEditing(false) })));
 }
-
 function EditProfileModal({ user, onClose }) {
-  const toast = useToast();
-  const [form, setForm] = useState({
-    displayName: user.displayName || '', bio: user.bio || '', location: user.location || '',
-    website: user.website || '', occupation: user.occupation || '', gender: user.gender || '',
-    dob: user.dob || '', relationshipStatus: user.relationshipStatus || ''
-  });
-  const [photoFile, setPhotoFile] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
-  const [busy, setBusy] = useState(false);
-
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const save = async () => {
-    setBusy(true);
-    try {
-      const update = { ...form };
-      if (photoFile) {
-        const compressed = await compressImage(photoFile, 512);
-        const ref = storage.ref(`avatars/${user.id}.jpg`);
-        await ref.put(compressed, { contentType: 'image/jpeg' });
-        update.photoURL = await ref.getDownloadURL();
-      }
-      if (coverFile) {
-        const compressed = await compressImage(coverFile, 1200);
-        const ref = storage.ref(`covers/${user.id}.jpg`);
-        await ref.put(compressed, { contentType: 'image/jpeg' });
-        update.coverURL = await ref.getDownloadURL();
-      }
-      await db.collection('users').doc(user.id).update(update);
-      toast('Profile updated', 'success');
-      onClose();
-    } catch (e) { toast(e.message, 'error'); } finally { setBusy(false); }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
-      <div className="bg-white dark:bg-ink-800 rounded-t-2xl md:rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-display font-bold text-lg">Edit profile</h3>
-          <button onClick={onClose} className="text-slate-400"><i className="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs font-semibold text-slate-500">Profile photo</label>
-            <input type="file" accept="image/*" onChange={e => setPhotoFile(e.target.files[0])} className="text-sm mt-1 block" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-500">Cover photo</label>
-            <input type="file" accept="image/*" onChange={e => setCoverFile(e.target.files[0])} className="text-sm mt-1 block" />
-          </div>
-          {[
-            ['displayName', 'Display name', 'text'], ['bio', 'Bio', 'textarea'], ['location', 'Location', 'text'],
-            ['website', 'Website', 'text'], ['occupation', 'Occupation', 'text'], ['dob', 'Date of birth', 'date'],
-          ].map(([key, label, type]) => (
-            <div key={key}>
-              <label className="text-xs font-semibold text-slate-500">{label}</label>
-              {type === 'textarea' ? (
-                <textarea value={form[key]} onChange={e => set(key, e.target.value)} rows={3}
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" />
-              ) : (
-                <input type={type} value={form[key]} onChange={e => set(key, e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" />
-              )}
-            </div>
-          ))}
-          <div>
-            <label className="text-xs font-semibold text-slate-500">Gender</label>
-            <select value={form.gender} onChange={e => set('gender', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm">
-              <option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-500">Relationship status</label>
-            <select value={form.relationshipStatus} onChange={e => set('relationshipStatus', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm">
-              <option value="">Prefer not to say</option><option>Single</option><option>In a relationship</option><option>Married</option><option>It's complicated</option>
-            </select>
-          </div>
-        </div>
-        <button onClick={save} disabled={busy} className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl py-2.5 font-semibold text-sm mt-5">
-          {busy ? 'Saving…' : 'Save changes'}
-        </button>
-      </div>
-    </div>
-  );
+    const toast = useToast();
+    const [form, setForm] = useState({
+        displayName: user.displayName || '', bio: user.bio || '', location: user.location || '',
+        website: user.website || '', occupation: user.occupation || '', gender: user.gender || '',
+        dob: user.dob || '', relationshipStatus: user.relationshipStatus || ''
+    });
+    const [photoFile, setPhotoFile] = useState(null);
+    const [coverFile, setCoverFile] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const set = (k, v) => setForm(f => (Object.assign(Object.assign({}, f), { [k]: v })));
+    const save = async () => {
+        setBusy(true);
+        try {
+            const update = Object.assign({}, form);
+            if (photoFile) {
+                const compressed = await compressImage(photoFile, 512);
+                const ref = storage.ref(`avatars/${user.id}.jpg`);
+                await ref.put(compressed, { contentType: 'image/jpeg' });
+                update.photoURL = await ref.getDownloadURL();
+            }
+            if (coverFile) {
+                const compressed = await compressImage(coverFile, 1200);
+                const ref = storage.ref(`covers/${user.id}.jpg`);
+                await ref.put(compressed, { contentType: 'image/jpeg' });
+                update.coverURL = await ref.getDownloadURL();
+            }
+            await db.collection('users').doc(user.id).update(update);
+            toast('Profile updated', 'success');
+            onClose();
+        }
+        catch (e) {
+            toast(e.message, 'error');
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4" },
+        React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-t-2xl md:rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5" },
+            React.createElement("div", { className: "flex justify-between items-center mb-4" },
+                React.createElement("h3", { className: "font-display font-bold text-lg" }, "Edit profile"),
+                React.createElement("button", { onClick: onClose, className: "text-slate-400" },
+                    React.createElement("i", { className: "fa-solid fa-xmark text-lg" }))),
+            React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Profile photo"),
+                    React.createElement("input", { type: "file", accept: "image/*", onChange: e => setPhotoFile(e.target.files[0]), className: "text-sm mt-1 block" })),
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Cover photo"),
+                    React.createElement("input", { type: "file", accept: "image/*", onChange: e => setCoverFile(e.target.files[0]), className: "text-sm mt-1 block" })),
+                [
+                    ['displayName', 'Display name', 'text'], ['bio', 'Bio', 'textarea'], ['location', 'Location', 'text'],
+                    ['website', 'Website', 'text'], ['occupation', 'Occupation', 'text'], ['dob', 'Date of birth', 'date'],
+                ].map(([key, label, type]) => (React.createElement("div", { key: key },
+                    React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, label),
+                    type === 'textarea' ? (React.createElement("textarea", { value: form[key], onChange: e => set(key, e.target.value), rows: 3, className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" })) : (React.createElement("input", { type: type, value: form[key], onChange: e => set(key, e.target.value), className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" }))))),
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Gender"),
+                    React.createElement("select", { value: form.gender, onChange: e => set('gender', e.target.value), className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" },
+                        React.createElement("option", { value: "" }, "Prefer not to say"),
+                        React.createElement("option", null, "Female"),
+                        React.createElement("option", null, "Male"),
+                        React.createElement("option", null, "Non-binary"),
+                        React.createElement("option", null, "Other"))),
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-xs font-semibold text-slate-500" }, "Relationship status"),
+                    React.createElement("select", { value: form.relationshipStatus, onChange: e => set('relationshipStatus', e.target.value), className: "w-full mt-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-ink-600 bg-transparent text-sm" },
+                        React.createElement("option", { value: "" }, "Prefer not to say"),
+                        React.createElement("option", null, "Single"),
+                        React.createElement("option", null, "In a relationship"),
+                        React.createElement("option", null, "Married"),
+                        React.createElement("option", null, "It's complicated")))),
+            React.createElement("button", { onClick: save, disabled: busy, className: "w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-xl py-2.5 font-semibold text-sm mt-5" }, busy ? 'Saving…' : 'Save changes'))));
 }
-
 /* ============================== ADMIN ============================== */
 function AdminScreen() {
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [tab, setTab] = useState('dashboard');
-  const [search, setSearch] = useState('');
-  const toast = useToast();
-
-  useEffect(() => {
-    (async () => {
-      const [usersSnap, postsSnap] = await Promise.all([
-        db.collection('users').get(), db.collection('posts').get()
-      ]);
-      let comments = 0, likes = 0, shares = 0;
-      postsSnap.docs.forEach(d => { const p = d.data(); comments += p.commentsCount || 0; likes += p.likesCount || 0; shares += p.sharesCount || 0; });
-      setStats({ users: usersSnap.size, posts: postsSnap.size, comments, likes, shares });
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (tab !== 'users') return;
-    const unsub = db.collection('users').limit(100).onSnapshot(snap => setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [tab]);
-
-  const toggleSuspend = async (u) => {
-    await db.collection('users').doc(u.id).update({ suspended: !u.suspended });
-    toast(u.suspended ? 'User reactivated' : 'User suspended', 'success');
-  };
-
-  const filtered = users.filter(u => !search || u.username?.includes(search.toLowerCase()) || u.displayName?.toLowerCase().includes(search.toLowerCase()));
-
-  return (
-    <div>
-      <h2 className="font-display text-lg font-bold mb-4">Admin panel</h2>
-      <div className="flex gap-2 mb-4">
-        {['dashboard', 'users'].map(t => (
-          <button key={t} onClick={() => setTab(t)} className={"px-4 py-1.5 rounded-full text-sm font-semibold " + (tab === t ? "bg-brand-600 text-white" : "bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-700")}>
-            {t[0].toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'dashboard' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {stats ? Object.entries({ 'Total users': stats.users, 'Total posts': stats.posts, 'Total comments': stats.comments, 'Total likes': stats.likes, 'Total shares': stats.shares }).map(([label, val]) => (
-            <div key={label} className="bg-white dark:bg-ink-800 rounded-xl border border-slate-100 dark:border-ink-700 p-4">
-              <p className="text-2xl font-display font-bold">{val}</p>
-              <p className="text-xs text-slate-400 mt-1">{label}</p>
-            </div>
-          )) : <p className="text-sm text-slate-400">Loading…</p>}
-        </div>
-      )}
-
-      {tab === 'users' && (
-        <div>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users…"
-            className="w-full mb-3 px-4 py-2 rounded-xl border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm" />
-          <div className="space-y-2">
-            {filtered.map(u => (
-              <div key={u.id} className="flex items-center justify-between bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700">
-                <div className="flex items-center gap-3">
-                  <Avatar user={u} size={9} />
-                  <div>
-                    <p className="text-sm font-semibold">{u.displayName} {u.suspended && <span className="text-red-500 text-xs ml-1">(suspended)</span>}</p>
-                    <p className="text-xs text-slate-400">@{u.username}</p>
-                  </div>
-                </div>
-                <button onClick={() => toggleSuspend(u)} className={"text-xs font-semibold px-3 py-1.5 rounded-full " + (u.suspended ? "bg-emerald-500 text-white" : "bg-red-500 text-white")}>
-                  {u.suspended ? 'Reactivate' : 'Suspend'}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    const [stats, setStats] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [tab, setTab] = useState('dashboard');
+    const [search, setSearch] = useState('');
+    const toast = useToast();
+    useEffect(() => {
+        (async () => {
+            const [usersSnap, postsSnap] = await Promise.all([
+                db.collection('users').get(), db.collection('posts').get()
+            ]);
+            let comments = 0, likes = 0, shares = 0;
+            postsSnap.docs.forEach(d => { const p = d.data(); comments += p.commentsCount || 0; likes += p.likesCount || 0; shares += p.sharesCount || 0; });
+            setStats({ users: usersSnap.size, posts: postsSnap.size, comments, likes, shares });
+        })();
+    }, []);
+    useEffect(() => {
+        if (tab !== 'users')
+            return;
+        const unsub = db.collection('users').limit(100).onSnapshot(snap => setUsers(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [tab]);
+    const toggleSuspend = async (u) => {
+        await db.collection('users').doc(u.id).update({ suspended: !u.suspended });
+        toast(u.suspended ? 'User reactivated' : 'User suspended', 'success');
+    };
+    const filtered = users.filter(u => { var _a, _b; return !search || ((_a = u.username) === null || _a === void 0 ? void 0 : _a.includes(search.toLowerCase())) || ((_b = u.displayName) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(search.toLowerCase())); });
+    return (React.createElement("div", null,
+        React.createElement("h2", { className: "font-display text-lg font-bold mb-4" }, "Admin panel"),
+        React.createElement("div", { className: "flex gap-2 mb-4" }, ['dashboard', 'users'].map(t => (React.createElement("button", { key: t, onClick: () => setTab(t), className: "px-4 py-1.5 rounded-full text-sm font-semibold " + (tab === t ? "bg-brand-600 text-white" : "bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-700") }, t[0].toUpperCase() + t.slice(1))))),
+        tab === 'dashboard' && (React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-3" }, stats ? Object.entries({ 'Total users': stats.users, 'Total posts': stats.posts, 'Total comments': stats.comments, 'Total likes': stats.likes, 'Total shares': stats.shares }).map(([label, val]) => (React.createElement("div", { key: label, className: "bg-white dark:bg-ink-800 rounded-xl border border-slate-100 dark:border-ink-700 p-4" },
+            React.createElement("p", { className: "text-2xl font-display font-bold" }, val),
+            React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, label)))) : React.createElement("p", { className: "text-sm text-slate-400" }, "Loading\u2026"))),
+        tab === 'users' && (React.createElement("div", null,
+            React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "Search users\u2026", className: "w-full mb-3 px-4 py-2 rounded-xl border border-slate-200 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm" }),
+            React.createElement("div", { className: "space-y-2" }, filtered.map(u => (React.createElement("div", { key: u.id, className: "flex items-center justify-between bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700" },
+                React.createElement("div", { className: "flex items-center gap-3" },
+                    React.createElement(Avatar, { user: u, size: 9 }),
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-sm font-semibold" },
+                            u.displayName,
+                            " ",
+                            u.suspended && React.createElement("span", { className: "text-red-500 text-xs ml-1" }, "(suspended)")),
+                        React.createElement("p", { className: "text-xs text-slate-400" },
+                            "@",
+                            u.username))),
+                React.createElement("button", { onClick: () => toggleSuspend(u), className: "text-xs font-semibold px-3 py-1.5 rounded-full " + (u.suspended ? "bg-emerald-500 text-white" : "bg-red-500 text-white") }, u.suspended ? 'Reactivate' : 'Suspend')))))))));
 }
-
 /* ============================== MESSAGING: CHAT LIST ============================== */
 function ChatListScreen({ go }) {
-  const { profile } = useAuth();
-  const [rows, setRows] = useState(null);
-  const [tab, setTab] = useState('all');
-  const [search, setSearch] = useState('');
-  const [menuFor, setMenuFor] = useState(null);
-
-  useEffect(() => {
-    const unsub = db.collection('chatMembers').where('uid', '==', profile.id)
-      .onSnapshot(snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [profile.id]);
-
-  const visible = (rows || []).filter(r => {
-    if (r.deletedAt) return false;
-    if (tab === 'requests') return r.status === 'pending';
-    if (tab === 'archived') return r.archived && r.status === 'accepted';
-    return r.status === 'accepted' && !r.archived;
-  }).sort((a, b) => {
-    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
-    const at = a.lastMessageAt?.toMillis ? a.lastMessageAt.toMillis() : 0;
-    const bt = b.lastMessageAt?.toMillis ? b.lastMessageAt.toMillis() : 0;
-    return bt - at;
-  });
-
-  const requestCount = (rows || []).filter(r => r.status === 'pending' && !r.deletedAt).length;
-
-  const togglePin = (r) => db.collection('chatMembers').doc(r.id).update({ pinned: !r.pinned });
-  const toggleArchive = (r) => db.collection('chatMembers').doc(r.id).update({ archived: !r.archived });
-  const deleteConvo = (r) => { if (confirm('Delete this conversation for you?')) db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() }); };
-  const acceptRequest = (r) => db.collection('chatMembers').doc(r.id).update({ status: 'accepted' });
-  const declineRequest = (r) => db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() });
-
-  return (
-    <div>
-      <h2 className="font-display text-lg font-bold mb-3">Messages</h2>
-      <div className="relative mb-3">
-        <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search conversations…"
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 text-sm" />
-      </div>
-      <div className="flex gap-2 mb-4">
-        {[['all', 'All'], ['requests', 'Requests'], ['archived', 'Archived']].map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-semibold " + (tab === k ? "bg-brand-600 text-white" : "bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-500")}>
-            {l}{k === 'requests' && requestCount > 0 && <span className="ml-1">({requestCount})</span>}
-          </button>
-        ))}
-      </div>
-      {rows === null && <p className="text-sm text-slate-400">Loading…</p>}
-      {rows !== null && visible.length === 0 && <p className="text-sm text-slate-400 text-center py-16">No conversations here.</p>}
-      <div className="space-y-2">
-        {visible.map(r => (
-          <ChatRow key={r.id} row={r} go={go} search={search}
-            onPin={() => togglePin(r)} onArchive={() => toggleArchive(r)} onDelete={() => deleteConvo(r)}
-            onAccept={() => acceptRequest(r)} onDecline={() => declineRequest(r)}
-            menuOpen={menuFor === r.id} setMenuOpen={(v) => setMenuFor(v ? r.id : null)} />
-        ))}
-      </div>
-    </div>
-  );
+    const { profile } = useAuth();
+    const [rows, setRows] = useState(null);
+    const [tab, setTab] = useState('all');
+    const [search, setSearch] = useState('');
+    const [menuFor, setMenuFor] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('chatMembers').where('uid', '==', profile.id)
+            .onSnapshot(snap => setRows(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [profile.id]);
+    const visible = (rows || []).filter(r => {
+        if (r.deletedAt)
+            return false;
+        if (tab === 'requests')
+            return r.status === 'pending';
+        if (tab === 'archived')
+            return r.archived && r.status === 'accepted';
+        return r.status === 'accepted' && !r.archived;
+    }).sort((a, b) => {
+        var _a, _b;
+        if (!!a.pinned !== !!b.pinned)
+            return a.pinned ? -1 : 1;
+        const at = ((_a = a.lastMessageAt) === null || _a === void 0 ? void 0 : _a.toMillis) ? a.lastMessageAt.toMillis() : 0;
+        const bt = ((_b = b.lastMessageAt) === null || _b === void 0 ? void 0 : _b.toMillis) ? b.lastMessageAt.toMillis() : 0;
+        return bt - at;
+    });
+    const requestCount = (rows || []).filter(r => r.status === 'pending' && !r.deletedAt).length;
+    const togglePin = (r) => db.collection('chatMembers').doc(r.id).update({ pinned: !r.pinned });
+    const toggleArchive = (r) => db.collection('chatMembers').doc(r.id).update({ archived: !r.archived });
+    const deleteConvo = (r) => { if (confirm('Delete this conversation for you?'))
+        db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() }); };
+    const acceptRequest = (r) => db.collection('chatMembers').doc(r.id).update({ status: 'accepted' });
+    const declineRequest = (r) => db.collection('chatMembers').doc(r.id).update({ deletedAt: FieldValue.serverTimestamp() });
+    return (React.createElement("div", null,
+        React.createElement("h2", { className: "font-display text-lg font-bold mb-3" }, "Messages"),
+        React.createElement("div", { className: "relative mb-3" },
+            React.createElement("i", { className: "fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" }),
+            React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "Search conversations\u2026", className: "w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 text-sm" })),
+        React.createElement("div", { className: "flex gap-2 mb-4" }, [['all', 'All'], ['requests', 'Requests'], ['archived', 'Archived']].map(([k, l]) => (React.createElement("button", { key: k, onClick: () => setTab(k), className: "px-3.5 py-1.5 rounded-full text-xs font-semibold " + (tab === k ? "bg-brand-600 text-white" : "bg-white dark:bg-ink-800 border border-slate-200 dark:border-ink-700 text-slate-500") },
+            l,
+            k === 'requests' && requestCount > 0 && React.createElement("span", { className: "ml-1" },
+                "(",
+                requestCount,
+                ")"))))),
+        rows === null && React.createElement("p", { className: "text-sm text-slate-400" }, "Loading\u2026"),
+        rows !== null && visible.length === 0 && React.createElement("p", { className: "text-sm text-slate-400 text-center py-16" }, "No conversations here."),
+        React.createElement("div", { className: "space-y-2" }, visible.map(r => (React.createElement(ChatRow, { key: r.id, row: r, go: go, search: search, onPin: () => togglePin(r), onArchive: () => toggleArchive(r), onDelete: () => deleteConvo(r), onAccept: () => acceptRequest(r), onDecline: () => declineRequest(r), menuOpen: menuFor === r.id, setMenuOpen: (v) => setMenuFor(v ? r.id : null) }))))));
 }
-
 function ChatRow({ row, go, search, onPin, onArchive, onDelete, onAccept, onDecline, menuOpen, setMenuOpen }) {
-  const [user, setUser] = useState(null);
-  useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [row.otherUid]);
-  if (!user) return null;
-  if (search && !(user.displayName?.toLowerCase().includes(search.toLowerCase()) || user.username?.toLowerCase().includes(search.toLowerCase()))) return null;
-  const previewMap = { image: '📷 Photo', video: '🎥 Video', audio: '🎤 Voice note', document: '📄 Document' };
-  const preview = row.lastMessage ? (row.lastMessage.type === 'text' ? row.lastMessage.text : (previewMap[row.lastMessage.type] || 'Message')) : 'Say hello 👋';
-  const openChat = () => go({ name: 'chat', chatId: row.chatId, otherUid: row.otherUid });
-
-  return (
-    <div className="flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700">
-      <div className="relative cursor-pointer shrink-0" onClick={openChat}>
-        <Avatar user={user} size={11} />
-        {isUserOnline(user) && <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800"></span>}
-      </div>
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={openChat}>
-        <div className="flex items-center justify-between gap-2">
-          <p className="font-semibold text-sm truncate flex items-center gap-1">
-            {row.pinned && <i className="fa-solid fa-thumbtack text-[10px] text-slate-400"></i>}{user.displayName}
-          </p>
-          <span className="text-xs text-slate-400 shrink-0">{timeAgo(row.lastMessageAt)}</span>
-        </div>
-        <p className="text-xs text-slate-400 truncate">{row.lastMessage?.senderId && row.lastMessage.senderId !== user.id ? 'You: ' : ''}{preview}</p>
-      </div>
-      {row.status === 'pending' ? (
-        <div className="flex flex-col gap-1 shrink-0">
-          <button onClick={onAccept} className="text-xs bg-brand-600 text-white rounded-full px-3 py-1">Accept</button>
-          <button onClick={onDecline} className="text-xs border border-slate-200 dark:border-ink-600 rounded-full px-3 py-1">Decline</button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 shrink-0">
-          {row.unreadCount > 0 && <span className="bg-brand-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">{row.unreadCount}</span>}
-          <div className="relative">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="text-slate-400 px-1"><i className="fa-solid fa-ellipsis-vertical"></i></button>
-            {menuOpen && (
-              <div className="absolute right-0 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl overflow-hidden border border-slate-100 dark:border-ink-600 z-10 w-36">
-                <button onClick={() => { onPin(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">{row.pinned ? 'Unpin' : 'Pin'}</button>
-                <button onClick={() => { onArchive(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">{row.archived ? 'Unarchive' : 'Archive'}</button>
-                <button onClick={() => { onDelete(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600">Delete</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    var _a, _b, _c;
+    const [user, setUser] = useState(null);
+    useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null)); return unsub; }, [row.otherUid]);
+    if (!user)
+        return null;
+    if (search && !(((_a = user.displayName) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(search.toLowerCase())) || ((_b = user.username) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(search.toLowerCase()))))
+        return null;
+    const previewMap = { image: '📷 Photo', video: '🎥 Video', audio: '🎤 Voice note', document: '📄 Document' };
+    const preview = row.lastMessage ? (row.lastMessage.type === 'text' ? row.lastMessage.text : (previewMap[row.lastMessage.type] || 'Message')) : 'Say hello 👋';
+    const openChat = () => go({ name: 'chat', chatId: row.chatId, otherUid: row.otherUid });
+    return (React.createElement("div", { className: "flex items-center gap-3 bg-white dark:bg-ink-800 rounded-xl p-3 border border-slate-100 dark:border-ink-700" },
+        React.createElement("div", { className: "relative cursor-pointer shrink-0", onClick: openChat },
+            React.createElement(Avatar, { user: user, size: 11 }),
+            isUserOnline(user) && React.createElement("span", { className: "absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800" })),
+        React.createElement("div", { className: "flex-1 min-w-0 cursor-pointer", onClick: openChat },
+            React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                React.createElement("p", { className: "font-semibold text-sm truncate flex items-center gap-1" },
+                    row.pinned && React.createElement("i", { className: "fa-solid fa-thumbtack text-[10px] text-slate-400" }),
+                    user.displayName),
+                React.createElement("span", { className: "text-xs text-slate-400 shrink-0" }, timeAgo(row.lastMessageAt))),
+            React.createElement("p", { className: "text-xs text-slate-400 truncate" },
+                ((_c = row.lastMessage) === null || _c === void 0 ? void 0 : _c.senderId) && row.lastMessage.senderId !== user.id ? 'You: ' : '',
+                preview)),
+        row.status === 'pending' ? (React.createElement("div", { className: "flex flex-col gap-1 shrink-0" },
+            React.createElement("button", { onClick: onAccept, className: "text-xs bg-brand-600 text-white rounded-full px-3 py-1" }, "Accept"),
+            React.createElement("button", { onClick: onDecline, className: "text-xs border border-slate-200 dark:border-ink-600 rounded-full px-3 py-1" }, "Decline"))) : (React.createElement("div", { className: "flex items-center gap-2 shrink-0" },
+            row.unreadCount > 0 && React.createElement("span", { className: "bg-brand-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" }, row.unreadCount),
+            React.createElement("div", { className: "relative" },
+                React.createElement("button", { onClick: () => setMenuOpen(!menuOpen), className: "text-slate-400 px-1" },
+                    React.createElement("i", { className: "fa-solid fa-ellipsis-vertical" })),
+                menuOpen && (React.createElement("div", { className: "absolute right-0 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl overflow-hidden border border-slate-100 dark:border-ink-600 z-10 w-36" },
+                    React.createElement("button", { onClick: () => { onPin(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, row.pinned ? 'Unpin' : 'Pin'),
+                    React.createElement("button", { onClick: () => { onArchive(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, row.archived ? 'Unarchive' : 'Archive'),
+                    React.createElement("button", { onClick: () => { onDelete(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600" }, "Delete"))))))));
 }
-
 /* ============================== MESSAGING: CHAT WINDOW ============================== */
 function DateSeparator({ prev, curr }) {
-  if (!curr?.createdAt?.toDate) return null;
-  const currDate = curr.createdAt.toDate().toDateString();
-  const prevDate = prev?.createdAt?.toDate ? prev.createdAt.toDate().toDateString() : null;
-  if (currDate === prevDate) return null;
-  const label = currDate === new Date().toDateString() ? 'Today' : curr.createdAt.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  return <div className="text-center text-xs text-slate-400 my-2">{label}</div>;
+    var _a, _b;
+    if (!((_a = curr === null || curr === void 0 ? void 0 : curr.createdAt) === null || _a === void 0 ? void 0 : _a.toDate))
+        return null;
+    const currDate = curr.createdAt.toDate().toDateString();
+    const prevDate = ((_b = prev === null || prev === void 0 ? void 0 : prev.createdAt) === null || _b === void 0 ? void 0 : _b.toDate) ? prev.createdAt.toDate().toDateString() : null;
+    if (currDate === prevDate)
+        return null;
+    const label = currDate === new Date().toDateString() ? 'Today' : curr.createdAt.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return React.createElement("div", { className: "text-center text-xs text-slate-400 my-2" }, label);
 }
-
 function MessageBubble({ message, isMe, otherUid, menuOpen, setMenuOpen, onReply, onForward, onCopy, onEdit, onDelete, onReact }) {
-  const status = () => {
-    if ((message.readBy || []).includes(otherUid)) return <i className="fa-solid fa-check-double text-brand-200"></i>;
-    if ((message.deliveredTo || []).includes(otherUid)) return <i className="fa-solid fa-check-double text-white/60"></i>;
-    return <i className="fa-solid fa-check text-white/60"></i>;
-  };
-  const reactions = message.reactions ? Object.entries(message.reactions) : [];
-
-  return (
-    <div className={"flex " + (isMe ? "justify-end" : "justify-start")}>
-      <div className="max-w-[75%] group relative">
-        {message.forwardedFrom && <p className="text-[10px] text-slate-400 mb-0.5 flex items-center gap-1"><i className="fa-solid fa-share"></i>Forwarded</p>}
-        {message.replyTo && (
-          <div className="text-xs px-2.5 py-1 rounded-t-lg border-l-2 border-brand-400 bg-black/5 dark:bg-white/5">
-            <p className="truncate opacity-70 max-w-[220px]">{message.replyTo.text}</p>
-          </div>
-        )}
-        <div className={"relative px-3.5 py-2 rounded-2xl text-sm " + (isMe ? "bg-brand-600 text-white rounded-br-sm" : "bg-slate-100 dark:bg-ink-700 rounded-bl-sm")}>
-          {message.type === 'text' && <p className="whitespace-pre-wrap break-words">{message.text}</p>}
-          {message.type === 'image' && <img src={message.mediaURL} onClick={() => window.open(message.mediaURL, '_blank')} loading="lazy" className="rounded-lg max-w-[240px] cursor-pointer" />}
-          {message.type === 'video' && <video src={message.mediaURL} controls className="rounded-lg max-w-[240px]" />}
-          {message.type === 'audio' && <audio src={message.mediaURL} controls className="w-56" />}
-          {message.type === 'document' && (
-            <a href={message.mediaURL} target="_blank" className={"flex items-center gap-2 " + (isMe ? "text-white" : "text-brand-600")}>
-              <i className="fa-solid fa-file-lines text-lg"></i>
-              <span className="truncate max-w-[160px] underline">{message.mediaName || 'Document'}</span>
-            </a>
-          )}
-          <div className={"flex items-center gap-1 mt-1 justify-end text-[10px] " + (isMe ? "text-white/70" : "text-slate-400")}>
-            {message.editedAt && <span>edited</span>}
-            <span>{message.createdAt?.toDate ? message.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-            {isMe && status()}
-          </div>
-          <button onClick={() => setMenuOpen(!menuOpen)}
-            className={"absolute top-1 " + (isMe ? "-left-7" : "-right-7") + " opacity-0 group-hover:opacity-100 text-slate-400 text-xs px-1.5 py-1"}>
-            <i className="fa-solid fa-chevron-down"></i>
-          </button>
-        </div>
-        {reactions.length > 0 && (
-          <div className="flex gap-0.5 mt-0.5">
-            {reactions.map(([uid, emoji]) => <span key={uid} className="text-xs bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-600 rounded-full px-1.5">{emoji}</span>)}
-          </div>
-        )}
-        {menuOpen && (
-          <div className={"absolute z-20 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl border border-slate-100 dark:border-ink-600 overflow-hidden w-40 " + (isMe ? "right-0" : "left-0")}>
-            <div className="flex justify-around px-2 py-1.5 border-b border-slate-100 dark:border-ink-600">
-              {REACTION_EMOJIS.map(e => <button key={e} onClick={() => { onReact(e); setMenuOpen(false); }} className="text-sm hover:scale-125 transition">{e}</button>)}
-            </div>
-            <button onClick={() => { onReply(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Reply</button>
-            <button onClick={() => { onForward(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Forward</button>
-            {message.type === 'text' && <button onClick={() => { onCopy(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Copy</button>}
-            {isMe && message.type === 'text' && <button onClick={() => { onEdit(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600">Edit</button>}
-            <button onClick={() => { onDelete(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600">Delete for me</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    var _a;
+    const status = () => {
+        if ((message.readBy || []).includes(otherUid))
+            return React.createElement("i", { className: "fa-solid fa-check-double text-brand-200" });
+        if ((message.deliveredTo || []).includes(otherUid))
+            return React.createElement("i", { className: "fa-solid fa-check-double text-white/60" });
+        return React.createElement("i", { className: "fa-solid fa-check text-white/60" });
+    };
+    const reactions = message.reactions ? Object.entries(message.reactions) : [];
+    return (React.createElement("div", { className: "flex " + (isMe ? "justify-end" : "justify-start") },
+        React.createElement("div", { className: "max-w-[75%] group relative" },
+            message.forwardedFrom && React.createElement("p", { className: "text-[10px] text-slate-400 mb-0.5 flex items-center gap-1" },
+                React.createElement("i", { className: "fa-solid fa-share" }),
+                "Forwarded"),
+            message.replyTo && (React.createElement("div", { className: "text-xs px-2.5 py-1 rounded-t-lg border-l-2 border-brand-400 bg-black/5 dark:bg-white/5" },
+                React.createElement("p", { className: "truncate opacity-70 max-w-[220px]" }, message.replyTo.text))),
+            React.createElement("div", { className: "relative px-3.5 py-2 rounded-2xl text-sm " + (isMe ? "bg-brand-600 text-white rounded-br-sm" : "bg-slate-100 dark:bg-ink-700 rounded-bl-sm") },
+                message.type === 'text' && React.createElement("p", { className: "whitespace-pre-wrap break-words" }, message.text),
+                message.type === 'image' && React.createElement("img", { src: message.mediaURL, onClick: () => window.open(message.mediaURL, '_blank'), loading: "lazy", className: "rounded-lg max-w-[240px] cursor-pointer" }),
+                message.type === 'video' && React.createElement("video", { src: message.mediaURL, controls: true, className: "rounded-lg max-w-[240px]" }),
+                message.type === 'audio' && React.createElement("audio", { src: message.mediaURL, controls: true, className: "w-56" }),
+                message.type === 'document' && (React.createElement("a", { href: message.mediaURL, target: "_blank", className: "flex items-center gap-2 " + (isMe ? "text-white" : "text-brand-600") },
+                    React.createElement("i", { className: "fa-solid fa-file-lines text-lg" }),
+                    React.createElement("span", { className: "truncate max-w-[160px] underline" }, message.mediaName || 'Document'))),
+                React.createElement("div", { className: "flex items-center gap-1 mt-1 justify-end text-[10px] " + (isMe ? "text-white/70" : "text-slate-400") },
+                    message.editedAt && React.createElement("span", null, "edited"),
+                    React.createElement("span", null, ((_a = message.createdAt) === null || _a === void 0 ? void 0 : _a.toDate) ? message.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+                    isMe && status()),
+                React.createElement("button", { onClick: () => setMenuOpen(!menuOpen), className: "absolute top-1 " + (isMe ? "-left-7" : "-right-7") + " opacity-0 group-hover:opacity-100 text-slate-400 text-xs px-1.5 py-1" },
+                    React.createElement("i", { className: "fa-solid fa-chevron-down" }))),
+            reactions.length > 0 && (React.createElement("div", { className: "flex gap-0.5 mt-0.5" }, reactions.map(([uid, emoji]) => React.createElement("span", { key: uid, className: "text-xs bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-600 rounded-full px-1.5" }, emoji)))),
+            menuOpen && (React.createElement("div", { className: "absolute z-20 mt-1 bg-white dark:bg-ink-700 shadow-lg rounded-xl border border-slate-100 dark:border-ink-600 overflow-hidden w-40 " + (isMe ? "right-0" : "left-0") },
+                React.createElement("div", { className: "flex justify-around px-2 py-1.5 border-b border-slate-100 dark:border-ink-600" }, REACTION_EMOJIS.map(e => React.createElement("button", { key: e, onClick: () => { onReact(e); setMenuOpen(false); }, className: "text-sm hover:scale-125 transition" }, e))),
+                React.createElement("button", { onClick: () => { onReply(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, "Reply"),
+                React.createElement("button", { onClick: () => { onForward(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, "Forward"),
+                message.type === 'text' && React.createElement("button", { onClick: () => { onCopy(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, "Copy"),
+                isMe && message.type === 'text' && React.createElement("button", { onClick: () => { onEdit(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-ink-600" }, "Edit"),
+                React.createElement("button", { onClick: () => { onDelete(); setMenuOpen(false); }, className: "w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-slate-50 dark:hover:bg-ink-600" }, "Delete for me"))))));
 }
-
 function ChatWindow({ chatId, otherUid, go }) {
-  const { profile } = useAuth();
-  const toast = useToast();
-  const [otherUser, setOtherUser] = useState(null);
-  const [chatDoc, setChatDoc] = useState(null);
-  const [messages, setMessages] = useState(null);
-  const [text, setText] = useState('');
-  const [replyTo, setReplyTo] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null);
-  const [attachOpen, setAttachOpen] = useState(false);
-  const [emojiOpen, setEmojiOpen] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [recordSeconds, setRecordSeconds] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [activeMenuId, setActiveMenuId] = useState(null);
-  const [forwardMsg, setForwardMsg] = useState(null);
-  const bottomRef = useRef();
-  const typingTimeout = useRef();
-  const recorderRef = useRef(); const chunksRef = useRef([]); const recordTimerRef = useRef();
-  const imageInputRef = useRef(); const videoInputRef = useRef(); const docInputRef = useRef();
-
-  useEffect(() => { const unsub = db.collection('users').doc(otherUid).onSnapshot(s => setOtherUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [otherUid]);
-  useEffect(() => { const unsub = db.collection('chats').doc(chatId).onSnapshot(s => setChatDoc(s.exists ? s.data() : null)); return unsub; }, [chatId]);
-  useEffect(() => {
-    const unsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt', 'asc').limit(200)
-      .onSnapshot(snap => setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    return unsub;
-  }, [chatId]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages?.length]);
-
-  useEffect(() => {
-    if (!messages || messages.length === 0) return;
-    const unread = messages.filter(m => m.senderId !== profile.id && !(m.readBy || []).includes(profile.id));
-    if (unread.length === 0) return;
-    const batch = db.batch();
-    unread.forEach(m => batch.update(db.collection('chats').doc(chatId).collection('messages').doc(m.id),
-      { readBy: FieldValue.arrayUnion(profile.id), deliveredTo: FieldValue.arrayUnion(profile.id) }));
-    batch.commit().catch(() => {});
-    db.collection('chatMembers').doc(chatId + '_' + profile.id).set({ unreadCount: 0 }, { merge: true }).catch(() => {});
-  }, [messages, chatId, profile.id]);
-
-  useEffect(() => () => { db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {}); }, [chatId]);
-
-  const iBlockedThem = (profile.blockedUsers || []).includes(otherUid);
-  const theyBlockedMe = (otherUser?.blockedUsers || []).includes(profile.id);
-  const blocked = iBlockedThem || theyBlockedMe;
-
-  const onTextChange = (v) => {
-    setText(v);
-    db.collection('chats').doc(chatId).set({ typing: { [profile.id]: true } }, { merge: true }).catch(() => {});
-    clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => {
-      db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {});
-    }, 2500);
-  };
-
-  const sendText = async () => {
-    if (blocked) { toast("You can't message this user", 'error'); return; }
-    if (editingMessage) {
-      await db.collection('chats').doc(chatId).collection('messages').doc(editingMessage.id).update({ text: text.trim(), editedAt: FieldValue.serverTimestamp() });
-      setEditingMessage(null); setText(''); return;
-    }
-    if (!text.trim()) return;
-    const payload = { type: 'text', text: text.trim() };
-    if (replyTo) payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
-    setText(''); setReplyTo(null);
-    db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => {});
-    try { await sendChatMessage(profile.id, chatId, otherUid, payload); } catch (e) { toast(e.message, 'error'); }
-  };
-
-  const uploadAndSend = async (file, type) => {
-    if (blocked) { toast("You can't message this user", 'error'); return; }
-    const maxSizes = { image: 15 * 1024 * 1024, video: 100 * 1024 * 1024, document: 25 * 1024 * 1024, audio: 20 * 1024 * 1024 };
-    if (file.size > maxSizes[type]) { toast('File exceeds the size limit for ' + type, 'error'); return; }
-    setUploading(true); setProgress(0);
-    try {
-      let blob = file;
-      if (type === 'image') blob = await compressImage(file, 1600, 0.85);
-      const ext = type === 'image' ? 'jpg' : (file.name ? file.name.split('.').pop() : 'webm');
-      const path = `chat-media/${chatId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const ref = storage.ref(path);
-      await new Promise((resolve, reject) => {
-        const task = ref.put(blob, { contentType: type === 'image' ? 'image/jpeg' : (file.type || 'application/octet-stream') });
-        task.on('state_changed', s => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)), reject, resolve);
-      });
-      const url = await ref.getDownloadURL();
-      const payload = { type, mediaURL: url, mediaName: file.name || 'voice-note.webm', mediaSize: file.size };
-      if (replyTo) payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
-      setReplyTo(null);
-      await sendChatMessage(profile.id, chatId, otherUid, payload);
-    } catch (e) { toast(e.message, 'error'); } finally { setUploading(false); setProgress(0); }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const rec = new MediaRecorder(stream);
-      recorderRef.current = rec; chunksRef.current = [];
-      rec.ondataavailable = e => chunksRef.current.push(e.data);
-      rec.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        if (rec.__cancelled || chunksRef.current.length === 0) return;
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
-        await uploadAndSend(file, 'audio');
-      };
-      rec.start();
-      setRecording(true); setRecordSeconds(0);
-      recordTimerRef.current = setInterval(() => setRecordSeconds(s => s + 1), 1000);
-    } catch (e) { toast('Microphone access denied', 'error'); }
-  };
-  const stopRecording = (cancel) => {
-    clearInterval(recordTimerRef.current);
-    setRecording(false);
-    if (recorderRef.current) { recorderRef.current.__cancelled = !!cancel; recorderRef.current.stop(); }
-  };
-
-  const deleteForMe = (m) => db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ deletedFor: FieldValue.arrayUnion(profile.id) });
-  const copyText = (m) => { navigator.clipboard?.writeText(m.text || ''); toast('Copied', 'success'); };
-  const react = async (m, emoji) => {
-    const key = 'reactions.' + profile.id;
-    if (m.reactions?.[profile.id] === emoji) await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: FieldValue.delete() });
-    else await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: emoji });
-  };
-
-  if (!otherUser) return <div className="p-6"><PostSkeleton /></div>;
-  const visibleMessages = (messages || []).filter(m => !(m.deletedFor || []).includes(profile.id));
-
-  return (
-    <div className="flex flex-col bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 md:rounded-2xl overflow-hidden" style={{ height: 'calc(100vh - 1px)' }}>
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-ink-700 shrink-0">
-        <button onClick={() => go({ name: 'messages' })} className="text-slate-400 md:hidden"><i className="fa-solid fa-arrow-left"></i></button>
-        <div className="relative cursor-pointer" onClick={() => go({ name: 'profile', uid: otherUid })}>
-          <Avatar user={otherUser} size={9} />
-          {isUserOnline(otherUser) && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800"></span>}
-        </div>
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => go({ name: 'profile', uid: otherUid })}>
-          <p className="font-semibold text-sm truncate">{otherUser.displayName}</p>
-          <p className="text-xs text-slate-400 truncate">
-            {chatDoc?.typing?.[otherUid] ? <span className="text-brand-500">typing…</span> : lastSeenLabel(otherUser)}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages === null && <p className="text-sm text-slate-400 text-center">Loading…</p>}
-        {messages?.length === 0 && (
-          <div className="text-center text-slate-400 py-10">
-            <div className="flex justify-center"><Avatar user={otherUser} size={16} /></div>
-            <p className="mt-3 font-semibold text-sm text-slate-600 dark:text-slate-300">{otherUser.displayName}</p>
-            <p className="text-xs mt-1">Say hello to start the conversation 👋</p>
-          </div>
-        )}
-        {visibleMessages.map((m, i) => (
-          <React.Fragment key={m.id}>
-            <DateSeparator prev={visibleMessages[i - 1]} curr={m} />
-            <MessageBubble message={m} isMe={m.senderId === profile.id} otherUid={otherUid}
-              menuOpen={activeMenuId === m.id} setMenuOpen={(v) => setActiveMenuId(v ? m.id : null)}
-              onReply={() => setReplyTo(m)} onForward={() => setForwardMsg(m)} onCopy={() => copyText(m)}
-              onEdit={() => { setEditingMessage(m); setText(m.text || ''); }} onDelete={() => deleteForMe(m)}
-              onReact={(e) => react(m, e)} />
-          </React.Fragment>
-        ))}
-        <div ref={bottomRef}></div>
-      </div>
-
-      {blocked && (
-        <div className="px-4 py-2 text-xs text-center text-red-500 bg-red-50 dark:bg-red-900/20 shrink-0">
-          {iBlockedThem ? "You've blocked this user." : "You can't reply to this conversation."}
-        </div>
-      )}
-
-      {(replyTo || editingMessage) && (
-        <div className="flex items-center justify-between px-4 py-2 border-t border-slate-100 dark:border-ink-700 bg-slate-50 dark:bg-ink-700 shrink-0">
-          <p className="text-xs text-slate-500 truncate">{editingMessage ? 'Editing message' : 'Replying to: ' + (replyTo.text || '[' + replyTo.type + ']')}</p>
-          <button onClick={() => { setReplyTo(null); setEditingMessage(null); setText(''); }} className="text-slate-400 text-xs px-2">✕</button>
-        </div>
-      )}
-
-      {uploading && (
-        <div className="px-4 pt-2 shrink-0">
-          <div className="w-full h-1.5 bg-slate-100 dark:bg-ink-700 rounded-full overflow-hidden">
-            <div className="h-full bg-brand-600 transition-all" style={{ width: progress + '%' }}></div>
-          </div>
-        </div>
-      )}
-
-      <div className="p-3 border-t border-slate-100 dark:border-ink-700 shrink-0 relative">
-        {emojiOpen && (
-          <div className="absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 grid grid-cols-6 gap-1 z-20">
-            {EMOJI_PICKER_SET.map(e => <button key={e} onClick={() => { setText(t => t + e); setEmojiOpen(false); }} className="text-lg hover:bg-slate-100 dark:hover:bg-ink-600 rounded-lg p-1">{e}</button>)}
-          </div>
-        )}
-        {attachOpen && (
-          <div className="absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 flex gap-2 z-20">
-            <button onClick={() => { imageInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-image text-brand-500"></i>Photo</button>
-            <button onClick={() => { videoInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-video text-purple-500"></i>Video</button>
-            <button onClick={() => { docInputRef.current.click(); setAttachOpen(false); }} className="flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg"><i className="fa-solid fa-file text-amber-500"></i>Document</button>
-          </div>
-        )}
-        <input ref={imageInputRef} type="file" accept="image/*" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'image'); e.target.value = ''; }} />
-        <input ref={videoInputRef} type="file" accept="video/*" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'video'); e.target.value = ''; }} />
-        <input ref={docInputRef} type="file" accept=".pdf,.doc,.docx,.zip,.txt,.xlsx,.pptx" hidden onChange={e => { if (e.target.files[0]) uploadAndSend(e.target.files[0], 'document'); e.target.value = ''; }} />
-
-        {recording ? (
-          <div className="flex items-center gap-3 bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-            <span className="text-sm text-red-500 flex-1">Recording… {Math.floor(recordSeconds / 60)}:{String(recordSeconds % 60).padStart(2, '0')}</span>
-            <button onClick={() => stopRecording(true)} className="text-slate-400 text-sm">Cancel</button>
-            <button onClick={() => stopRecording(false)} className="bg-brand-600 text-white rounded-full w-8 h-8 flex items-center justify-center"><i className="fa-solid fa-paper-plane text-xs"></i></button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button onClick={() => { setAttachOpen(a => !a); setEmojiOpen(false); }} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-solid fa-paperclip"></i></button>
-            <button onClick={() => { setEmojiOpen(a => !a); setAttachOpen(false); }} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-regular fa-face-smile"></i></button>
-            <input value={text} onChange={e => onTextChange(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); } }}
-              disabled={blocked} placeholder={blocked ? "You can't message this user" : "Message…"} className="flex-1 bg-slate-50 dark:bg-ink-700 rounded-full px-4 py-2 text-sm disabled:opacity-50" />
-            {text.trim() ? (
-              <button onClick={sendText} className="bg-brand-600 text-white rounded-full w-9 h-9 flex items-center justify-center shrink-0"><i className="fa-solid fa-paper-plane text-sm"></i></button>
-            ) : (
-              <button onClick={startRecording} disabled={blocked} className="text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40"><i className="fa-solid fa-microphone"></i></button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {forwardMsg && <ForwardModal message={forwardMsg} onClose={() => setForwardMsg(null)} />}
-    </div>
-  );
+    var _a;
+    const { profile } = useAuth();
+    const toast = useToast();
+    const [otherUser, setOtherUser] = useState(null);
+    const [chatDoc, setChatDoc] = useState(null);
+    const [messages, setMessages] = useState(null);
+    const [text, setText] = useState('');
+    const [replyTo, setReplyTo] = useState(null);
+    const [editingMessage, setEditingMessage] = useState(null);
+    const [attachOpen, setAttachOpen] = useState(false);
+    const [emojiOpen, setEmojiOpen] = useState(false);
+    const [recording, setRecording] = useState(false);
+    const [recordSeconds, setRecordSeconds] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [activeMenuId, setActiveMenuId] = useState(null);
+    const [forwardMsg, setForwardMsg] = useState(null);
+    const bottomRef = useRef();
+    const typingTimeout = useRef();
+    const recorderRef = useRef();
+    const chunksRef = useRef([]);
+    const recordTimerRef = useRef();
+    const imageInputRef = useRef();
+    const videoInputRef = useRef();
+    const docInputRef = useRef();
+    useEffect(() => { const unsub = db.collection('users').doc(otherUid).onSnapshot(s => setOtherUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null)); return unsub; }, [otherUid]);
+    useEffect(() => { const unsub = db.collection('chats').doc(chatId).onSnapshot(s => setChatDoc(s.exists ? s.data() : null)); return unsub; }, [chatId]);
+    useEffect(() => {
+        const unsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt', 'asc').limit(200)
+            .onSnapshot(snap => setMessages(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        return unsub;
+    }, [chatId]);
+    useEffect(() => { var _a; (_a = bottomRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: 'smooth' }); }, [messages === null || messages === void 0 ? void 0 : messages.length]);
+    useEffect(() => {
+        if (!messages || messages.length === 0)
+            return;
+        const unread = messages.filter(m => m.senderId !== profile.id && !(m.readBy || []).includes(profile.id));
+        if (unread.length === 0)
+            return;
+        const batch = db.batch();
+        unread.forEach(m => batch.update(db.collection('chats').doc(chatId).collection('messages').doc(m.id), { readBy: FieldValue.arrayUnion(profile.id), deliveredTo: FieldValue.arrayUnion(profile.id) }));
+        batch.commit().catch(() => { });
+        db.collection('chatMembers').doc(chatId + '_' + profile.id).set({ unreadCount: 0 }, { merge: true }).catch(() => { });
+    }, [messages, chatId, profile.id]);
+    useEffect(() => () => { db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { }); }, [chatId]);
+    const iBlockedThem = (profile.blockedUsers || []).includes(otherUid);
+    const theyBlockedMe = ((otherUser === null || otherUser === void 0 ? void 0 : otherUser.blockedUsers) || []).includes(profile.id);
+    const blocked = iBlockedThem || theyBlockedMe;
+    const onTextChange = (v) => {
+        setText(v);
+        db.collection('chats').doc(chatId).set({ typing: { [profile.id]: true } }, { merge: true }).catch(() => { });
+        clearTimeout(typingTimeout.current);
+        typingTimeout.current = setTimeout(() => {
+            db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { });
+        }, 2500);
+    };
+    const sendText = async () => {
+        if (blocked) {
+            toast("You can't message this user", 'error');
+            return;
+        }
+        if (editingMessage) {
+            await db.collection('chats').doc(chatId).collection('messages').doc(editingMessage.id).update({ text: text.trim(), editedAt: FieldValue.serverTimestamp() });
+            setEditingMessage(null);
+            setText('');
+            return;
+        }
+        if (!text.trim())
+            return;
+        const payload = { type: 'text', text: text.trim() };
+        if (replyTo)
+            payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
+        setText('');
+        setReplyTo(null);
+        db.collection('chats').doc(chatId).set({ typing: { [profile.id]: false } }, { merge: true }).catch(() => { });
+        try {
+            await sendChatMessage(profile.id, chatId, otherUid, payload);
+        }
+        catch (e) {
+            toast(e.message, 'error');
+        }
+    };
+    const uploadAndSend = async (file, type) => {
+        if (blocked) {
+            toast("You can't message this user", 'error');
+            return;
+        }
+        const maxSizes = { image: 15 * 1024 * 1024, video: 100 * 1024 * 1024, document: 25 * 1024 * 1024, audio: 20 * 1024 * 1024 };
+        if (file.size > maxSizes[type]) {
+            toast('File exceeds the size limit for ' + type, 'error');
+            return;
+        }
+        setUploading(true);
+        setProgress(0);
+        try {
+            let blob = file;
+            if (type === 'image')
+                blob = await compressImage(file, 1600, 0.85);
+            const ext = type === 'image' ? 'jpg' : (file.name ? file.name.split('.').pop() : 'webm');
+            const path = `chat-media/${chatId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+            const ref = storage.ref(path);
+            await new Promise((resolve, reject) => {
+                const task = ref.put(blob, { contentType: type === 'image' ? 'image/jpeg' : (file.type || 'application/octet-stream') });
+                task.on('state_changed', s => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)), reject, resolve);
+            });
+            const url = await ref.getDownloadURL();
+            const payload = { type, mediaURL: url, mediaName: file.name || 'voice-note.webm', mediaSize: file.size };
+            if (replyTo)
+                payload.replyTo = { id: replyTo.id, text: replyTo.text || ('[' + replyTo.type + ']'), senderId: replyTo.senderId };
+            setReplyTo(null);
+            await sendChatMessage(profile.id, chatId, otherUid, payload);
+        }
+        catch (e) {
+            toast(e.message, 'error');
+        }
+        finally {
+            setUploading(false);
+            setProgress(0);
+        }
+    };
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const rec = new MediaRecorder(stream);
+            recorderRef.current = rec;
+            chunksRef.current = [];
+            rec.ondataavailable = e => chunksRef.current.push(e.data);
+            rec.onstop = async () => {
+                stream.getTracks().forEach(t => t.stop());
+                if (rec.__cancelled || chunksRef.current.length === 0)
+                    return;
+                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+                await uploadAndSend(file, 'audio');
+            };
+            rec.start();
+            setRecording(true);
+            setRecordSeconds(0);
+            recordTimerRef.current = setInterval(() => setRecordSeconds(s => s + 1), 1000);
+        }
+        catch (e) {
+            toast('Microphone access denied', 'error');
+        }
+    };
+    const stopRecording = (cancel) => {
+        clearInterval(recordTimerRef.current);
+        setRecording(false);
+        if (recorderRef.current) {
+            recorderRef.current.__cancelled = !!cancel;
+            recorderRef.current.stop();
+        }
+    };
+    const deleteForMe = (m) => db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ deletedFor: FieldValue.arrayUnion(profile.id) });
+    const copyText = (m) => { var _a; (_a = navigator.clipboard) === null || _a === void 0 ? void 0 : _a.writeText(m.text || ''); toast('Copied', 'success'); };
+    const react = async (m, emoji) => {
+        var _a;
+        const key = 'reactions.' + profile.id;
+        if (((_a = m.reactions) === null || _a === void 0 ? void 0 : _a[profile.id]) === emoji)
+            await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: FieldValue.delete() });
+        else
+            await db.collection('chats').doc(chatId).collection('messages').doc(m.id).update({ [key]: emoji });
+    };
+    if (!otherUser)
+        return React.createElement("div", { className: "p-6" },
+            React.createElement(PostSkeleton, null));
+    const visibleMessages = (messages || []).filter(m => !(m.deletedFor || []).includes(profile.id));
+    return (React.createElement("div", { className: "flex flex-col bg-white dark:bg-ink-800 border border-slate-100 dark:border-ink-700 md:rounded-2xl overflow-hidden", style: { height: 'calc(100vh - 1px)' } },
+        React.createElement("div", { className: "flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-ink-700 shrink-0" },
+            React.createElement("button", { onClick: () => go({ name: 'messages' }), className: "text-slate-400 md:hidden" },
+                React.createElement("i", { className: "fa-solid fa-arrow-left" })),
+            React.createElement("div", { className: "relative cursor-pointer", onClick: () => go({ name: 'profile', uid: otherUid }) },
+                React.createElement(Avatar, { user: otherUser, size: 9 }),
+                isUserOnline(otherUser) && React.createElement("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-ink-800" })),
+            React.createElement("div", { className: "flex-1 min-w-0 cursor-pointer", onClick: () => go({ name: 'profile', uid: otherUid }) },
+                React.createElement("p", { className: "font-semibold text-sm truncate" }, otherUser.displayName),
+                React.createElement("p", { className: "text-xs text-slate-400 truncate" }, ((_a = chatDoc === null || chatDoc === void 0 ? void 0 : chatDoc.typing) === null || _a === void 0 ? void 0 : _a[otherUid]) ? React.createElement("span", { className: "text-brand-500" }, "typing\u2026") : lastSeenLabel(otherUser)))),
+        React.createElement("div", { className: "flex-1 overflow-y-auto px-4 py-4 space-y-3" },
+            messages === null && React.createElement("p", { className: "text-sm text-slate-400 text-center" }, "Loading\u2026"),
+            (messages === null || messages === void 0 ? void 0 : messages.length) === 0 && (React.createElement("div", { className: "text-center text-slate-400 py-10" },
+                React.createElement("div", { className: "flex justify-center" },
+                    React.createElement(Avatar, { user: otherUser, size: 16 })),
+                React.createElement("p", { className: "mt-3 font-semibold text-sm text-slate-600 dark:text-slate-300" }, otherUser.displayName),
+                React.createElement("p", { className: "text-xs mt-1" }, "Say hello to start the conversation \uD83D\uDC4B"))),
+            visibleMessages.map((m, i) => (React.createElement(React.Fragment, { key: m.id },
+                React.createElement(DateSeparator, { prev: visibleMessages[i - 1], curr: m }),
+                React.createElement(MessageBubble, { message: m, isMe: m.senderId === profile.id, otherUid: otherUid, menuOpen: activeMenuId === m.id, setMenuOpen: (v) => setActiveMenuId(v ? m.id : null), onReply: () => setReplyTo(m), onForward: () => setForwardMsg(m), onCopy: () => copyText(m), onEdit: () => { setEditingMessage(m); setText(m.text || ''); }, onDelete: () => deleteForMe(m), onReact: (e) => react(m, e) })))),
+            React.createElement("div", { ref: bottomRef })),
+        blocked && (React.createElement("div", { className: "px-4 py-2 text-xs text-center text-red-500 bg-red-50 dark:bg-red-900/20 shrink-0" }, iBlockedThem ? "You've blocked this user." : "You can't reply to this conversation.")),
+        (replyTo || editingMessage) && (React.createElement("div", { className: "flex items-center justify-between px-4 py-2 border-t border-slate-100 dark:border-ink-700 bg-slate-50 dark:bg-ink-700 shrink-0" },
+            React.createElement("p", { className: "text-xs text-slate-500 truncate" }, editingMessage ? 'Editing message' : 'Replying to: ' + (replyTo.text || '[' + replyTo.type + ']')),
+            React.createElement("button", { onClick: () => { setReplyTo(null); setEditingMessage(null); setText(''); }, className: "text-slate-400 text-xs px-2" }, "\u2715"))),
+        uploading && (React.createElement("div", { className: "px-4 pt-2 shrink-0" },
+            React.createElement("div", { className: "w-full h-1.5 bg-slate-100 dark:bg-ink-700 rounded-full overflow-hidden" },
+                React.createElement("div", { className: "h-full bg-brand-600 transition-all", style: { width: progress + '%' } })))),
+        React.createElement("div", { className: "p-3 border-t border-slate-100 dark:border-ink-700 shrink-0 relative" },
+            emojiOpen && (React.createElement("div", { className: "absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 grid grid-cols-6 gap-1 z-20" }, EMOJI_PICKER_SET.map(e => React.createElement("button", { key: e, onClick: () => { setText(t => t + e); setEmojiOpen(false); }, className: "text-lg hover:bg-slate-100 dark:hover:bg-ink-600 rounded-lg p-1" }, e)))),
+            attachOpen && (React.createElement("div", { className: "absolute bottom-14 left-3 bg-white dark:bg-ink-700 border border-slate-100 dark:border-ink-600 rounded-xl shadow-lg p-2 flex gap-2 z-20" },
+                React.createElement("button", { onClick: () => { imageInputRef.current.click(); setAttachOpen(false); }, className: "flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg" },
+                    React.createElement("i", { className: "fa-solid fa-image text-brand-500" }),
+                    "Photo"),
+                React.createElement("button", { onClick: () => { videoInputRef.current.click(); setAttachOpen(false); }, className: "flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg" },
+                    React.createElement("i", { className: "fa-solid fa-video text-purple-500" }),
+                    "Video"),
+                React.createElement("button", { onClick: () => { docInputRef.current.click(); setAttachOpen(false); }, className: "flex flex-col items-center gap-1 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-ink-600 rounded-lg" },
+                    React.createElement("i", { className: "fa-solid fa-file text-amber-500" }),
+                    "Document"))),
+            React.createElement("input", { ref: imageInputRef, type: "file", accept: "image/*", hidden: true, onChange: e => { if (e.target.files[0])
+                    uploadAndSend(e.target.files[0], 'image'); e.target.value = ''; } }),
+            React.createElement("input", { ref: videoInputRef, type: "file", accept: "video/*", hidden: true, onChange: e => { if (e.target.files[0])
+                    uploadAndSend(e.target.files[0], 'video'); e.target.value = ''; } }),
+            React.createElement("input", { ref: docInputRef, type: "file", accept: ".pdf,.doc,.docx,.zip,.txt,.xlsx,.pptx", hidden: true, onChange: e => { if (e.target.files[0])
+                    uploadAndSend(e.target.files[0], 'document'); e.target.value = ''; } }),
+            recording ? (React.createElement("div", { className: "flex items-center gap-3 bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-2" },
+                React.createElement("span", { className: "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" }),
+                React.createElement("span", { className: "text-sm text-red-500 flex-1" },
+                    "Recording\u2026 ",
+                    Math.floor(recordSeconds / 60),
+                    ":",
+                    String(recordSeconds % 60).padStart(2, '0')),
+                React.createElement("button", { onClick: () => stopRecording(true), className: "text-slate-400 text-sm" }, "Cancel"),
+                React.createElement("button", { onClick: () => stopRecording(false), className: "bg-brand-600 text-white rounded-full w-8 h-8 flex items-center justify-center" },
+                    React.createElement("i", { className: "fa-solid fa-paper-plane text-xs" })))) : (React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("button", { onClick: () => { setAttachOpen(a => !a); setEmojiOpen(false); }, disabled: blocked, className: "text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40" },
+                    React.createElement("i", { className: "fa-solid fa-paperclip" })),
+                React.createElement("button", { onClick: () => { setEmojiOpen(a => !a); setAttachOpen(false); }, disabled: blocked, className: "text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40" },
+                    React.createElement("i", { className: "fa-regular fa-face-smile" })),
+                React.createElement("input", { value: text, onChange: e => onTextChange(e.target.value), onKeyDown: e => { if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendText();
+                    } }, disabled: blocked, placeholder: blocked ? "You can't message this user" : "Message…", className: "flex-1 bg-slate-50 dark:bg-ink-700 rounded-full px-4 py-2 text-sm disabled:opacity-50" }),
+                text.trim() ? (React.createElement("button", { onClick: sendText, className: "bg-brand-600 text-white rounded-full w-9 h-9 flex items-center justify-center shrink-0" },
+                    React.createElement("i", { className: "fa-solid fa-paper-plane text-sm" }))) : (React.createElement("button", { onClick: startRecording, disabled: blocked, className: "text-slate-400 w-9 h-9 flex items-center justify-center disabled:opacity-40" },
+                    React.createElement("i", { className: "fa-solid fa-microphone" })))))),
+        forwardMsg && React.createElement(ForwardModal, { message: forwardMsg, onClose: () => setForwardMsg(null) })));
 }
-
 function ForwardModal({ message, onClose }) {
-  const { profile } = useAuth();
-  const toast = useToast();
-  const [rows, setRows] = useState([]);
-  const [sending, setSending] = useState(null);
-
-  useEffect(() => {
-    const unsub = db.collection('chatMembers').where('uid', '==', profile.id).where('status', '==', 'accepted')
-      .onSnapshot(snap => setRows(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => !r.deletedAt)));
-    return unsub;
-  }, [profile.id]);
-
-  const forwardTo = async (row) => {
-    setSending(row.id);
-    try {
-      const payload = { type: message.type };
-      if (message.text) payload.text = message.text;
-      if (message.mediaURL) { payload.mediaURL = message.mediaURL; payload.mediaName = message.mediaName || ''; payload.mediaSize = message.mediaSize || 0; }
-      payload.forwardedFrom = { chatId: message.id, originalSenderId: message.senderId };
-      await sendChatMessage(profile.id, row.chatId, row.otherUid, payload);
-      toast('Forwarded', 'success');
-      onClose();
-    } catch (e) { toast(e.message, 'error'); } finally { setSending(null); }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center">
-      <div className="bg-white dark:bg-ink-800 rounded-t-2xl md:rounded-2xl w-full max-w-sm max-h-[70vh] overflow-y-auto p-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-display font-bold text-base">Forward message</h3>
-          <button onClick={onClose} className="text-slate-400"><i className="fa-solid fa-xmark"></i></button>
-        </div>
-        <div className="space-y-3">
-          {rows.map(r => <ForwardRow key={r.id} row={r} onSend={() => forwardTo(r)} sending={sending === r.id} />)}
-          {rows.length === 0 && <p className="text-sm text-slate-400 text-center py-6">No conversations to forward to yet.</p>}
-        </div>
-      </div>
-    </div>
-  );
+    const { profile } = useAuth();
+    const toast = useToast();
+    const [rows, setRows] = useState([]);
+    const [sending, setSending] = useState(null);
+    useEffect(() => {
+        const unsub = db.collection('chatMembers').where('uid', '==', profile.id).where('status', '==', 'accepted')
+            .onSnapshot(snap => setRows(snap.docs.map(d => (Object.assign({ id: d.id }, d.data()))).filter(r => !r.deletedAt)));
+        return unsub;
+    }, [profile.id]);
+    const forwardTo = async (row) => {
+        setSending(row.id);
+        try {
+            const payload = { type: message.type };
+            if (message.text)
+                payload.text = message.text;
+            if (message.mediaURL) {
+                payload.mediaURL = message.mediaURL;
+                payload.mediaName = message.mediaName || '';
+                payload.mediaSize = message.mediaSize || 0;
+            }
+            payload.forwardedFrom = { chatId: message.id, originalSenderId: message.senderId };
+            await sendChatMessage(profile.id, row.chatId, row.otherUid, payload);
+            toast('Forwarded', 'success');
+            onClose();
+        }
+        catch (e) {
+            toast(e.message, 'error');
+        }
+        finally {
+            setSending(null);
+        }
+    };
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center" },
+        React.createElement("div", { className: "bg-white dark:bg-ink-800 rounded-t-2xl md:rounded-2xl w-full max-w-sm max-h-[70vh] overflow-y-auto p-4" },
+            React.createElement("div", { className: "flex justify-between items-center mb-3" },
+                React.createElement("h3", { className: "font-display font-bold text-base" }, "Forward message"),
+                React.createElement("button", { onClick: onClose, className: "text-slate-400" },
+                    React.createElement("i", { className: "fa-solid fa-xmark" }))),
+            React.createElement("div", { className: "space-y-3" },
+                rows.map(r => React.createElement(ForwardRow, { key: r.id, row: r, onSend: () => forwardTo(r), sending: sending === r.id })),
+                rows.length === 0 && React.createElement("p", { className: "text-sm text-slate-400 text-center py-6" }, "No conversations to forward to yet.")))));
 }
-
 function ForwardRow({ row, onSend, sending }) {
-  const [user, setUser] = useState(null);
-  useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? { id: s.id, ...s.data() } : null)); return unsub; }, [row.otherUid]);
-  if (!user) return null;
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2"><Avatar user={user} size={8} /><span className="text-sm font-medium">{user.displayName}</span></div>
-      <button onClick={onSend} disabled={sending} className="text-xs font-semibold text-brand-600 disabled:opacity-50">{sending ? 'Sending…' : 'Send'}</button>
-    </div>
-  );
+    const [user, setUser] = useState(null);
+    useEffect(() => { const unsub = db.collection('users').doc(row.otherUid).onSnapshot(s => setUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null)); return unsub; }, [row.otherUid]);
+    if (!user)
+        return null;
+    return (React.createElement("div", { className: "flex items-center justify-between" },
+        React.createElement("div", { className: "flex items-center gap-2" },
+            React.createElement(Avatar, { user: user, size: 8 }),
+            React.createElement("span", { className: "text-sm font-medium" }, user.displayName)),
+        React.createElement("button", { onClick: onSend, disabled: sending, className: "text-xs font-semibold text-brand-600 disabled:opacity-50" }, sending ? 'Sending…' : 'Send')));
 }
-
 /* ============================== RENDER ============================== */
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
 document.getElementById('root').dataset.mounted = 'true';
+
 </script>
 </body>
 </html>
