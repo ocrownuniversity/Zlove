@@ -233,22 +233,49 @@ function useUnreadMessages(uid) {
 async function ensureChat(meId, otherId) {
     const id = chatIdFor(meId, otherId);
     const chatRef = db.collection('chats').doc(id);
-    const snap = await chatRef.get();
+    let snap;
+    try {
+        snap = await chatRef.get();
+    }
+    catch (e) {
+        throw new Error('[read chat doc] ' + e.message);
+    }
     if (!snap.exists) {
-        const followedByOther = await db.collection('follows').doc(otherId + '_' + meId).get();
+        let followedByOther;
+        try {
+            followedByOther = await db.collection('follows').doc(otherId + '_' + meId).get();
+        }
+        catch (e) {
+            throw new Error('[read follows] ' + e.message);
+        }
         const recipientStatus = followedByOther.exists ? 'accepted' : 'pending';
-        await chatRef.set({
-            members: [meId, otherId], isGroup: false, lastMessage: null,
-            lastMessageAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp(), typing: {}
-        });
-        await db.collection('chatMembers').doc(id + '_' + meId).set({
-            chatId: id, uid: meId, otherUid: otherId, pinned: false, archived: false, unreadCount: 0,
-            status: 'accepted', lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
-        });
-        await db.collection('chatMembers').doc(id + '_' + otherId).set({
-            chatId: id, uid: otherId, otherUid: meId, pinned: false, archived: false, unreadCount: 0,
-            status: recipientStatus, lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
-        });
+        try {
+            await chatRef.set({
+                members: [meId, otherId], isGroup: false, lastMessage: null,
+                lastMessageAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp(), typing: {}
+            });
+        }
+        catch (e) {
+            throw new Error('[create chat doc] ' + e.message);
+        }
+        try {
+            await db.collection('chatMembers').doc(id + '_' + meId).set({
+                chatId: id, uid: meId, otherUid: otherId, pinned: false, archived: false, unreadCount: 0,
+                status: 'accepted', lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+            });
+        }
+        catch (e) {
+            throw new Error('[create my chatMembers] ' + e.message);
+        }
+        try {
+            await db.collection('chatMembers').doc(id + '_' + otherId).set({
+                chatId: id, uid: otherId, otherUid: meId, pinned: false, archived: false, unreadCount: 0,
+                status: recipientStatus, lastMessage: null, lastMessageAt: FieldValue.serverTimestamp(), deletedAt: null
+            });
+        }
+        catch (e) {
+            throw new Error('[create their chatMembers] ' + e.message);
+        }
     }
     return id;
 }
@@ -539,7 +566,7 @@ function ToastProvider({ children }) {
     const push = useCallback((message, type = 'info') => {
         const id = Math.random().toString(36).slice(2);
         setToasts(t => [...t, { id, message, type }]);
-        setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3200);
+        setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), type === 'error' ? 8000 : 3200);
     }, []);
     return (React.createElement(ToastContext.Provider, { value: push },
         children,
@@ -1790,6 +1817,7 @@ function ChatWindow({ chatId, otherUid, go }) {
                 setChatReady(true); })
             .catch(e => {
             if (!cancelled) {
+                console.error('ensureChat failed:', e);
                 toast('Could not open conversation: ' + e.message, 'error');
                 setChatReady(true); // stop showing an infinite spinner even on failure
             }
