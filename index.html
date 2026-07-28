@@ -974,6 +974,7 @@ function PostCard({ post, go }) {
     const [author, setAuthor] = useState(null);
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+    const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
     const [showComments, setShowComments] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -987,6 +988,21 @@ function PostCard({ post, go }) {
         const unsub = db.collection('posts').doc(post.id).collection('likes').doc(profile.id).onSnapshot(s => setLiked(s.exists));
         return unsub;
     }, [post.id, profile.id]);
+    // Root cause of "can't like other users' posts": the like write itself (to the
+    // uid-keyed likes subcollection doc) always succeeds for any authenticated user, but the
+    // old code also required a write to the parent posts/{id} document to bump likesCount,
+    // which only the post's owner can normally write to. Liking your own post worked because
+    // you own that document; liking someone else's threw and aborted the whole action. Deriving
+    // the count from the likes subcollection itself removes that dependency entirely, so liking
+    // works for any post and the count is always accurate and realtime.
+    useEffect(() => {
+        const unsub = db.collection('posts').doc(post.id).collection('likes').onSnapshot(snap => setLikesCount(snap.size), () => { });
+        return unsub;
+    }, [post.id]);
+    useEffect(() => {
+        const unsub = db.collection('posts').doc(post.id).collection('comments').onSnapshot(snap => setCommentsCount(snap.size), () => { });
+        return unsub;
+    }, [post.id]);
     useEffect(() => {
         const unsub = db.collection('bookmarks').doc(profile.id).collection('items').doc(post.id).onSnapshot(s => setBookmarked(s.exists));
         return unsub;
@@ -997,19 +1013,21 @@ function PostCard({ post, go }) {
         try {
             if (liked) {
                 await likeRef.delete();
-                await postRef.update({ likesCount: FieldValue.increment(-1) });
-                setLikesCount(c => c - 1);
             }
             else {
+                // Doc id is the liker's own uid, so re-liking just overwrites the same
+                // document instead of creating a duplicate.
                 await likeRef.set({ uid: profile.id, createdAt: FieldValue.serverTimestamp() });
-                await postRef.update({ likesCount: FieldValue.increment(1) });
-                setLikesCount(c => c + 1);
                 if (post.authorId !== profile.id) {
                     db.collection('notifications').doc(post.authorId).collection('items').add({
                         type: 'like', fromUserId: profile.id, postId: post.id, read: false, createdAt: FieldValue.serverTimestamp()
                     });
                 }
             }
+            // Best-effort denormalized counter for the admin dashboard's aggregate stats.
+            // Intentionally not awaited/thrown on failure: the count shown to users above
+            // now comes live from the likes subcollection, so this can never block a like.
+            postRef.update({ likesCount: FieldValue.increment(liked ? -1 : 1) }).catch(() => { });
         }
         catch (e) {
             toast('Could not update like', 'error');
@@ -1077,7 +1095,7 @@ function PostCard({ post, go }) {
             React.createElement("button", { onClick: () => setShowComments(s => !s), className: "flex items-center gap-1.5 hover:text-brand-600" },
                 React.createElement("i", { className: "fa-regular fa-comment" }),
                 " ",
-                post.commentsCount || 0),
+                commentsCount),
             React.createElement("button", { onClick: share, className: "flex items-center gap-1.5 hover:text-emerald-500" },
                 React.createElement("i", { className: "fa-regular fa-share-from-square" }),
                 " ",
@@ -1114,7 +1132,8 @@ function Comments({ postId, go }) {
         await db.collection('posts').doc(postId).collection('comments').add({
             authorId: profile.id, text: text.trim(), createdAt: FieldValue.serverTimestamp()
         });
-        await db.collection('posts').doc(postId).update({ commentsCount: FieldValue.increment(1) });
+        // Best-effort denormalized counter (see PostCard's live commentsCount for why).
+        db.collection('posts').doc(postId).update({ commentsCount: FieldValue.increment(1) }).catch(() => { });
         if (post.authorId !== profile.id) {
             db.collection('notifications').doc(post.authorId).collection('items').add({
                 type: 'comment', fromUserId: profile.id, postId, read: false, createdAt: FieldValue.serverTimestamp()
@@ -1298,18 +1317,37 @@ function ProfileScreen({ uid, go }) {
         const unsub = db.collection('follows').doc(me.id + '_' + uid).onSnapshot(s => setFollowing(s.exists));
         return unsub;
     }, [uid, me.id]);
+    // Same class of bug as the like counter: bumping followersCount on the *other* user's
+    // document is a cross-user write that can be denied by ownership-based rules, and here it
+    // wasn't even wrapped in try/catch, so a failure silently threw and skipped the rest of the
+    // function (including your own followingCount update). Derive both counts live from the
+    // follows collection so the UI is always correct regardless of that write's permission, and
+    // make the denormalized counters best-effort.
+    const [followersCount, setFollowersCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
+    useEffect(() => {
+        const unsub = db.collection('follows').where('followingId', '==', uid).onSnapshot(snap => setFollowersCount(snap.size), () => { });
+        return unsub;
+    }, [uid]);
+    useEffect(() => {
+        const unsub = db.collection('follows').where('followerId', '==', uid).onSnapshot(snap => setFollowingCount(snap.size), () => { });
+        return unsub;
+    }, [uid]);
     const toggleFollow = async () => {
         const relId = me.id + '_' + uid;
-        if (following) {
-            await db.collection('follows').doc(relId).delete();
-            await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(-1) });
-            await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(-1) });
+        try {
+            if (following) {
+                await db.collection('follows').doc(relId).delete();
+            }
+            else {
+                await db.collection('follows').doc(relId).set({ followerId: me.id, followingId: uid, createdAt: FieldValue.serverTimestamp() });
+                db.collection('notifications').doc(uid).collection('items').add({ type: 'follow', fromUserId: me.id, read: false, createdAt: FieldValue.serverTimestamp() });
+            }
+            db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(following ? -1 : 1) }).catch(() => { });
+            db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(following ? -1 : 1) }).catch(() => { });
         }
-        else {
-            await db.collection('follows').doc(relId).set({ followerId: me.id, followingId: uid, createdAt: FieldValue.serverTimestamp() });
-            await db.collection('users').doc(uid).update({ followersCount: FieldValue.increment(1) });
-            await db.collection('users').doc(me.id).update({ followingCount: FieldValue.increment(1) });
-            db.collection('notifications').doc(uid).collection('items').add({ type: 'follow', fromUserId: me.id, read: false, createdAt: FieldValue.serverTimestamp() });
+        catch (e) {
+            toast(e.message, 'error');
         }
     };
     const iBlockedThem = (me.blockedUsers || []).includes(uid);
@@ -1371,11 +1409,11 @@ function ProfileScreen({ uid, go }) {
                         " ",
                         React.createElement("span", { className: "text-slate-400" }, "Posts")),
                     React.createElement("span", null,
-                        React.createElement("b", null, user.followersCount || 0),
+                        React.createElement("b", null, followersCount),
                         " ",
                         React.createElement("span", { className: "text-slate-400" }, "Followers")),
                     React.createElement("span", null,
-                        React.createElement("b", null, user.followingCount || 0),
+                        React.createElement("b", null, followingCount),
                         " ",
                         React.createElement("span", { className: "text-slate-400" }, "Following"))),
                 user.bio && React.createElement("p", { className: "text-sm mt-3 leading-relaxed" }, user.bio),
@@ -1735,13 +1773,46 @@ function ChatWindow({ chatId, otherUid, go }) {
     const imageInputRef = useRef();
     const videoInputRef = useRef();
     const docInputRef = useRef();
+    const [chatReady, setChatReady] = useState(false);
     useEffect(() => { const unsub = db.collection('users').doc(otherUid).onSnapshot(s => setOtherUser(s.exists ? Object.assign({ id: s.id }, s.data()) : null)); return unsub; }, [otherUid]);
-    useEffect(() => { const unsub = db.collection('chats').doc(chatId).onSnapshot(s => setChatDoc(s.exists ? s.data() : null)); return unsub; }, [chatId]);
+    // Root cause of "stuck on Loading": the chat/chatMembers docs were only ever created
+    // inside sendChatMessage(), but ChatWindow attaches its listeners as soon as it's opened
+    // (e.g. from the profile "Message" button), before any message has been sent. If the chat
+    // doc doesn't exist yet, membership-based Security Rules deny the read, onSnapshot has no
+    // error handler, and messages/chatDoc state never leaves its initial null -> infinite
+    // "Loading...". Fix: make sure the conversation exists (create it if missing, reuse it if
+    // not) before attaching any listener, and only then subscribe.
     useEffect(() => {
-        const unsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt', 'asc').limit(200)
-            .onSnapshot(snap => setMessages(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))));
+        let cancelled = false;
+        setChatReady(false);
+        ensureChat(profile.id, otherUid)
+            .then(() => { if (!cancelled)
+                setChatReady(true); })
+            .catch(e => {
+            if (!cancelled) {
+                toast('Could not open conversation: ' + e.message, 'error');
+                setChatReady(true); // stop showing an infinite spinner even on failure
+            }
+        });
+        return () => { cancelled = true; };
+    }, [chatId, otherUid, profile.id]);
+    useEffect(() => {
+        if (!chatReady)
+            return;
+        const unsub = db.collection('chats').doc(chatId).onSnapshot(s => setChatDoc(s.exists ? s.data() : null), () => setChatDoc(null));
         return unsub;
-    }, [chatId]);
+    }, [chatId, chatReady]);
+    useEffect(() => {
+        if (!chatReady)
+            return;
+        const unsub = db.collection('chats').doc(chatId).collection('messages').orderBy('createdAt', 'asc').limit(200)
+            .onSnapshot(snap => setMessages(snap.docs.map(d => (Object.assign({ id: d.id }, d.data())))), e => {
+            // Ensure loading state always ends, even on a permission/listener error.
+            setMessages([]);
+            toast('Could not load messages: ' + e.message, 'error');
+        });
+        return unsub;
+    }, [chatId, chatReady]);
     useEffect(() => { var _a; (_a = bottomRef.current) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: 'smooth' }); }, [messages === null || messages === void 0 ? void 0 : messages.length]);
     useEffect(() => {
         if (!messages || messages.length === 0)
